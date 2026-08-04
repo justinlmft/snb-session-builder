@@ -88,8 +88,8 @@ change made in a source tool, re-extract that practice's blocks and re-run.
 | practice | prompts | from `LADDER` | its own |
 |---|---|---|---|
 | mm | 18 | 0 | 18 |
-| cb | 122 | 60 | 62 |
-| srs | 163 | 60 | 103 |
+| cb | 122 | 61 | 61 |
+| srs | 163 | 61 | 102 |
 | ss | 116 | 58 | 58 |
 
 **SS's safety-anchoring slides are already shared with CB** — 58 of its 116 prompts
@@ -97,10 +97,23 @@ come from the canonical ladder, and only one of its own also appears in CB. The
 audit did find drift, now fixed: SS's Normalize and Validate notes and
 "Take **in** one intentional breath" were paraphrases; they are CB's wording again.
 
-The remaining duplication is **CB↔SRS: 22 prompts written twice**, all outside
-`ladderBeats()` — the phase-2/3 skill sequences (imagery, obstacles + 4 statements,
-balancing, pendulating) and the practice closing. Extracting those into `LADDER`
-would collapse them; not done yet.
+The remaining duplication is **CB↔SRS: 21 prompts written twice**, all outside
+`ladderBeats()`. They split in half:
+
+**~11 have zero conditionals — extractable today.** `OBSTACLE_STATEMENTS` (16
+strings) and `pickObstacles()` are byte-identical in both files, Fisher-Yates and
+all. So are `inviteBeats`' four Imagine-&-Invite prompts, the three Obstacle
+prompts, the Validate/Normalize notes, and the `check your Capacity:` body.
+
+**~10 are genuinely conditional.** CB's `pendBeats` branches on five runtime dials
+(`skip`, `holdwatch`, `pendSec`, `pend` as a loop count, `dur`) and carries its
+timings *in the presenter note*; SRS has two dials only by design, so it writes a
+fixed two-round sequence with blank notes — which is precisely the one allowlisted
+parity exception. The closing isn't really duplicated either: CB's `closingBeats`
+is 5 beats + capacity check, SRS's `reconnect()` is 4 differently-worded beats plus
+a `bigBreath` variant, sharing exactly one line. Describe-defense is a checkbox set
+in CB and longhand in SRS weeks 7/8 — worded differently from each other. And SRS
+headlines carry `<br>` for the two-line slide where CB's do not.
 
 ## Parity
 
