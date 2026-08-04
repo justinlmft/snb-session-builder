@@ -83,6 +83,25 @@ node smoke.mjs          # dials, tabs, console walk, dial wiring
 `build.py` composes from the extracted source blocks in this folder. To pick up a
 change made in a source tool, re-extract that practice's blocks and re-run.
 
+## What is actually shared (measured, `overlap.mjs`)
+
+| practice | prompts | from `LADDER` | its own |
+|---|---|---|---|
+| mm | 18 | 0 | 18 |
+| cb | 122 | 60 | 62 |
+| srs | 163 | 60 | 103 |
+| ss | 116 | 58 | 58 |
+
+**SS's safety-anchoring slides are already shared with CB** — 58 of its 116 prompts
+come from the canonical ladder, and only one of its own also appears in CB. The
+audit did find drift, now fixed: SS's Normalize and Validate notes and
+"Take **in** one intentional breath" were paraphrases; they are CB's wording again.
+
+The remaining duplication is **CB↔SRS: 22 prompts written twice**, all outside
+`ladderBeats()` — the phase-2/3 skill sequences (imagery, obstacles + 4 statements,
+balancing, pendulating) and the practice closing. Extracting those into `LADDER`
+would collapse them; not done yet.
+
 ## Parity
 
 `parity.mjs` loads each source tool and the merged builder side by side, applies
@@ -94,11 +113,12 @@ The contract has two halves:
 
 1. **MM and CB must stay byte-identical to their sources.** Nothing about those
    practices changed. Last run: **9/9 sweeps identical** (MM ×4, CB ×5).
-2. **SRS is deliberately no longer identical** — it adopted the CB ladder. So
-   instead it asserts what that decision was *for*: every prompt shared between CB
-   and SRS must carry an identical presenter note. Last run: **82 shared prompts,
-   0 drifting**, with a 1-entry allowlist (`Has non-safety changed?`, where CB's
-   note is its pendulation timing dial and SRS has no such dial to inherit).
+2. **SRS and SS are deliberately not identical to anything** — they call the CB
+   ladder rather than keeping copies. So instead the suite asserts what that
+   decision was *for*: every prompt either shares with CB must carry an identical
+   presenter note. Last run: **82 shared prompts with SRS and 60 with SS, 0
+   drifting on both**, with a 1-entry allowlist (`Has non-safety changed?`, where
+   CB's note is its pendulation timing dial and SRS has no such dial to inherit).
 
 ## Sources
 
