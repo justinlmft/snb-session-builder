@@ -2825,6 +2825,86 @@ const LADDER = (function(){
 })();
 
 
+/* ---------------- the shared cohort skeleton ---------------- */
+/* ==================================================================
+   THE COHORT SKELETON — how every multi-week live cohort opens and closes.
+   Justin, 2026-08-04: "standardize these where you can."
+
+   Self-Regulation Simplified and Safety Simplified were each writing their own
+   copy of the same seven slides: cover · app check-in · ice-melter · homework
+   review … app check-in again · homework · questions · next-week (or finale).
+   A third cohort would have made a third copy. Now there is one.
+
+   SRS had real presenter notes on these; SS had none. So SRS's notes are the
+   canonical ones — a cohort supplies only what is genuinely its own (its ice-
+   melter question, its homework, its week titles) and inherits the rest.
+
+   The skeleton does NOT build beats itself. Each cohort passes its own
+   constructors in `mk` ({cover, info, app}), so every beat keeps that module's
+   exact shape and the merged builder stays beat-identical to before. What is
+   shared is the SEQUENCE and the CANONICAL NOTES, which is the part that drifts.
+   ================================================================== */
+const COHORT = (function(){
+
+  /* ---- canonical presenter notes (from SRS, the cohort that had them) ---- */
+  const N = {
+    checkinBefore:
+      "Before we do anything, open the app and check in. — If you’re not in yet, scan the code on screen or type the join code. — Notice where you are right now. There’s no right answer. — Two reasons we do this. One, it gives you a starting point, so at the end you can see whether the practice moved anything. Two, over the cohort it becomes a picture of your baseline, which is the thing we’re actually trying to move. — Take your time.",
+    checkinAfter:
+      "Let’s check in one more time. — Open the app again and notice where you are now. Not better or worse, just what’s true. — Then look at where you started and where you are. Sometimes it moved. Sometimes it didn’t, and sometimes it went the other way. All three are real information, and none of them mean you did it wrong. — That comparison is the point. You’re building evidence about your own system.",
+    homeworkReview:
+      "Open floor, but keep it moving — a few voices, not everyone. — What I’m listening for: did you practice inside your safety environment AND outside it? What got in the way? — If someone says they didn’t practice, that’s useful information, not a confession. Ask what stopped them.",
+    questions:
+      "Take what’s in the room. If nothing comes, that’s fine — don’t fish. — Point anything big toward the cohort space so others can see the answer."
+  };
+
+  const CHECKIN_BEFORE_BODY = "open the stuck not broken app and check in before the practice.";
+  const CHECKIN_AFTER_BODY  = "open the app and check in again.";
+
+  /* ---- OPEN: cover · check in · ice-melter · homework review ----
+     c = {n, title, eyebrow, coverNote, checkinBody, checkinNote,
+          ice, iceNote, hwReviewH, hwReviewBody, hwReviewNote}
+     mk = {cover(h,note,eyebrow), info(h,body,note), app(h,body,note,phase)} */
+  function open(c, mk){
+    const B = [];
+    B.push(mk.cover("week "+c.n+".<br>"+c.title, c.coverNote || "", c.eyebrow));
+    B.push(mk.app("check in.",
+      c.checkinBody || CHECKIN_BEFORE_BODY,
+      c.checkinNote || N.checkinBefore, "before"));
+    B.push(mk.info("ice-melter.", c.ice, c.iceNote));
+    if (c.n > 1) B.push(mk.info(
+      c.hwReviewH || "how was the homework?",
+      c.hwReviewBody || "",
+      c.hwReviewNote || N.homeworkReview));
+    return B;
+  }
+
+  /* ---- CLOSE: check in again · homework · [extras] · questions · next ----
+     c = {n, last, checkinBody, checkinNote, homework, homeworkNote,
+          extras (array of already-built beats), questionsNote,
+          next:{n,title}, nextNote, finaleH, finaleNote, finaleEyebrow} */
+  function close(c, mk){
+    const B = [];
+    B.push(mk.app("check in again.",
+      c.checkinBody || CHECKIN_AFTER_BODY,
+      c.checkinNote || N.checkinAfter, "after"));
+    B.push(mk.info("homework.", c.homework, c.homeworkNote));
+    (c.extras || []).forEach(b => B.push(b));
+    B.push(mk.info("questions?", "", c.questionsNote || N.questions));
+    if (!c.last && c.next) {
+      B.push(mk.cover("next week:<br>"+c.next.title, c.nextNote || "", "WEEK "+c.next.n));
+    } else {
+      B.push(mk.cover(c.finaleH || "you did it. 🎉", c.finaleNote || "",
+                      c.finaleEyebrow || "THANK YOU"));
+    }
+    return B;
+  }
+
+  return { open:open, close:close, NOTES:N,
+           CHECKIN_BEFORE_BODY:CHECKIN_BEFORE_BODY, CHECKIN_AFTER_BODY:CHECKIN_AFTER_BODY };
+})();
+
+
 
 /* ==================================================================
    Mindful Moment — content lifted VERBATIM from its source tool.
@@ -3960,6 +4040,7 @@ function q(h,note){ return {style:"q",h,body:"",eyebrow:"",note:note||"",fixed:f
 function info(h,body,note){ return {style:"info",h,body:body||"",eyebrow:"",note:note||"",fixed:true}; }
 function vig(h,body,note){ return {style:"vig",h,body:body||"",eyebrow:"JENNY",note:note||"",fixed:true}; }
 function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:(phase?"CHECK IN":"STUCK NOT BROKEN APP"),note:note||"",fixed:true,phase:phase||""}; }
+const MK = {cover:(h,n,e)=>cover(h,n,e), info:(h,b,n)=>info(h,b,n), app:(h,b,n,ph)=>app(h,b,n,ph)};
 function ptitle(h,tagline,note,body){ return {style:"ptitle",h,body:body||"",eyebrow:tagline||"",note:note||"",fixed:false}; }
 
 /* The Capacity Builder capacity screen, verbatim. When a break length is passed
@@ -4121,19 +4202,13 @@ function buildBeats(){
   const sec=(name,from)=>{for(let i=from;i<B.length;i++) if(!B[i].section) B[i].section=name;};
 
   /* ---------- OPEN ---------- */
+  /* structure + the generic presenter notes come from the shared COHORT skeleton */
   let m=0;
-  B.push(cover("week "+w.n+".<br>"+w.title,
-    "Welcome back. — Week "+w.n+" of eight. Today is "+w.short+". — Quick reminder of how this room works: the lessons live in the Academy, and you review them on your own time. In here we practice. That’s it. — No pressure to participate out loud. Cameras on or off. Chat if you want it.",
-    "SELF-REGULATION SIMPLIFIED"));
-
-  B.push(app("check in.",
-    "open the stuck not broken app and check in before the practice.",
-    "Before we do anything, open the app and check in. — If you’re not in yet, scan the code on screen or type the join code. — Notice where you are right now. There’s no right answer. — Two reasons we do this. One, it gives you a starting point, so at the end you can see whether the practice moved anything. Two, over eight weeks it becomes a picture of your baseline, which is the thing we’re actually trying to move. — Take your time.","before"));
-
-  B.push(info("ice-melter.",w.ice,w.iceNote));
-
-  if(w.n>1) B.push(info("how was the homework?","",
-    "Open floor, but keep it moving — a few voices, not everyone. — What I’m listening for: did you practice inside your safety environment AND outside it? What got in the way? — If someone says they didn’t practice, that’s useful information, not a confession. Ask what stopped them."));
+  COHORT.open({
+    n:w.n, title:w.title, eyebrow:"SELF-REGULATION SIMPLIFIED",
+    coverNote:"Welcome back. — Week "+w.n+" of eight. Today is "+w.short+". — Quick reminder of how this room works: the lessons live in the Academy, and you review them on your own time. In here we practice. That\u2019s it. — No pressure to participate out loud. Cameras on or off. Chat if you want it.",
+    ice:w.ice, iceNote:w.iceNote
+  }, MK).forEach(b=>B.push(b));
 
   sec("open",m);
 
@@ -4164,33 +4239,20 @@ function buildBeats(){
 
   /* ---------- CLOSE ---------- */
   m=B.length;
-  B.push(app("check in again.",
-    "open the app and check in again.",
-    "Let’s check in one more time. — Open the app again and notice where you are now. Not better or worse, just what’s true. — Then look at where you started and where you are. Sometimes it moved. Sometimes it didn’t, and sometimes it went the other way. All three are real information, and none of them mean you did it wrong. — That comparison is the point. You’re building evidence about your own system.","after"));
+  COHORT.close({
+    n:w.n, last:w.n>=8,
+    homework:"1. Use the practices at least once <b>inside</b> your Passive Safety Environment.<br><br>"+
+             "2. Use the practices at least once <b>outside</b> it.<br><br>"+
+             "3. Share your experiences in the cohort space.",
+    homeworkNote:"Same three every week. Inside your safety environment, outside it, and tell us about it. — The \u201Coutside\u201D one is the one people skip, and it\u2019s the one that generalizes the skill.",
+    extras:[ app("your practice this week.",
+      w.appHow+"<br><br>And check in daily — even on the days you don\u2019t practice.",
+      "The app will run this week\u2019s skill for you, guided, whenever you want it. That\u2019s your \u201Cinside the safety environment\u201D rep, handled. — Check in daily even when you don\u2019t practice. Especially then. The days you don\u2019t practice are data too. — By week eight you\u2019ll have two months of your own pattern to look at.") ],
+    next: w.n<8 ? {n:WEEKS[w.n].n, title:WEEKS[w.n].title} : null,
+    nextNote: w.n<8 ? ("Next Thursday we do "+WEEKS[w.n].short+". — Review the lesson beforehand if you want it — and if you don\u2019t get to it, come anyway. The practice is the part that matters.") : "",
+    finaleNote:"Eight weeks. — Look at what you can do now that you couldn\u2019t in August. You can anchor. You can validate and normalize. You can invite a hard feeling to stay. You can balance it, pendulate it, and describe it. — And you can stop when you\u2019ve had enough, which might be the biggest one. — This doesn\u2019t end here — it just stops being a cohort and starts being a practice. The app has all of it. The Academy has all of us."
+  }, MK).forEach(b=>B.push(b));
 
-  B.push(info("homework.",
-    "1. Use the practices at least once <b>inside</b> your Passive Safety Environment.<br><br>"+
-    "2. Use the practices at least once <b>outside</b> it.<br><br>"+
-    "3. Share your experiences in the cohort space.",
-    "Same three every week. Inside your safety environment, outside it, and tell us about it. — The “outside” one is the one people skip, and it’s the one that generalizes the skill."));
-
-  B.push(app("your practice this week.",
-    w.appHow+"<br><br>And check in daily — even on the days you don’t practice.",
-    "The app will run this week’s skill for you, guided, whenever you want it. That’s your “inside the safety environment” rep, handled. — Check in daily even when you don’t practice. Especially then. The days you don’t practice are data too. — By week eight you’ll have two months of your own pattern to look at."));
-
-  B.push(info("questions?","",
-    "Take what’s in the room. If nothing comes, that’s fine — don’t fish. — Point anything big toward the cohort space so others can see the answer."));
-
-  if(w.n<8){
-    const nx=WEEKS[w.n];
-    B.push(cover("next week:<br>"+nx.title,
-      "Next Thursday we do "+nx.short+". — Review the lesson beforehand if you want it — and if you don’t get to it, come anyway. The practice is the part that matters.",
-      "WEEK "+nx.n));
-  } else {
-    B.push(cover("you did it. 🎉",
-      "Eight weeks. — Look at what you can do now that you couldn’t in August. You can anchor. You can validate and normalize. You can invite a hard feeling to stay. You can balance it, pendulate it, and describe it. — And you can stop when you’ve had enough, which might be the biggest one. — This doesn’t end here — it just stops being a cohort and starts being a practice. The app has all of it. The Academy has all of us.",
-      "THANK YOU"));
-  }
   sec("close",m);
 
   return B;
@@ -4390,6 +4452,8 @@ function W(){ return WEEKS[st.week-1]; }
 
 function cover(h,eyebrow){ return {style:"cover",h,body:"",eyebrow:eyebrow||"",note:"",fixed:true}; }
 function info(h,body,note,eyebrow){ return {style:"info",h,body:body||"",eyebrow:eyebrow||"",note:note||"",fixed:true}; }
+function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:"CHECK IN",note:note||"",fixed:true,phase:phase||""}; }
+const MK = {cover:(h,n,e)=>cover(h,e), info:(h,b,n)=>info(h,b,n), app:(h,b,n,ph)=>app(h,b,n,ph)};
 function vig(h,body){ return {style:"vig",h,body:body||"",eyebrow:"JENNY",note:"",fixed:true}; }
 function ptitle(h,eyebrow){ return {style:"ptitle",h,body:"",eyebrow:eyebrow||"",note:"",fixed:false}; }
 function q(h,note){ return {style:"q",h,body:"",eyebrow:"",note:note||"",fixed:false}; }
@@ -4421,10 +4485,14 @@ function buildBeats(){
   const sec=(name,from)=>{for(let i=from;i<B.length;i++) if(!B[i].section) B[i].section=name;};
 
   let m=0;
-  B.push(cover("week "+w.n+".<br>"+w.title, "SAFETY SIMPLIFIED"));
-  B.push(info("check in.","open the stuck not broken app and check in before we start.","","CHECK IN"));
-  B.push(info("ice-melter.", w.ice, ""));
-  if(w.n>1) B.push(info("homework review.","How was the meditation practice?<br><br>Has your Passive Safety Environment changed? Have you made any adjustments?",""));
+  COHORT.open({
+    n:w.n, title:w.title, eyebrow:"SAFETY SIMPLIFIED",
+    checkinBody:"open the stuck not broken app and check in before we start.",
+    ice:w.ice,
+    hwReviewH:"homework review.",
+    hwReviewBody:"How was the meditation practice?<br><br>Has your Passive Safety Environment changed? Have you made any adjustments?"
+  }, MK).forEach(b=>B.push(b));
+
   sec("open",m);
 
   m=B.length;
@@ -4450,11 +4518,12 @@ function buildBeats(){
   sec("practice",m);
 
   m=B.length;
-  B.push(info("check in again.","open the app and check in again.","","CHECK IN"));
-  B.push(info("homework.", w.homework, ""));
-  B.push(info("questions?","",""));
-  if(w.n<4){ const nx=WEEKS[w.n]; B.push(cover("next week:<br>"+nx.title,"WEEK "+nx.n)); }
-  else B.push(cover("you did it. 🎉","THANK YOU"));
+  COHORT.close({
+    n:w.n, last:w.n>=4,
+    homework:w.homework,
+    next: w.n<4 ? {n:WEEKS[w.n].n, title:WEEKS[w.n].title} : null
+  }, MK).forEach(b=>B.push(b));
+
   sec("close",m);
   return B;
 }
@@ -4495,7 +4564,7 @@ function senseChips(){
       if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="ptitle") return {kind:"ptitle", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="cover")  return {kind:"cover", eyebrow:b.eyebrow, h:b.h};
-      if(b.eyebrow==="CHECK IN") return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body};
+      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body};
       return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body};
     },
     agenda:function(){ const w=W();
@@ -4510,8 +4579,7 @@ function senseChips(){
     joinMode:function(b){ const k=this.map(b).kind;
       if(k==="prompt") return "off";
       if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
-    seam:function(b){ return (this.map(b).kind==="checkin")
-      ? ("ss:"+(String(b.h).indexOf("again")>=0?"after":"before")) : null; },
+    seam:function(b){ return b.phase ? ("ss:"+b.phase) : null; },
     recipe:function(){ const w=W(); return {week:w.n, skill:w.short, sense:st.sense,
       scene:(SHELL.scene||"(surprise me)")}; },
     live:{ type:"safety-simplified", ref:"ss", minutes:90, seams:["ss:before","ss:after"],
