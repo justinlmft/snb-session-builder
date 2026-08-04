@@ -2799,6 +2799,59 @@ const LADDER = (function(){
       experience: eStart >= 0 ? all.slice(eStart) : []
     };
   }
+
+  /* ---- BATCH A: prompts that were living in both CB and SRS, character for
+     character. Extracted verbatim from CB (the standard) so there is one copy.
+     Justin, 2026-08-04: "A - yeah fix it." ---- */
+
+  const OBSTACLE_STATEMENTS = [
+    "“I’m capable of achieving my goals.”", "“I deserve to get unstuck.”", "“My feelings are a normal result of my life context.”", "“I am worthy of making change.”",
+    "“My feelings are important.”", "“I have everything I need within me.”", "“I am worthy of acceptance.”", "“I am capable of creating positive change.”",
+    "“I am enough as I am.”", "“I’m allowed to take up space.”", "“I deserve kindness.”", "“My needs matter.”",
+    "“It’s okay to lower my defenses.”", "“I can trust myself.”", "“I’m allowed to feel safe.”", "“Things can get better for me.”"
+  ];
+  function pickObstacles(n){
+    const a = OBSTACLE_STATEMENTS.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a.slice(0, n);
+  }
+
+  /* the body of the capacity-check slide — identical in every tool */
+  const CAPACITY_H = "check your Capacity:";
+  const CAPACITY_BODY =
+    "1. Intolerable distress<br>2. Curiosity turns into evaluation<br>3. Losing connection with your breath<br>4. Intrusive cognitions" +
+    "<br><br>Ask yourself:<br>– What do I need right now?<br>– Do I genuinely want to continue?<br>– Does my body genuinely want to continue?";
+
+  /* Imagery & Invitation — Validate, Normalize, imagine it, invite it */
+  function IMAGERY_TAIL(P){
+    const b = mkq(P);
+    return [
+      b("What is one non-safety experience you can Validate?", "“I do feel _____.” / “I don’t like it, but I feel _____.” / “Yeah, fine, I feel _____.”"),
+      b("Normalize that experience.", "“I feel _____, which makes sense based on my life context.”"),
+      b("What does _____ look like?", "“_____ looks like _____.”"),
+      b("Where is _____?"),
+      b("What is _____ doing?"),
+      b("Invite _____ to be with you while you reconnect with the external world.")
+    ];
+  }
+
+  /* Obstacles — four statements, then Validate / Normalize / Imagine / Invite.
+     `four` lets a cohort supply its own "4 statements." slide (SRS shows a body
+     line there); everything after it is shared. */
+  function OBSTACLES_TAIL(P, four){
+    const b = mkq(P), B = [];
+    B.push(four || b("4 statements.", "Check your capacity."));
+    pickObstacles(4).forEach(s => B.push(b(s, "Notice what surfaces as you say it to yourself.")));
+    B.push(b("Validate the Obstacle."));
+    B.push(b("Normalize the Obstacle."));
+    B.push(b("Imagine.", "What does it look like? Where is it? What is it doing?"));
+    B.push(b("Invite the Obstacle to be with you while you reconnect with the external world."));
+    return B;
+  }
+
   /* THE CANONICAL CLOSING — every practice in every cohort ends this way.
      Justin, 2026-08-04: "CB, SRS, and SS should all use that closing structure."
      Structure is CB's; two lines are his edits ("(or stay just as you are)",
@@ -2820,6 +2873,8 @@ const LADDER = (function(){
     ];
   }
   return {ladderBeats:ladderBeats, CURIOSITY:CURIOSITY, mkq:mkq, segments:segments, CLOSING:CLOSING,
+          OBSTACLE_STATEMENTS:OBSTACLE_STATEMENTS, pickObstacles:pickObstacles,
+          CAPACITY_BODY:CAPACITY_BODY, CAPACITY_H:CAPACITY_H, IMAGERY_TAIL:IMAGERY_TAIL, OBSTACLES_TAIL:OBSTACLES_TAIL,
           BREATH_NOTE_FULL:BREATH_NOTE_FULL, BREATH_NOTE_SHORT:BREATH_NOTE_SHORT,
           HEAR_NOTE:HEAR_NOTE, DELEMS:['color','shape','temp','texture','doing']};
 })();
@@ -3209,21 +3264,9 @@ PRACTICES.cb = (function(){
       });
       return B;
     }
-    const OBSTACLE_STATEMENTS = [
-      "“I’m capable of achieving my goals.”", "“I deserve to get unstuck.”", "“My feelings are a normal result of my life context.”", "“I am worthy of making change.”",
-      "“My feelings are important.”", "“I have everything I need within me.”", "“I am worthy of acceptance.”", "“I am capable of creating positive change.”",
-      "“I am enough as I am.”", "“I’m allowed to take up space.”", "“I deserve kindness.”", "“My needs matter.”",
-      "“It’s okay to lower my defenses.”", "“I can trust myself.”", "“I’m allowed to feel safe.”", "“Things can get better for me.”"
-    ];
-
-    function pickObstacles(n) {
-      const a = OBSTACLE_STATEMENTS.slice();
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a.slice(0, n);
-    }
+    /* now canonical in LADDER — one copy, shared with SRS */
+    const OBSTACLE_STATEMENTS = LADDER.OBSTACLE_STATEMENTS;
+    const pickObstacles = LADDER.pickObstacles;
 
     /* ---------- STATE ---------- */
     let st = {
@@ -3293,9 +3336,7 @@ PRACTICES.cb = (function(){
       pendulating: 5
     }; // break minutes by skill; Mindfulness (P1)=2, passed directly
     function capacityCheck(breakMin) {
-      const c = info("check your Capacity:",
-        "1. Intolerable distress<br>2. Curiosity turns into evaluation<br>3. Losing connection with your breath<br>4. Intrusive cognitions" +
-        "<br><br>Ask yourself:<br>– What do I need right now?<br>– Do I genuinely want to continue?<br>– Does my body genuinely want to continue?");
+      const c = info(LADDER.CAPACITY_H, LADDER.CAPACITY_BODY);
       if (breakMin) c.breakMin = breakMin;
       return c;
     }
@@ -3525,24 +3566,14 @@ PRACTICES.cb = (function(){
           rate: true
         }, v));
         B.push(CURIOSITY(P));
-        B.push(b("What is one non-safety experience you can Validate?", "“I do feel _____.” / “I don’t like it, but I feel _____.” / “Yeah, fine, I feel _____.”"));
-        B.push(b("Normalize that experience.", "“I feel _____, which makes sense based on my life context.”"));
-        B.push(b("What does _____ look like?", "“_____ looks like _____.”"));
-        B.push(b("Where is _____?"));
-        B.push(b("What is _____ doing?"));
-        B.push(b("Invite _____ to be with you while you reconnect with the external world."));
+        B = B.concat(LADDER.IMAGERY_TAIL(P));
       } else if (key === "obstacles") { // from Self-Regulation Simplified, Obstacles Practices 1–2
         B.push(ptitle(P, "Obstacles", TAG,
           "We will: anchor into safety — induce Obstacles through four statements — Validate, Normalize, Imagine & Invite the Obstacle.", TRACK));
         B = B.concat(ladderBeats(P, sense, {
           rate: true
         }, v));
-        B.push(b("4 statements.", "Check your capacity."));
-        pickObstacles(4).forEach(s => B.push(b(s, "Notice what surfaces as you say it to yourself.")));
-        B.push(b("Validate the Obstacle."));
-        B.push(b("Normalize the Obstacle."));
-        B.push(b("Imagine.", "What does it look like? Where is it? What is it doing?"));
-        B.push(b("Invite the Obstacle to be with you while you reconnect with the external world."));
+        B = B.concat(LADDER.OBSTACLES_TAIL(P));
       }
       B = B.concat(closingBeats(P, BREAK_MIN[v.skill] || 3));
       return B;
@@ -3820,21 +3851,9 @@ const BREATH_SHORT = "Not controlling it. — Chest or belly? Full or shallow? T
 const HEAR_NOTE    = "Anything? Silence? — Inside the room, what do you hear? Outside the room, what do you hear?";
 const CAP_NOTE     = "Check your capacity.";
 
-const OBSTACLE_STATEMENTS = [
-  "“I’m capable of achieving my goals.”","“I deserve to get unstuck.”",
-  "“My feelings are a normal result of my life context.”","“I am worthy of making change.”",
-  "“My feelings are important.”","“I have everything I need within me.”",
-  "“I am worthy of acceptance.”","“I am capable of creating positive change.”",
-  "“I am enough as I am.”","“I’m allowed to take up space.”",
-  "“I deserve kindness.”","“My needs matter.”",
-  "“It’s okay to lower my defenses.”","“I can trust myself.”",
-  "“I’m allowed to feel safe.”","“Things can get better for me.”"
-];
-function pickObstacles(n){
-  const a=OBSTACLE_STATEMENTS.slice();
-  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
-  return a.slice(0,n);
-}
+/* now canonical in LADDER — one copy, shared with Capacity Builder */
+const OBSTACLE_STATEMENTS = LADDER.OBSTACLE_STATEMENTS;
+const pickObstacles = LADDER.pickObstacles;
 
 /* ==================================================================
    THE 8 WEEKS
@@ -4049,7 +4068,7 @@ const CAPACITY_BODY =
   "1. Intolerable distress<br>2. Curiosity turns into evaluation<br>3. Losing connection with your breath<br>4. Intrusive cognitions"+
   "<br><br>Ask yourself:<br>– What do I need right now?<br>– Do I genuinely want to continue?<br>– Does my body genuinely want to continue?";
 function capacityCheck(breakMin,note){
-  const c=info("check your Capacity:",CAPACITY_BODY,note||"");
+  const c=info(LADDER.CAPACITY_H, LADDER.CAPACITY_BODY, note);
   if(breakMin) c.breakMin=breakMin;
   return c;
 }
@@ -4091,23 +4110,11 @@ function tailBeats(kind){
 
   if(kind==="vn"){ B.push(VAL); B.push(NORM); return B; }
 
-  if(kind==="ii"){
-    B.push(VAL); B.push(NORM);
-    B.push(q("What does _____ look like?","“_____ looks like _____.”"));
-    B.push(q("Where is _____?"));
-    B.push(q("What is _____ doing?"));
-    B.push(q("Invite _____ to be with you while you reconnect with the external world."));
-    return B;
-  }
+  if(kind==="ii") return LADDER.IMAGERY_TAIL("Practice");
 
   if(kind==="obs"){
-    B.push(info("4 statements.","We’ll say four statements. Notice what surfaces — the tightening, the argument, the thought.",CAP_NOTE));
-    pickObstacles(4).forEach(s=>B.push(q(s,"Notice what surfaces as you say it to yourself.")));
-    B.push(q("Validate the Obstacle."));
-    B.push(q("Normalize the Obstacle."));
-    B.push(q("Imagine it.","What does it look like? Where is it? What is it doing?"));
-    B.push(q("Invite the Obstacle to be with you while you reconnect with the external world."));
-    return B;
+    return LADDER.OBSTACLES_TAIL("Practice",
+      info("4 statements.","We’ll say four statements. Notice what surfaces — the tightening, the argument, the thought.",CAP_NOTE));
   }
 
   if(kind==="bal"){
