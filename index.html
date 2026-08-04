@@ -3982,8 +3982,8 @@ function ladder(sense, o){
 /* ---------- RECONNECT (closes every practice) ---------- */
 function reconnect(bigBreath){
   return [
-    q("What do you see?<br>What do you hear?","Let your awareness widen. If your eyes are closed, let them open when they’re ready. No rush."),
-    q("Let your body move.<br>What would feel good?","Push, pull, squeeze, wiggle, clench, roll, stand, stretch, hug… There’s no wrong way."),
+    q("What do you see? What do you hear?","Let your awareness widen. If your eyes are closed, let them open when they’re ready. No rush."),
+    q("Let your body move. What would feel good?","Push, pull, squeeze, wiggle, clench, roll, stand, stretch, hug… There’s no wrong way."),
     q(bigBreath?"Take one intentional bigger breath<br>and a slower exhale.":"Take one intentional breath."),
     q("Say something kind to yourself.","You’ve earned it. Even a “good job, self” counts.")
   ];
@@ -3992,9 +3992,9 @@ function reconnect(bigBreath){
 /* ---------- THE SKILL TAIL — what makes each week different ---------- */
 function tailBeats(kind){
   const B=[];
-  const VAL = q("What is one non-safety experience<br>you can Validate?","“I do feel _____.” / “I don’t like it, but I feel _____.” / “Yeah, fine, I feel _____.”");
+  const VAL = q("What is one non-safety experience you can Validate?","“I do feel _____.” / “I don’t like it, but I feel _____.” / “Yeah, fine, I feel _____.”");
   const NORM= q("Normalize that experience.","“I feel _____, which makes sense based on my life context.”");
-  const RECALL = q("Recall a non-safety emotion you<br>typically have, have now, or will have.","Present moment? Recent past? Something coming up? Something lingering? — Remain open to Obstacles.");
+  const RECALL = q("Recall a non-safety emotion you typically have, have now, or will have.","Present moment? Recent past? Something coming up? Something lingering? — Remain open to Obstacles.");
 
   if(kind==="none") return B;
 
@@ -4005,7 +4005,7 @@ function tailBeats(kind){
     B.push(q("What does _____ look like?","“_____ looks like _____.”"));
     B.push(q("Where is _____?"));
     B.push(q("What is _____ doing?"));
-    B.push(q("Invite _____ to be with you while you<br>reconnect with the external world."));
+    B.push(q("Invite _____ to be with you while you reconnect with the external world."));
     return B;
   }
 
@@ -4015,17 +4015,17 @@ function tailBeats(kind){
     B.push(q("Validate the Obstacle."));
     B.push(q("Normalize the Obstacle."));
     B.push(q("Imagine it.","What does it look like? Where is it? What is it doing?"));
-    B.push(q("Invite the Obstacle to be with you while<br>you reconnect with the external world."));
+    B.push(q("Invite the Obstacle to be with you while you reconnect with the external world."));
     return B;
   }
 
   if(kind==="bal"){
     B.push(RECALL); B.push(q("Validate that emotion.","“I do feel _____.” / “I don’t like it, but I feel _____.”")); B.push(NORM);
-    B.push(q("Is it okay for this non-safety<br>experience to be here with you?","You can say yes or no."));
+    B.push(q("Is it okay for this non-safety experience to be here with you?","You can say yes or no."));
     B.push(q("Notice how that feels in your body overall.","Mobile or immobile? Heavy or light?"));
     B.push(q("Notice how that feels in your body specifically.","One place where it’s most obvious. Face, chest, belly, jaw, throat."));
     B.push(q("How is your body breathing?",CAP_NOTE));
-    B.push(q("Bring your attention back to<br>the safety experience."));
+    B.push(q("Bring your attention back to the safety experience."));
     B.push(q("Has safety changed?"));
     B.push(q("Remind yourself that you’re literally safe."));
     return B;
@@ -4033,10 +4033,10 @@ function tailBeats(kind){
 
   if(kind==="pend"){
     tailBeats("bal").forEach(b=>B.push(b));
-    B.push(q("Bring your focus back to<br>the non-safety experience."));
+    B.push(q("Bring your focus back to the non-safety experience."));
     B.push(q("Has non-safety changed?"));
     B.push(q("How is your body breathing?",CAP_NOTE));
-    B.push(q("Bring your attention back to<br>the safety experience."));
+    B.push(q("Bring your attention back to the safety experience."));
     B.push(q("Has safety changed?"));
     B.push(q("Remind yourself that you’re literally safe."));
     return B;
@@ -4044,7 +4044,7 @@ function tailBeats(kind){
 
   if(kind==="baldesc"){
     B.push(RECALL); B.push(q("Validate that emotion.","“I do feel _____.”")); B.push(NORM);
-    B.push(q("Is it okay for this non-safety<br>experience to be here with you?","You can say yes or no."));
+    B.push(q("Is it okay for this non-safety experience to be here with you?","You can say yes or no."));
     B.push(q("Notice how that feels in your body overall."));
     B.push(q("Notice how that feels in your body specifically."));
     B.push(q("What color is your non-safety?"));
@@ -4053,7 +4053,7 @@ function tailBeats(kind){
     B.push(q("What texture is your non-safety?"));
     B.push(q("What is it doing?"));
     B.push(q("How is your body breathing?",CAP_NOTE));
-    B.push(q("Bring your attention back to<br>the safety experience."));
+    B.push(q("Bring your attention back to the safety experience."));
     B.push(q("Has safety changed?"));
     B.push(q("Remind yourself that you’re literally safe."));
     return B;
@@ -4061,25 +4061,25 @@ function tailBeats(kind){
 
   if(kind==="penddesc"){
     B.push(RECALL); B.push(q("Validate that emotion.","“I do feel _____.”")); B.push(NORM);
-    B.push(q("Is it okay for this non-safety<br>experience to be here with you?","You can say yes or no."));
+    B.push(q("Is it okay for this non-safety experience to be here with you?","You can say yes or no."));
     B.push(q("Notice how that feels in your body overall."));
     B.push(q("Notice how that feels in your body specifically."));
     B.push(q("How is your body breathing?",CAP_NOTE));
-    B.push(q("Bring your attention back to<br>the safety experience."));
+    B.push(q("Bring your attention back to the safety experience."));
     B.push(q("Has safety changed?"));
     B.push(q("Remind yourself that you’re literally safe."));
-    B.push(q("Bring your focus back to<br>the non-safety experience."));
-    B.push(q("What color is it?"));
-    B.push(q("What shape is it?"));
-    B.push(q("What temperature is it?"));
-    B.push(q("What texture is it?"));
+    B.push(q("Bring your focus back to the non-safety experience."));
+    B.push(q("What color is your non-safety?"));
+    B.push(q("What shape is your non-safety?"));
+    B.push(q("What temperature is your non-safety?"));
+    B.push(q("What texture is your non-safety?"));
     B.push(q("What is it doing?"));
     B.push(q("How is your body breathing?",CAP_NOTE));
-    B.push(q("Bring your attention back to<br>the safety experience."));
+    B.push(q("Bring your attention back to the safety experience."));
     B.push(q("Has safety changed?"));
-    B.push(q("Bring your attention back to<br>the non-safety experience."));
+    B.push(q("Bring your attention back to the non-safety experience."));
     B.push(q("Has non-safety changed?"));
-    B.push(q("Bring your attention back to<br>the safety experience."));
+    B.push(q("Bring your attention back to the safety experience."));
     B.push(q("Has safety changed?"));
     B.push(q("Remind yourself that you’re literally safe."));
     return B;
