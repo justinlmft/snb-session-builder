@@ -2799,7 +2799,27 @@ const LADDER = (function(){
       experience: eStart >= 0 ? all.slice(eStart) : []
     };
   }
-  return {ladderBeats:ladderBeats, CURIOSITY:CURIOSITY, mkq:mkq, segments:segments,
+  /* THE CANONICAL CLOSING — every practice in every cohort ends this way.
+     Justin, 2026-08-04: "CB, SRS, and SS should all use that closing structure."
+     Structure is CB's; two lines are his edits ("(or stay just as you are)",
+     "Give yourself kindness if you have it"); CB's "Let the practice settle as
+     you come back" is cut; and SRS's warmer closing copy is folded into the
+     presenter notes rather than lost. The capacity check is NOT included — each
+     practice appends its own, because the break minutes differ per cohort. */
+  function CLOSING(P){
+    const b = mkq(P);
+    return [
+      b("Let your awareness begin to widen.", "No rush."),
+      b("Reconnect to the external present moment.",
+        "If your eyes are closed, let them open when they’re ready. — What do you see? What do you hear?"),
+      b("Let your body move however feels good (or stay just as you are).",
+        "Stretch, shift, settle. If you’ve been moving, keep going. — Push, pull, squeeze, wiggle, clench, roll, stand, stretch, hug… There’s no wrong way."),
+      b("Take one intentional breath."),
+      b("Give yourself kindness if you have it.",
+        "You’ve earned it. Even a “good job, self” counts.")
+    ];
+  }
+  return {ladderBeats:ladderBeats, CURIOSITY:CURIOSITY, mkq:mkq, segments:segments, CLOSING:CLOSING,
           BREATH_NOTE_FULL:BREATH_NOTE_FULL, BREATH_NOTE_SHORT:BREATH_NOTE_SHORT,
           HEAR_NOTE:HEAR_NOTE, DELEMS:['color','shape','temp','texture','doing']};
 })();
@@ -3296,16 +3316,10 @@ PRACTICES.cb = (function(){
     }
 
     /* ---------- CLOSING OF EACH SKILL PRACTICE ---------- */
+    /* The closing is now the CANONICAL one (LADDER.CLOSING) — shared with SRS and
+       SS per Justin, 2026-08-04. CB still owns its own break minutes. */
     function closingBeats(P, breakMin) {
-      const b = mkq(P);
-      return [
-        b("Let your awareness begin to widen.", "No rush. Let the practice settle as you come back."),
-        b("Reconnect to the external present moment.", "If your eyes are closed, let them open when they’re ready. — What do you see? What do you hear?"),
-        b("Let your body move however feels good — or stay just as you are.", "Stretch, shift, settle. If you’ve been moving, keep going."),
-        b("Take one intentional breath."),
-        b("Offer yourself something kind."),
-        capacityCheck(breakMin)
-      ];
+      return LADDER.CLOSING(P).concat([capacityCheck(breakMin)]);
     }
 
     /* ---------- PENDULATION SEQUENCE ---------- */
@@ -3979,15 +3993,11 @@ function ladder(sense, o){
   return B;
 }
 
-/* ---------- RECONNECT (closes every practice) ---------- */
-function reconnect(bigBreath){
-  return [
-    q("What do you see? What do you hear?","Let your awareness widen. If your eyes are closed, let them open when they’re ready. No rush."),
-    q("Let your body move. What would feel good?","Push, pull, squeeze, wiggle, clench, roll, stand, stretch, hug… There’s no wrong way."),
-    q(bigBreath?"Take one intentional bigger breath<br>and a slower exhale.":"Take one intentional breath."),
-    q("Say something kind to yourself.","You’ve earned it. Even a “good job, self” counts.")
-  ];
-}
+/* ---------- RECONNECT (closes every practice) ----------
+   Now the CANONICAL closing, shared with CB and SS (Justin, 2026-08-04).
+   SRS's own warmer copy survives inside those presenter notes. The per-week
+   "bigger breath and a slower exhale" variant is gone — one closing, all weeks. */
+function reconnect(){ return LADDER.CLOSING("Practice"); }
 
 /* ---------- THE SKILL TAIL — what makes each week different ---------- */
 function tailBeats(kind){
@@ -4097,7 +4107,7 @@ function practiceBeats(w, label){
   B.push(capacityCheck(0));
   ladder(st.sense,o).forEach(b=>B.push(b));
   tailBeats(w.tail).forEach(b=>B.push(b));
-  reconnect(w.n>=4).forEach(b=>B.push(b));
+  reconnect().forEach(b=>B.push(b));
   return B;
 }
 
@@ -4384,11 +4394,8 @@ function vig(h,body){ return {style:"vig",h,body:body||"",eyebrow:"JENNY",note:"
 function ptitle(h,eyebrow){ return {style:"ptitle",h,body:"",eyebrow:eyebrow||"",note:"",fixed:false}; }
 function q(h,note){ return {style:"q",h,body:"",eyebrow:"",note:note||"",fixed:false}; }
 
-const RECONNECT = [
-  ["What do you see in front of you?","Let your eyes land wherever they want."],
-  ["Let your body mobilize if it wants to.",""],
-  ["Take one intentional breath.",""]   // CB wording, not "take in"
-];
+/* The CANONICAL closing, shared with CB and SRS (Justin, 2026-08-04). */
+const RECONNECT = () => LADDER.CLOSING("Practice");
 
 /* a practice = the canonical ladder to a depth, with Validate/Normalize inserted
    between the anchor and the witness stages, exactly as the deck orders it */
@@ -4402,7 +4409,7 @@ function practiceBeats(pr){
   if(pr.vn){ B.push(q("Validate that experience.",V_NOTE)); B.push(q("Normalize that experience.",N_NOTE)); }
   if(pr.depth==="witness"||pr.depth==="experience") seg.witness.forEach(b=>B.push(b));
   if(pr.depth==="experience") seg.experience.forEach(b=>B.push(b));
-  RECONNECT.forEach(([h,n])=>B.push(q(h,n)));
+  RECONNECT().forEach(b=>B.push(b));
   B.push(info("well done. 🥳","How was this practice?<br>What was your experience?<br>What emotions came up?",""));
   return B;
 }
