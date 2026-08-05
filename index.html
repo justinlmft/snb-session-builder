@@ -108,6 +108,23 @@
     #slidesWrap{overflow:visible}
   }
 
+/* ---- Capacity Builder panel controls ----
+   Restored 2026-08-05. These rules live in the CB source stylesheet and were
+   missed when the four tools moved to one shared panel stylesheet, so CB's
+   mini-chips rendered as a run-on string ("Hold15s30s45s60s90s120s") instead of
+   buttons. Copied verbatim from the CB source. */
+.opt.check{background:var(--card);border-color:var(--ink);color:var(--ink);font-weight:600}
+.opt.check::before{content:"✓ ";font-weight:700}
+.opt .dr{font-size:10px;color:var(--draft);font-style:italic}
+.opt.sel .dr{color:var(--bone)}
+.toggle .dr{font-size:11px;color:var(--draft);font-style:italic}
+.vars{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
+.mini{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:13px}
+.mini .mopt{border:1px solid var(--line);background:var(--card);padding:3px 9px;border-radius:7px;cursor:pointer;font-size:12px}
+.mini .mopt.sel{background:var(--card);border-color:var(--ink);font-weight:600}
+.mini .mopt.sel::before{content:"✓ ";font-weight:700}
+.hint{font-size:12px;color:var(--muted);margin:0 0 16px}
+
 /* live join overlay — shared chrome, sits above whichever practice frame is showing */
 .frame .snbjoin{display:flex;align-items:center;background:rgba(250,249,245,.94);
   border:1px solid #1a1f2a24;border-radius:12px;box-shadow:0 6px 22px rgba(26,31,42,.10)}
@@ -3132,7 +3149,7 @@ function randomize(){
   }
 
 
-  const DIALS = '    <div class="dial">\n      <label class="h">Senses — click to add in order</label>\n      <p class="sub">Tap to add (numbered in spoken order) · tap again to remove.</p>\n      <div class="opts" id="senseOpts"></div>\n    </div>\n\n    <div class="dial sep">\n      <label class="h">Shape</label>\n      <label class="toggle"><input type="checkbox" id="tBreath" onchange="st.breathEach=this.checked;render()" checked> Breath reset before each sense</label>\n      <label class="toggle"><input type="checkbox" id="tAck" onchange="st.acknowledge=this.checked;render()" checked> Acknowledge slide (open)</label>\n      <label class="toggle"><input type="checkbox" id="tMove" onchange="st.closeMove=this.checked;render()" checked> Move slide (close)</label>\n      <label class="toggle"><input type="checkbox" id="tKind" onchange="st.kindness=this.checked;render()" checked> Kindness slide (close)</label>\n<label class="toggle" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><input type="checkbox" id="tTest" onchange="st.testMode=this.checked;render()"> 🧪 Test session <span style="color:var(--muted)">— the app popup says to ignore it</span></label>\n</div>\n\n    ';
+  const DIALS = '    <div class="dial">\n      <label class="h">Senses — click to add in order</label>\n      <p class="sub">Tap to add (numbered in spoken order) · tap again to remove.</p>\n      <div class="opts" id="senseOpts"></div>\n    </div>\n\n    <div class="dial sep">\n      <label class="h">Shape</label>\n      <label class="toggle"><input type="checkbox" id="tBreath" onchange="st.breathEach=this.checked;render()" checked> Breath reset before each sense</label>\n      <label class="toggle"><input type="checkbox" id="tAck" onchange="st.acknowledge=this.checked;render()" checked> Acknowledge slide (open)</label>\n      <label class="toggle"><input type="checkbox" id="tMove" onchange="st.closeMove=this.checked;render()" checked> Move slide (close)</label>\n      <label class="toggle"><input type="checkbox" id="tKind" onchange="st.kindness=this.checked;render()" checked> Kindness slide (close)</label>\n</div>\n\n    ';
 
   return {
     id:"mm", label:"Mindful Moment", blurb:"free live ~20-min guided practice, open to anyone",
