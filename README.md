@@ -64,13 +64,36 @@ points `window.st` at the active module's own state object (same reference, so
 mutations land where the module's `buildBeats` reads them) and publishes that
 module's inline handlers. That is why no dial code had to be rewritten.
 
-## What Capacity Builder gains
+## Capacity Builder's live check-in — four readings (2026-08-10)
 
-CB had no live check-in and no join overlay. Hosting it in the shell gives it
-both for free. It still has **no authored check-in slides**, so no seams are
-stamped yet — adding those is content work in the CB source (the plan in
-`App Designer/Live-Checkin-Plan.md` specs four readings: open · between 1–2 ·
-between 2–3 · close).
+CB had no live check-in and no join overlay. Hosting it in the shell gave it
+both for free, and as of 2026-08-10 it has its **authored check-in slides** too,
+so all four seams are stamped. Justin's call, same day: **four readings, not
+six** — a check-out and the next practice's check-in are the same moment, so
+folding them together beats two check-in slides in a row.
+
+| # | seam | where | slide |
+|---|---|---|---|
+| 1 | `cb1:before` | Practice 1, right after the Mindfulness title | a new authored check-in slide |
+| 2 | `cb1:after`  | end of Practice 1 | folded into the capacity-check slide |
+| 3 | `cb2:after`  | end of Practice 2 | folded into the capacity-check slide |
+| 4 | `cb3:after`  | end of Practice 3 | folded into the capacity-check slide |
+
+The folded slides are unchanged apart from a `CHECK IN` eyebrow, one added line
+and a presenter note; the capacity questions and the break clock stay put (the
+join block lifts above the clock so neither is covered). A beat carrying `ci`
+**is** the seam — `seam(b)` returns `b.ci` and nothing else stamps.
+
+CB's `live.practices` is a **function**, not a literal, so the app's trail names
+the two skills the presenter actually dialled in (`cb2` = Balancing,
+`cb3` = Imagery & Invitation…) rather than saying "Capacity Builder" four times.
+`publishLive()` calls it if it's callable, so the other three practices are
+unaffected.
+
+This is the first deliberate divergence between the merged builder and the
+standalone `capacity-builder` tool. `parity.mjs` enumerates it rather than
+waving it through: strip the four readings and CB must be byte-identical to
+source again, and the seam list must be exactly those four in that order.
 
 ## Build
 
@@ -78,7 +101,15 @@ between 2–3 · close).
 python3 build.py        # → snb-session-builder.html
 node parity.mjs         # must print PARITY PASS
 node smoke.mjs          # dials, tabs, console walk, dial wiring
+node railcheck.mjs      # break clock vs join block: 0 overlaps, one right edge
 ```
+
+`railcheck.mjs` exists because the QR-over-the-countdown bug shipped and stayed
+live: parity compares beats and smoke counts slides, so neither could see it.
+It stubs `LIVE`, drives the real `pRender()` over every beat of all four
+practices at four presenter viewports, and measures rectangles. Deleting the
+`:has(.breakclock)` lift takes it from 0/20 to 20/20 overlapping, so it fails
+when the bug comes back.
 
 `build.py` composes from the extracted source blocks in this folder. To pick up a
 change made in a source tool, re-extract that practice's blocks and re-run.
@@ -88,9 +119,12 @@ change made in a source tool, re-extract that practice's blocks and re-run.
 | practice | prompts | from `LADDER` | its own |
 |---|---|---|---|
 | mm | 18 | 0 | 18 |
-| cb | 122 | 61 | 61 |
-| srs | 163 | 61 | 102 |
-| ss | 116 | 58 | 58 |
+| cb | 123 | 82 | 41 |
+| srs | 163 | 89 | 74 |
+| ss | 118 | 70 | 48 |
+
+(Re-measured 2026-08-10. CB's one new prompt is its check-in slide, which it now
+shares with MM by design — same headline, same reading.)
 
 **SS's safety-anchoring slides are already shared with CB** — 58 of its 116 prompts
 come from the canonical ladder, and only one of its own also appears in CB. The
@@ -122,16 +156,24 @@ the same dial sweep to both, and compares the **full beat list** — style, head
 body, presenter note, section, kind, tagline, phase, break minutes — not just
 counts. Randomised content (CB's obstacle statements) is seeded out.
 
-The contract has two halves:
+The contract has three halves:
 
-1. **MM and CB must stay byte-identical to their sources.** Nothing about those
-   practices changed. Last run: **9/9 sweeps identical** (MM ×4, CB ×5).
-2. **SRS and SS are deliberately not identical to anything** — they call the CB
+1. **MM must stay byte-identical to its source.** Nothing about that practice
+   changed. Last run: **4/4 sweeps identical**.
+2. **CB is identical to its source APART FROM its four check-in readings**
+   (2026-08-10). The delta is enumerated, not tolerated: the suite strips the new
+   `checkin` beat and the `ci`/`eyebrow`/`ciBody`/note stamped on the capacity
+   slides, then demands byte-identity with source — and separately asserts the
+   seam list is exactly `cb1:before · cb1:after · cb2:after · cb3:after`, in that
+   order, on every sweep. Last run: **5/5 sweeps identical after the strip**.
+3. **SRS and SS are deliberately not identical to anything** — they call the CB
    ladder rather than keeping copies. So instead the suite asserts what that
    decision was *for*: every prompt either shares with CB must carry an identical
-   presenter note. Last run: **82 shared prompts with SRS and 60 with SS, 0
-   drifting on both**, with a 1-entry allowlist (`Has non-safety changed?`, where
-   CB's note is its pendulation timing dial and SRS has no such dial to inherit).
+   presenter note. Last run: **87 shared prompts with SRS and 64 with SS, 0
+   drifting on both**, with a 2-entry allowlist (`Has non-safety changed?`, where
+   CB's note is its pendulation timing dial and SRS has no such dial to inherit;
+   and `check your Capacity:`, where CB's note is its folded-in check-in cue and
+   SRS/SS author their own separate check-in slides).
 
 ## Sources
 

@@ -139,12 +139,18 @@
 .frame .snbjoin.big .qr{width:min(24cqh,19cqw);height:auto;padding:5px}
 .frame .snbjoin.big .jcode{font-size:clamp(20px,3.1cqw,46px);margin-top:.3cqh}
 .frame .snbjoin.big .jlink{font-size:clamp(9px,1.15cqw,17px)}
-.frame .snbjoin.corner{position:absolute;bottom:6.5cqh;right:6.25cqw;gap:1.1cqw;padding:1cqh 1.3cqw}
+.frame .snbjoin.corner{position:absolute;bottom:6.5cqh;right:var(--railr,6.25cqw);gap:1.1cqw;padding:1cqh 1.3cqw}
 .frame .snbjoin.corner .qr{width:9cqh;height:9cqh;padding:3px}
 .frame .snbjoin.corner .jtext{gap:.2cqh;text-align:left}
 .frame .snbjoin.corner .jlead{font-size:clamp(7px,.8cqw,11px)}
 .frame .snbjoin.corner .jcode{font-size:clamp(11px,1.5cqw,22px)}
 .frame .snbjoin.corner .jlink{display:none}
+/* The join block and the break clock share the bottom-right corner, and the
+   join box was painting over the countdown — Justin saw this live on a capacity
+   slide before CB ever had check-ins, so it bit MM/SRS/SS too. Stack them on the
+   one right rail (--railr) instead: clock on the floor, join block above it,
+   both flush to the same edge. Justin, 2026-08-10. */
+.frame:has(.breakclock) .snbjoin.corner{bottom:16cqh}
 
 /* ==================================================================
    SNB SLIDE DESIGN LANGUAGE — one system, every practice.
@@ -157,8 +163,10 @@
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;overflow:hidden;
   transition:background-color .7s cubic-bezier(.22,1,.36,1)}
 
-/* the invisible grid every slide snaps to */
-.snbframe{--mx:6.25cqw;--top:11cqh;--gut:3cqh;--foot:6.5cqh;--veil:rgba(250,249,245,.70)}
+/* the invisible grid every slide snaps to.
+   --railr is the right rail: the break clock and the join block both hang off
+   it, so they line up instead of drifting apart (Justin, 2026-08-10). */
+.snbframe{--mx:6.25cqw;--top:11cqh;--gut:3cqh;--foot:6.5cqh;--railr:5cqw;--veil:rgba(250,249,245,.70)}
 /* the two light-based scenes bring a dark field with them, as in the app */
 .snbframe.dark{background:#1a1f2a;color:#FAF9F5;--veil:rgba(26,31,42,.72)}
 
@@ -215,7 +223,7 @@
 .snbframe .foot .byline{font-size:clamp(6px,.78cqw,12px);letter-spacing:.1em;color:#8a877e;text-transform:uppercase}
 
 /* ---- break clock, bottom right ---- */
-.snbframe .breakclock{position:absolute;right:5cqw;bottom:5cqh;display:flex;flex-direction:column;
+.snbframe .breakclock{position:absolute;right:var(--railr);bottom:5cqh;display:flex;flex-direction:column;
   align-items:flex-end;gap:.4cqh;color:#8a877e}
 .snbframe .breakclock .bl{font-size:clamp(7px,.9cqw,13px);letter-spacing:.16em;text-transform:uppercase;opacity:.7}
 .snbframe .breakclock .bt{font-size:clamp(13px,1.9cqw,30px);font-variant-numeric:tabular-nums;opacity:.85}
@@ -3352,9 +3360,49 @@ PRACTICES.cb = (function(){
       balancing: 5,
       pendulating: 5
     }; // break minutes by skill; Mindfulness (P1)=2, passed directly
-    function capacityCheck(breakMin) {
+
+    /* ---------- LIVE APP CHECK-IN (Justin, 2026-08-10) ----------
+    Same reading as Mindful Moment — the app's full, normal check-in — at the
+    session seams only, never mid-practice. CB gets FOUR: one authored slide
+    before Practice 1, then one folded into each practice's capacity-check
+    slide, so a practice's check-out and the next one's check-in are a single
+    moment rather than two slides in a row (Justin's call, 2026-08-10).
+    Refs are cb1/cb2/cb3 = practice 1/2/3. A beat carrying `ci` is a seam: the
+    shell stamps it on the live_sessions row and the app raises its own
+    check-in there. `ciBody`/`eyebrow` are ADDITIVE — h, body and the rest of
+    the beat stay byte-identical to the CB source, which is what parity.mjs
+    normalises against. 🖊 copy */
+    const CI_REF = { "Practice 1": "cb1", "Practice 2": "cb2", "Practice 3": "cb3" };
+    const CI_OPEN_H = "a quick check-in.";
+    const CI_OPEN_BODY = "open the stuck not broken app and check in before we practice.";
+    const CI_OPEN_NOTE = "let’s check in before we practice.<br>open the stuck not broken app. if you’re not in yet, scan the code or tap the link on screen.<br>notice where you are right now. there’s no right answer.<br>take your time.";
+    const CI_AFTER_BODY = "Check in again in the app.";
+    const CI_AFTER_NOTE = "check in again in the app — it will open on its own.<br>not better or worse, just what’s true right now.<br>then take the break.";
+
+    function checkinBeat(ref) {
+      return {
+        style: "checkin",
+        kind: "",
+        ci: ref + ":before",
+        h: CI_OPEN_H,
+        body: CI_OPEN_BODY,
+        tagline: "",
+        note: CI_OPEN_NOTE,
+        draft: false,
+        fixed: true
+      };
+    }
+
+    function capacityCheck(breakMin, P) {
       const c = info(LADDER.CAPACITY_H, LADDER.CAPACITY_BODY);
       if (breakMin) c.breakMin = breakMin;
+      const ref = CI_REF[P];
+      if (ref) {
+        c.ci = ref + ":after";
+        c.eyebrow = "CHECK IN";
+        c.ciBody = CI_AFTER_BODY;
+        c.note = CI_AFTER_NOTE;
+      }
       return c;
     }
 
@@ -3457,7 +3505,7 @@ PRACTICES.cb = (function(){
     /* The closing is now the CANONICAL one (LADDER.CLOSING) — shared with SRS and
        SS per Justin, 2026-08-04. CB still owns its own break minutes. */
     function closingBeats(P, breakMin) {
-      return LADDER.CLOSING(P).concat([capacityCheck(breakMin)]);
+      return LADDER.CLOSING(P).concat([capacityCheck(breakMin, P)]);
     }
 
     /* ---------- PENDULATION SEQUENCE ---------- */
@@ -3529,7 +3577,7 @@ PRACTICES.cb = (function(){
         B.push(b("Is there an emotion you’re holding onto?"));
         B.push(b("Invite it to be with you."));
       }
-      B.push(capacityCheck(2));
+      B.push(capacityCheck(2, P));
       return B;
     }
 
@@ -3601,6 +3649,7 @@ PRACTICES.cb = (function(){
       const b = mkq("Practice 1"),
         B = [];
       B.push(ptitle("Practice 1", "Mindfulness", "", "Brief, simple mindfulness — connect to the present moment.", "safety"));
+      B.push(checkinBeat("cb1"));   /* reading 1 of 4 — before the first practice */
       B.push(b("On a scale of 0–10, what is your current level of safety?"));
       B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
       B.push(b("What do you hear?", HEAR_NOTE));
@@ -3614,7 +3663,7 @@ PRACTICES.cb = (function(){
         B.push(b("Is there an emotion you’re holding onto?"));
         B.push(b("Invite it to be with you."));
       }
-      B.push(capacityCheck(2));
+      B.push(capacityCheck(2, "Practice 1"));
       return B;
     }
 
@@ -3820,9 +3869,13 @@ PRACTICES.cb = (function(){
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
       if(b.style==="title")  return {kind:"cover", eyebrow:"", h:b.h, flow:b.tagline||""};
+      if(b.style==="checkin")return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body};
       if(b.style==="ptitle") return {kind:"ptitle",
         eyebrow:[b.kind,b.tagline].filter(Boolean).join("<br>"), h:b.h};
-      return {kind:"info", h:b.h, body:b.body, breakMin:b.breakMin};
+      /* a capacity slide that carries a reading shows the check-in line under
+         the capacity questions; the slide is otherwise unchanged. */
+      return {kind:"info", eyebrow:b.eyebrow||"", h:b.h,
+        body:b.body+(b.ciBody?'<br><br><b>'+b.ciBody+'</b>':""), breakMin:b.breakMin};
     },
     agenda:function(){ return ["Mindfulness", skillName(st.p2), skillName(st.p3)]; },
     renderDials:function(){
@@ -3836,16 +3889,24 @@ PRACTICES.cb = (function(){
     roll:function(){ randomize(); },
     globals:{ randomize:randomize, toggleDelem:toggleDelem, randomizeDelems:randomizeDelems },
     sceneOn:function(b){ return this.map(b).kind==="prompt"; },
-    joinMode:function(b){ if(this.map(b).kind==="prompt") return "off";
-      if(b===pSlides[0]) return "big"; return "corner"; },
-    /* CB has no authored check-in slides yet, so no seams are stamped.
-       Adding them is content work in the CB source, not shell work. */
-    seam:function(b){ return null; },
+    joinMode:function(b){ const k=this.map(b).kind;
+      if(k==="prompt") return "off";
+      /* the open check-in gets the big block (that is where a late joiner
+         scans); the capacity slides are dense, so they keep the corner one. */
+      if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
+    /* four authored readings (Justin, 2026-08-10): open, then folded into each
+       practice's capacity-check slide. `ci` on a beat IS the seam. */
+    seam:function(b){ return (b&&b.ci)?b.ci:null; },
     recipe:function(){ return {sense:st.sense, p2:st.p2.skill, p3:st.p3.skill,
       scene:(SHELL.scene||"(surprise me)")}; },
-    live:{ type:"capacity-builder", ref:"cb", minutes:90, seams:["(none authored yet)"],
+    live:{ type:"capacity-builder", ref:"cb", minutes:90,
+           seams:["cb1:before","cb1:after","cb2:after","cb3:after"],
            invite:"we're building capacity together right now.",
-           practices:[{ref:"cb",label:"Capacity Builder",checkins:[]}] }
+           /* a function so the app's trail names the skills actually dialled in */
+           practices:function(){ return [
+             {ref:"cb1",label:"Mindfulness",       checkins:["before","after"]},
+             {ref:"cb2",label:skillName(st.p2),    checkins:["after"]},
+             {ref:"cb3",label:skillName(st.p3),    checkins:["after"]}]; } }
   };
 })();
 
@@ -4832,7 +4893,9 @@ async function publishLive(){
     const j=await sbFn("publish-live-session",{
       type:cfg.type,
       recipe:(typeof ACTIVE.recipe==="function"?ACTIVE.recipe():{}),
-      practices:cfg.practices,
+      /* a practice may compute its practices list from the dials (CB names the
+         two skills the presenter actually chose), so allow a function here. */
+      practices:(typeof cfg.practices==="function"?cfg.practices():cfg.practices),
       duration_minutes:cfg.minutes||90,
       host:(SHELL.testMode?LIVE_TEST.host:"the unstucking academy"),
       invite:(SHELL.testMode?LIVE_TEST.invite:cfg.invite),
