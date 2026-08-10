@@ -303,7 +303,10 @@
     </div>
 
     <div class="randbar">
-      <button class="btn" style="width:100%" onclick="rollAll()">🎲 Random anchor &amp; scene</button>
+      <!-- ghost (outlined ink, not filled): this is a "try something" convenience, not the
+           primary action on the panel — Present is. Justin, 2026-08-10. Label is "Randomize"
+           because rollAll() rolls the scene AND every practice dial, not just anchor + scene. -->
+      <button class="btn ghost" style="width:100%" onclick="rollAll()">🎲 Randomize</button>
       <p class="sub" id="pJoinDial" style="margin:4px 0 0"></p>
     </div>
   </div>
