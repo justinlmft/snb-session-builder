@@ -210,6 +210,25 @@
   transform:translate(-50%,-50%);width:118%;height:230%;border-radius:50%;pointer-events:none;
   background:radial-gradient(ellipse at center,var(--veil) 0%,var(--veil) 42%,transparent 74%)}
 
+/* ---- image well: a 3:4 panel on the right rail (AAMFT pattern).
+   Present only when the slide declares img and images/<marker> exists;
+   the text column narrows to make room and takes the grid back when the
+   well is empty. ---- */
+.snbframe .s.haswell h1{max-width:54cqw}
+.snbframe .s.haswell .body{max-width:52cqw}
+.snbframe .well{position:absolute;top:var(--top);right:var(--mx);width:27cqw}
+.snbframe .well img{display:block;width:100%;aspect-ratio:3/4;max-height:74cqh;
+  object-fit:cover;border-radius:3px}
+/* story slides carry a COMPACT portrait (the character), not the big panel —
+   vignette bodies are long and keep most of the grid */
+.snbframe .s.story.haswell h1{max-width:58cqw}
+.snbframe .s.story.haswell .body{max-width:58cqw}
+.snbframe .s.story .well{width:15cqw}
+/* fit ramp — long vignettes step down instead of clipping the frame */
+.snbframe .s.story.x1 .body{font-size:clamp(11px,1.5cqw,26px);line-height:1.5}
+.snbframe .s.story.x2 .body{font-size:clamp(10px,1.28cqw,22px);line-height:1.42}
+.snbframe .s.story.x2 h1{font-size:clamp(16px,2.7cqw,46px)}
+
 /* ---- flow chips (session map on a cover slide) ---- */
 .snbframe .flow{display:flex;gap:1.4cqw;align-items:center;flex-wrap:wrap;margin-top:var(--gut)}
 .snbframe .flow .step{border:1px solid #1a1f2a40;background:transparent;border-radius:999px;
@@ -3970,9 +3989,9 @@ const WEEKS = [
   vigQ:{h:"what’s your one thing?", note:"One word or one object in the chat. Not the story about it — just the thing. — Whatever you name is what we’ll use in about two minutes."},
   tail:"none",
   teach:[
-    {h:"passive cues.", body:"…are unconscious sensory information that come in through the senses, go to the brainstem, then shift your autonomic state.<br>— safety cues lead to some safety<br>— danger cues lead to some defense",
+    {img:"srs-w1-passive-cues", h:"passive cues.", body:"…are unconscious sensory information that come in through the senses, go to the brainstem, then shift your autonomic state.<br>— safety cues lead to some safety<br>— danger cues lead to some defense",
      note:"Very short. You already know this from the lessons. — A passive cue works without you. An anchor is what happens when you turn your attention toward it on purpose."},
-    {h:"A → W → E.", body:"<b>A</b>nchored Awareness → <b>W</b>itness → <b>E</b>xperience<br><br>Anchor through mindfully experiencing a passive safety cue, then shift awareness to its felt experience.<br>Witness where that lives in the body.<br>Experience it through description.",
+    {img:"srs-w1-awe", h:"A → W → E.", body:"<b>A</b>nchored Awareness → <b>W</b>itness → <b>E</b>xperience<br><br>Anchor through mindfully experiencing a passive safety cue, then shift awareness to its felt experience.<br>Witness where that lives in the body.<br>Experience it through description.",
      note:"Three moves. Anchor, witness, experience. — That’s the whole architecture of the next eight weeks. Everything we add sits on top of this."}
   ]
 },
@@ -4003,9 +4022,9 @@ const WEEKS = [
   vigQ:{h:"is your stuck state normal, given your life?", note:"Just yes or no in the chat. We’re not doing the story. — Some of you are going to hesitate on that, and that hesitation is worth noticing. Hold onto it, we’ll use it."},
   tail:"vn",
   teach:[
-    {h:"invalidating sounds like…", body:"…judging yourself — “There’s something wrong with me.”<br>…minimizing or denying — “It’s not a big deal.”<br>…labeling or diagnosing — “Maybe I have CPTSD?”",
+    {img:"srs-w2-invalidating", h:"invalidating sounds like…", body:"…judging yourself — “There’s something wrong with me.”<br>…minimizing or denying — “It’s not a big deal.”<br>…labeling or diagnosing — “Maybe I have CPTSD?”",
      note:"Quick pass. These are the three ways we dodge. Judging, minimizing, labeling. — Labeling feels like understanding, but it’s often a way to not feel the thing."},
-    {h:"you’ve already Validated.", body:"You’re here.<br><br>Something was uncomfortable enough, and you were honest enough about it, to show up.",
+    {img:"srs-w2-validated", h:"you’ve already Validated.", body:"You’re here.<br><br>Something was uncomfortable enough, and you were honest enough about it, to show up.",
      note:"Say this warmly and then move on. Don’t oversell it. — Showing up IS the skill. They already did it once today."}
   ]
 },
@@ -4039,7 +4058,7 @@ const WEEKS = [
   vigQ:{h:"what does yours look like?", note:"An image in the chat. A few words. — Don’t overthink it. Anger is a flame. Sad is a sack of potatoes. Anxiety is an electric bolt. There is no correct answer."},
   tail:"ii",
   teach:[
-    {h:"why bother?", body:"To reduce the friction of resisting defense — it’s there anyway.<br>To practice inviting tolerable defense — not just coping and managing.<br>To practice feeling defense — in preparation for what’s coming.",
+    {img:"srs-w3-why-bother", h:"why bother?", body:"To reduce the friction of resisting defense — it’s there anyway.<br>To practice inviting tolerable defense — not just coping and managing.<br>To practice feeling defense — in preparation for what’s coming.",
      note:"Short. — Resisting it costs you energy and doesn’t work. This is the cheaper option, and it’s the on-ramp to Balancing and Pendulating."}
   ]
 },
@@ -4069,7 +4088,7 @@ const WEEKS = [
   vigQ:{h:"what’s your usual Obstacle?", note:"The sentence your head says when you get close. In the chat. — You’ll see the same three or four sentences come up across the whole cohort. That’s worth seeing."},
   tail:"obs",
   teach:[
-    {h:"not really an obstacle.", body:"An opportunity:<br>— to notice the most present-moment experience<br>— to Validate, Normalize, Invite<br>— to Balance, to Pendulate<br>— to build vagal brake strength",
+    {img:"srs-w4-opportunity", h:"not really an obstacle.", body:"An opportunity:<br>— to notice the most present-moment experience<br>— to Validate, Normalize, Invite<br>— to Balance, to Pendulate<br>— to build vagal brake strength",
      note:"Reframe it once, then get to practice. — The Obstacle is not in the way of the work. Most of the time it IS the work."}
   ]
 },
@@ -4096,7 +4115,7 @@ const WEEKS = [
   vigQ:{h:"what’s your smallest noticeable defense?", note:"Not the big one. The small one. The first flicker. — In the chat, or just to yourself."},
   tail:"bal",
   teach:[
-    {h:"the smallest defense.", body:"Proactively identify the smallest noticeable defense — catch it as it rises, then shift to safety.<br><br>A few seconds is better than none. Catch it small, keep it small.<br><br>Increase time or intensity only as you’re ready.",
+    {img:"srs-w5-smallest", h:"the smallest defense.", body:"Proactively identify the smallest noticeable defense — catch it as it rises, then shift to safety.<br><br>A few seconds is better than none. Catch it small, keep it small.<br><br>Increase time or intensity only as you’re ready.",
      note:"Say this twice in different words. It’s the safety rail for the back half of the cohort. — Nobody is trying to be brave here."}
   ]
 },
@@ -4123,7 +4142,7 @@ const WEEKS = [
   vigQ:{h:"how many trips do you have in you today?", note:"Not a challenge. An honest read. — One is a real answer. We’ll do a small number together and stop early on purpose."},
   tail:"pend",
   teach:[
-    {h:"why Pendulate?", body:"<b>Short term:</b> self-regulation — safety balances defensive activation, and opens the potential for ladder climbing.<br><br><b>Long term:</b> vagal brake strength — pendulation acts as a neural exercise. Access safety, lose it, access it, lose it…",
+    {img:"srs-w6-why-pendulate", h:"why Pendulate?", body:"<b>Short term:</b> self-regulation — safety balances defensive activation, and opens the potential for ladder climbing.<br><br><b>Long term:</b> vagal brake strength — pendulation acts as a neural exercise. Access safety, lose it, access it, lose it…",
      note:"The reps ARE the point. Losing safety and getting it back is the exercise — not a failure of the exercise."}
   ]
 },
@@ -4152,9 +4171,9 @@ const WEEKS = [
   vigQ:{h:"could you describe yours — or is that today’s edge?", note:"Either answer is a good answer. — If describing it is too much today, you Balance at the Witnessing level and that’s the practice. Say that clearly so nobody pushes."},
   tail:"baldesc",
   teach:[
-    {h:"why Description?", body:"No, your internal experiences don’t have colors. Maybe size. General shape. Temperature. Probably not color or texture.<br><br>But your internal experiences <em>do</em> exist.<br><br>Description is a way to spend more time with them and build familiarity — to connect instead of reject.",
+    {img:"srs-w7-why-description", h:"why Description?", body:"No, your internal experiences don’t have colors. Maybe size. General shape. Temperature. Probably not color or texture.<br><br>But your internal experiences <em>do</em> exist.<br><br>Description is a way to spend more time with them and build familiarity — to connect instead of reject.",
      note:"Say the honest version. This isn’t mystical. — It’s a device to keep your attention on something long enough to stop treating it as an emergency."},
-    {h:"Description creates alignment.", body:"Top-down and bottom-up experiences in sync.<br><br>No contradictory signals to the brainstem.",
+    {img:"srs-w7-alignment", h:"Description creates alignment.", body:"Top-down and bottom-up experiences in sync.<br><br>No contradictory signals to the brainstem.",
      note:"One line. When your words match what your body is doing, your brainstem stops getting mixed messages."}
   ]
 },
@@ -4185,9 +4204,9 @@ const WEEKS = [
   vigQ:{h:"what’s underneath yours?", note:"You don’t have to answer this out loud. — Just notice whether you have a guess now that you didn’t have eight weeks ago."},
   tail:"penddesc",
   teach:[
-    {h:"you’re ready.", body:"You’ve prepared for this over eight weeks.<br>— You can anchor into safety<br>— You can Validate &amp; Normalize<br>— You can Balance defense with safety<br>— You can Pendulate<br>— You can Describe what’s happening within<br>— Your safety state can maintain<br>— You can act on what your body needs",
+    {img:"srs-w8-ready", h:"you’re ready.", body:"You’ve prepared for this over eight weeks.<br>— You can anchor into safety<br>— You can Validate &amp; Normalize<br>— You can Balance defense with safety<br>— You can Pendulate<br>— You can Describe what’s happening within<br>— Your safety state can maintain<br>— You can act on what your body needs",
      note:"Read the list. Let it land. — Every one of those was a thing they could not reliably do in August."},
-    {h:"safety first.", body:"We’ll return to safety continually, as always.<br><br>If you feel yourself drifting too far from safety, choose to return — with or without my prompting.<br>— your safety cue<br>— my voice<br>— one intentional breath with an extended exhale<br>— movement",
+    {img:"srs-w8-safety-first", h:"safety first.", body:"We’ll return to safety continually, as always.<br><br>If you feel yourself drifting too far from safety, choose to return — with or without my prompting.<br>— your safety cue<br>— my voice<br>— one intentional breath with an extended exhale<br>— movement",
      note:"Deliver this before the deepest practice of the cohort. — You are allowed to leave the practice at any point. Leaving well IS the skill."}
   ]
 }
@@ -4214,8 +4233,8 @@ function W(){ return WEEKS[st.week-1]; }
    ================================================================== */
 function cover(h,note,eyebrow){ return {style:"cover",h,body:"",eyebrow:eyebrow||"",note:note||"",fixed:true,logo:true}; }
 function q(h,note){ return {style:"q",h,body:"",eyebrow:"",note:note||"",fixed:false}; }
-function info(h,body,note){ return {style:"info",h,body:body||"",eyebrow:"",note:note||"",fixed:true}; }
-function vig(h,body,note,who){ return {style:"vig",h,body:body||"",eyebrow:(who||"JENNY"),note:note||"",fixed:true}; }
+function info(h,body,note,img){ return {style:"info",h,body:body||"",eyebrow:"",note:note||"",fixed:true,img:img}; }
+function vig(h,body,note,who){ const w=(who||"JENNY"); return {style:"vig",h,body:body||"",eyebrow:w,note:note||"",fixed:true,img:"char-"+w.toLowerCase()}; }
 function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:(phase?"CHECK IN":"STUCK NOT BROKEN APP"),note:note||"",fixed:true,phase:phase||""}; }
 const MK = {cover:(h,n,e)=>cover(h,n,e), info:(h,b,n)=>info(h,b,n), app:(h,b,n,ph)=>app(h,b,n,ph)};
 function ptitle(h,tagline,note,body){ return {style:"ptitle",h,body:body||"",eyebrow:tagline||"",note:note||"",fixed:false}; }
@@ -4398,7 +4417,7 @@ function buildBeats(){
   w.vig.forEach(v=>B.push(vig(v.h,v.body,v.note,v.who)));
   if(w.vigQ) B.push(q(w.vigQ.h,w.vigQ.note));
   /* the teaching beats are deliberately thin — pre-work carries the load */
-  (w.teach||[]).forEach(t=>B.push(info(t.h,t.body,t.note)));
+  (w.teach||[]).forEach(t=>B.push(info(t.h,t.body,t.note,t.img)));
   sec("vignette",m);
 
   /* ---------- PRACTICE ---------- */
@@ -4501,11 +4520,11 @@ function randomAnchorScene(){
     dialsHTML:DIALS,
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
-      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body};
+      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img};
       if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="ptitle") return {kind:"ptitle", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="cover")  return {kind:"cover", eyebrow:b.eyebrow, h:b.h};
-      return {kind:"info", h:b.h, body:b.body, breakMin:b.breakMin};
+      return {kind:"info", h:b.h, body:b.body, breakMin:b.breakMin, img:b.img};
     },
     agenda:function(){ const b=BREAK_MIN[W().tail]||3;
       return ["Check in","Vignettes","Practice","Break "+b+"m","Reflect","Share","Practice 2","Break "+b+"m","Reflect","Share","Check in","Homework"]; },
@@ -4576,18 +4595,18 @@ const WEEKS = [
 { n:1, short:"Passive Safety Environment", title:"passive safety<br>environment.",
   ice:"Hi, I'm _____. I'm from _____. I'm here to increase _____.",
   teach:[
-    {h:"safety.", body:"“Safety” can refer to many things:<br>– biology<br>– internal experiences<br>– external environment<br>– interpersonal"},
-    {h:"our focus.", body:"– biology: activating safety &amp; exercising it<br>– internal experiences: conscious connection with it<br>– external environment: through the senses<br>– interpersonal: with each other"},
-    {h:"safety is a Polyvagal state.", body:"Ventral vagal parasympathetic.<br><br>Safety doesn't just feel “good.”<br>Safety is not just the absence of “bad.”"},
-    {h:"like / dislike.", body:"Cues are easily missed as we don't pay attention.<br><br>Our starting point is noticing what we generally like and dislike."},
-    {h:"like vs. unhealthy coping.", body:"Like does not leave you with regret, guilt, or shame."},
-    {h:"how can you tell?", body:"Obvious:<br>– breath?<br>– muscles?<br>– smile?<br>– thoughts?<br>– emotions?<br><br>Less obvious:<br>– sensations<br>– impulses"}],
+    {img:"ss-w1-safety", h:"safety.", body:"“Safety” can refer to many things:<br>– biology<br>– internal experiences<br>– external environment<br>– interpersonal"},
+    {img:"ss-w1-focus", h:"our focus.", body:"– biology: activating safety &amp; exercising it<br>– internal experiences: conscious connection with it<br>– external environment: through the senses<br>– interpersonal: with each other"},
+    {img:"ss-w1-state", h:"safety is a Polyvagal state.", body:"Ventral vagal parasympathetic.<br><br>Safety doesn't just feel “good.”<br>Safety is not just the absence of “bad.”"},
+    {img:"ss-w1-like-dislike", h:"like / dislike.", body:"Cues are easily missed as we don't pay attention.<br><br>Our starting point is noticing what we generally like and dislike."},
+    {img:"ss-w1-coping", h:"like vs. unhealthy coping.", body:"Like does not leave you with regret, guilt, or shame."},
+    {img:"ss-w1-tell", h:"how can you tell?", body:"Obvious:<br>– breath?<br>– muscles?<br>– smile?<br>– thoughts?<br>– emotions?<br><br>Less obvious:<br>– sensations<br>– impulses"}],
   intro:[{h:"Jenny.", body:"Jenny is a young woman who feels emotionally numb and disconnected. She grapples with loneliness, self-judgment, and a pervasive sense of being “stuck,” which gets in the way of moving forward.<br><br>Jenny “likes” being alone, so she avoids social situations. She feels alone even when surrounded by others anyway.<br><br>She joins the Safety Simplified cohort."}],
   items:ITEMS,
   after:[
-    {h:"environmental safety.", body:"Environmental safety is necessary for deeper safety. Our goal is a felt sense of safety.<br><br>Environment provides cues of safety (or danger) through senses we constantly respond to."},
-    {h:"a Passive Safety Environment.", body:"A place you choose or find that gives you continuous safety cues.<br><br><b>Chosen:</b> living room couch · home office · backyard deck · apartment balcony<br><b>Found:</b> library corner · local cafe · local park"},
-    {h:"how to build one.", body:"1. Get the general feel of different spaces in your home<br>2. Pick the one you like most<br>3. Make minor changes<br><br>Minor changes: lighting · additions or removals · re-positioning · cleaning · tidying · organizing"}],
+    {img:"ss-w1-env-safety", h:"environmental safety.", body:"Environmental safety is necessary for deeper safety. Our goal is a felt sense of safety.<br><br>Environment provides cues of safety (or danger) through senses we constantly respond to."},
+    {img:"ss-w1-pse", h:"a Passive Safety Environment.", body:"A place you choose or find that gives you continuous safety cues.<br><br><b>Chosen:</b> living room couch · home office · backyard deck · apartment balcony<br><b>Found:</b> library corner · local cafe · local park"},
+    {img:"ss-w1-build", h:"how to build one.", body:"1. Get the general feel of different spaces in your home<br>2. Pick the one you like most<br>3. Make minor changes<br><br>Minor changes: lighting · additions or removals · re-positioning · cleaning · tidying · organizing"}],
   outro:[
     {h:"Jenny: finding her space.", body:"Jenny spends a few moments in every room of her home, checking whether she likes it or not. “It's my home! Shouldn't I like being in every room?”<br><br>But the bathroom feels cold and small. The bedroom is a tad too cluttered. Same with the kitchen.<br><br>The one space that feels like a <em>like</em> is her living room. More specifically, the couch."},
     {h:"Jenny: the adjustment.", body:"She doesn't like facing the TV, so she turns the couch slightly to face a window. She moves the side table back to the couch's side, places her lamp on it and turns it on.<br><br>She sits, puts the blanket on her lap, and gazes out the window. “Yeah, I like this.”<br><br>An image of tea and a book comes to mind."}],
@@ -4597,9 +4616,9 @@ const WEEKS = [
 { n:2, short:"Anchored Awareness", title:"anchored awareness<br>of safety.",
   ice:"What item in your Passive Safety Environment cues safety?",
   teach:[
-    {h:"A→W→E.", body:"<b>A</b>nchored Awareness → <b>W</b>itness → <b>E</b>xperience<br><br>Anchor into safety through mindfully experiencing a passive safety cue, then shift awareness to its felt experience.<br>Witness where that lives in the body.<br>Experience through description."},
-    {h:"why.", body:"To connect more deeply with internal safety — a stronger present-moment connection.<br><br>To strengthen safety capacity, through repeated practice.<br><br>To prepare for connecting with defense."},
-    {h:"Anchored Awareness.", body:"The first phase of A→W→E.<br><br>1. Begin in your Passive Safety Environment<br>2. Notice the experience of the space<br>3. Notice a specific pull<br>4. Use your senses to connect mindfully"}],
+    {img:"ss-w2-awe", h:"A→W→E.", body:"<b>A</b>nchored Awareness → <b>W</b>itness → <b>E</b>xperience<br><br>Anchor into safety through mindfully experiencing a passive safety cue, then shift awareness to its felt experience.<br>Witness where that lives in the body.<br>Experience through description."},
+    {img:"ss-w2-why", h:"why.", body:"To connect more deeply with internal safety — a stronger present-moment connection.<br><br>To strengthen safety capacity, through repeated practice.<br><br>To prepare for connecting with defense."},
+    {img:"ss-w2-anchored", h:"Anchored Awareness.", body:"The first phase of A→W→E.<br><br>1. Begin in your Passive Safety Environment<br>2. Notice the experience of the space<br>3. Notice a specific pull<br>4. Use your senses to connect mindfully"}],
   intro:[], items:[], after:[], outro:[],
   practices:[
     {label:"Anchored Awareness", depth:"anchor"},
@@ -4611,9 +4630,9 @@ const WEEKS = [
 { n:3, short:"Witnessing Safety", title:"witnessing safety.",
   ice:"What changed in your Passive Safety Environment this week?",
   teach:[
-    {h:"where we are.", body:"✅ understand the significance of biological safety<br>✅ like / dislike<br>✅ the experiences of like/dislike (breath, smile, muscles…)<br>✅ identify and adjust a Passive Safety Environment<br>✅ connect mindfully with a passive cue using the senses<br>✅ validate safety<br>✅ normalize safety"},
-    {h:"going inward.", body:"Shifting focus inward:<br>– outside → in<br>– brain → body<br>– passive → mindful<br>– general → specific"},
-    {h:"Witnessing.", body:"1. Anchor into safety, shift awareness<br>2. <b>Witness safety in the body</b> ← this week<br>3. Experience through description"}],
+    {img:"ss-w3-where", h:"where we are.", body:"✅ understand the significance of biological safety<br>✅ like / dislike<br>✅ the experiences of like/dislike (breath, smile, muscles…)<br>✅ identify and adjust a Passive Safety Environment<br>✅ connect mindfully with a passive cue using the senses<br>✅ validate safety<br>✅ normalize safety"},
+    {img:"ss-w3-inward", h:"going inward.", body:"Shifting focus inward:<br>– outside → in<br>– brain → body<br>– passive → mindful<br>– general → specific"},
+    {img:"ss-w3-witnessing", h:"Witnessing.", body:"1. Anchor into safety, shift awareness<br>2. <b>Witness safety in the body</b> ← this week<br>3. Experience through description"}],
   intro:[{h:"Jenny: witnessing.", body:"Jenny is in Week 3. She can anchor into safety and shift her awareness to the felt experience of it. Now she looks for where it lives in her body, like a researcher — no conclusions, just observation."}],
   items:[], after:[], outro:[],
   practices:[{label:"Witnessing", depth:"witness", vn:true},
@@ -4623,8 +4642,8 @@ const WEEKS = [
 { n:4, short:"Experiencing Safety", title:"experiencing safety.",
   ice:"One word for how safety feels in your body right now.",
   teach:[
-    {h:"Experiencing.", body:"1. Anchor into safety, shift awareness<br>2. Witness safety in the body<br>3. <b>Experience through description</b> ← this week<br><br>Temperature · shape · size · color · texture."},
-    {h:"the Interest Impulse.", body:"A specific potential experience of strong safety anchoring.<br><br>It could help you connect longer or deeper with safety.<br><br>Ask yourself: am I curious about my inner experience?<br><br>If you're curious, that does not mean you must act on it. If you're not curious, that indicates you need more safety first."}],
+    {img:"ss-w4-experiencing", h:"Experiencing.", body:"1. Anchor into safety, shift awareness<br>2. Witness safety in the body<br>3. <b>Experience through description</b> ← this week<br><br>Temperature · shape · size · color · texture."},
+    {img:"ss-w4-interest", h:"the Interest Impulse.", body:"A specific potential experience of strong safety anchoring.<br><br>It could help you connect longer or deeper with safety.<br><br>Ask yourself: am I curious about my inner experience?<br><br>If you're curious, that does not mean you must act on it. If you're not curious, that indicates you need more safety first."}],
   intro:[{h:"Jenny: experiencing.", body:"Jenny is in Week 4. She can anchor into safety and shift her awareness to it. She can find where it lives in her body. Now she describes it — and in describing it, she stays with it longer than she used to."}],
   items:[], after:[], outro:[],
   practices:[{label:"Experiencing", depth:"experience", vn:true},
@@ -4636,10 +4655,10 @@ let st = { week:1, sense:"touch" };
 function W(){ return WEEKS[st.week-1]; }
 
 function cover(h,eyebrow){ return {style:"cover",h,body:"",eyebrow:eyebrow||"",note:"",fixed:true}; }
-function info(h,body,note,eyebrow){ return {style:"info",h,body:body||"",eyebrow:eyebrow||"",note:note||"",fixed:true}; }
+function info(h,body,note,eyebrow,img){ return {style:"info",h,body:body||"",eyebrow:eyebrow||"",note:note||"",fixed:true,img:img}; }
 function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:"CHECK IN",note:note||"",fixed:true,phase:phase||""}; }
 const MK = {cover:(h,n,e)=>cover(h,e), info:(h,b,n)=>info(h,b,n), app:(h,b,n,ph)=>app(h,b,n,ph)};
-function vig(h,body){ return {style:"vig",h,body:body||"",eyebrow:"JENNY",note:"",fixed:true}; }
+function vig(h,body){ return {style:"vig",h,body:body||"",eyebrow:"JENNY",note:"",fixed:true,img:"char-jenny"}; }
 function ptitle(h,eyebrow){ return {style:"ptitle",h,body:"",eyebrow:eyebrow||"",note:"",fixed:false}; }
 function q(h,note){ return {style:"q",h,body:"",eyebrow:"",note:note||"",fixed:false}; }
 
@@ -4681,7 +4700,7 @@ function buildBeats(){
   sec("open",m);
 
   m=B.length;
-  (w.teach||[]).forEach(t=>B.push(info(t.h,t.body,"")));
+  (w.teach||[]).forEach(t=>B.push(info(t.h,t.body,"",null,t.img)));
   (w.intro||[]).forEach(v=>B.push(vig(v.h,v.body)));
   sec("teach",m);
 
@@ -4696,7 +4715,7 @@ function buildBeats(){
       B.push(q(it.n+" item: does it give you a<br>sense of like or dislike?","What about it do you like? What about it do you dislike?"));
       B.push(q(it.n+" item: how can you tell?","Pushed toward? Pulled away? — Breath? Muscles? Smile? Thoughts? Emotions? — Less obvious: sensations, impulses."));
     });
-    (w.after||[]).forEach(t=>B.push(info(t.h,t.body,"")));
+    (w.after||[]).forEach(t=>B.push(info(t.h,t.body,"",null,t.img)));
     (w.outro||[]).forEach(v=>B.push(vig(v.h,v.body)));
   }
   (w.practices||[]).forEach(pr=>{ practiceBeats(pr).forEach(b=>B.push(b)); });
@@ -4746,11 +4765,11 @@ function senseChips(){
     st:st, TABS:TABS, buildBeats:buildBeats, sessionName:sessionName, dialsHTML:DIALS,
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
-      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body};
+      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img};
       if(b.style==="ptitle") return {kind:"ptitle", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="cover")  return {kind:"cover", eyebrow:b.eyebrow, h:b.h};
       if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body};
-      return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body};
+      return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img};
     },
     agenda:function(){ const w=W();
       const mid = (w.items||[]).length ? ["Three items"]
@@ -4795,6 +4814,17 @@ const FOOT = '<div class="foot">'+
   '<span class="byline">JUSTIN SUNSERI, STUCKNOTBROKEN.COM</span></div>';
 
 function eyebrowHTML(t){ return '<div class="eyebrow">'+(t||"")+'</div>'; }
+/* IMAGE WELL — the AAMFT mechanism, browser-native. A slide that declares
+   img:"<marker>" renders a right panel filled from images/<marker>.jpg (then
+   .png). Drop the file next to index.html and the well fills on the next
+   load — no code change. No file → the well removes itself and the text
+   takes the full grid again. Title slides carry no wells by design. */
+function wellHTML(m){
+  if(!m) return "";
+  return '<div class="well"><img src="images/'+m+'.jpg" alt="" '+
+    'onerror="if(!this.dataset.p){this.dataset.p=1;this.src=this.src.replace(/\.jpg$/,\'.png\');}'+
+    'else{var s=this.closest(\'.s\');if(s)s.classList.remove(\'haswell\');this.parentNode.remove();}"></div>';
+}
 function breakClockHTML(min){
   if(!min) return "";
   return '<div class="breakclock"><span class="bl">break</span>'+
@@ -4815,15 +4845,20 @@ function renderSlide(c){
     case "checkin":
       return '<div class="s checkin">'+eb+'<h1>'+(c.h||"")+'</h1>'+
         (c.body?'<div class="body">'+c.body+'</div>':"")+FOOT+'</div>';
-    case "story":
-      return '<div class="s story">'+eb+'<h1>'+(c.h||"")+'</h1>'+
-        (c.body?'<div class="body">'+c.body+'</div>':"")+'</div>';
+    case "story": {
+      /* long vignettes shrink to fit the frame instead of clipping; a portrait
+         well counts as extra length since it narrows the text column */
+      const blen = String(c.body||"").replace(/<[^>]+>/g,"").length + (c.img?250:0);
+      const fit = blen>900 ? " x2" : (blen>550 ? " x1" : "");
+      return '<div class="s story'+(c.img?' haswell':'')+fit+'">'+eb+'<h1>'+(c.h||"")+'</h1>'+
+        (c.body?'<div class="body">'+c.body+'</div>':"")+wellHTML(c.img)+'</div>';
+    }
     case "events":
       return '<div class="s events">'+eb+'<h1>'+(c.h||"")+'</h1>'+(c.rows||"")+FOOT+'</div>';
     case "info":
     default:
-      return '<div class="s info">'+eb+'<h1>'+(c.h||"")+'</h1>'+
-        (c.body?'<div class="body">'+c.body+'</div>':"")+breakClockHTML(c.breakMin)+'</div>';
+      return '<div class="s info'+(c.img?' haswell':'')+'">'+eb+'<h1>'+(c.h||"")+'</h1>'+
+        (c.body?'<div class="body">'+c.body+'</div>':"")+wellHTML(c.img)+breakClockHTML(c.breakMin)+'</div>';
   }
 }
 
