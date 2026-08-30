@@ -316,7 +316,7 @@
 
     <div class="dial sep">
       <label class="h">Live session</label>
-      <label class="toggle"><input type="checkbox" id="tTestS" onchange="SHELL.testMode=this.checked;render()"> 🧪 Test session <span style="color:var(--muted)">— the app popup says to ignore it</span></label>
+      <label class="toggle"><input type="checkbox" id="tTestS" onchange="SHELL.testMode=this.checked;if(typeof LIVE!=='undefined'&&LIVE){endLive();publishLive();}render()"> 🧪 Test session <span style="color:var(--muted)">— publishes nothing; members are never notified</span></label>
       <label class="h" style="margin-top:12px;display:block">Live room URL <input type="text" id="tRoomS" placeholder="https://… (blank = auto from the Academy calendar)" oninput="SHELL.room=this.value.trim()" style="display:block;width:100%;margin-top:5px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;box-sizing:border-box"></label>
       <p class="sub" id="liveNote" style="margin:10px 0 0"></p>
     </div>
@@ -5008,8 +5008,11 @@ const SNB_LIVE = {
   anon:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpdXRuendwYnJ5ZHlpcHdhb2NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyNjEzMzcsImV4cCI6MjA5NzgzNzMzN30.sWJQ--a6-Wdodud6StMzfU_wwSCeUT-ThSRiOxbJ0uU",
   appBase:"https://app.stucknotbroken.com"
 };
-const LIVE_TEST = { host:"test session (please ignore)",
-  invite:"this is just a test of a new feature. nothing is happening live right now." };
+/* TEST MODE publishes NOTHING (Justin, 2026-08-30, after a member asked about a
+   test run): no live session is created, so the app never hears about it and
+   nobody is notified. The presenter still sees the join-overlay layout with a
+   TEST placeholder. The old behavior — publishing a real session titled
+   "test session (please ignore)" — still pinged everyone. */
 let LIVE=null, LIVE_SEAM=undefined;
 const stripProto=u=>(u||"").replace("https://","").replace("http://","");
 async function sbFn(name, body){
@@ -5020,10 +5023,14 @@ async function sbFn(name, body){
   if(!r.ok) throw new Error((j&&j.error)||("HTTP "+r.status));
   return j;
 }
-function liveJoinURL(){ return LIVE?(SNB_LIVE.appBase+"/?live="+LIVE.code):""; }
+function liveJoinURL(){ return (LIVE&&!LIVE.test)?(SNB_LIVE.appBase+"/?live="+LIVE.code):""; }
 async function publishLive(){
   LIVE=null; LIVE_SEAM=undefined; updateConsoleJoin();
   const cfg=ACTIVE.live; if(!cfg){ return; }
+  if(SHELL.testMode){
+    LIVE={id:null, code:"TEST", presenter_key:null, test:true};
+    updateConsoleJoin(); pushJoin(); return;
+  }
   try{
     const j=await sbFn("publish-live-session",{
       type:cfg.type,
@@ -5032,8 +5039,8 @@ async function publishLive(){
          two skills the presenter actually chose), so allow a function here. */
       practices:(typeof cfg.practices==="function"?cfg.practices():cfg.practices),
       duration_minutes:cfg.minutes||90,
-      host:(SHELL.testMode?LIVE_TEST.host:"the unstucking academy"),
-      invite:(SHELL.testMode?LIVE_TEST.invite:cfg.invite),
+      host:"the unstucking academy",
+      invite:cfg.invite,
       room:((SHELL.room||"").trim()||null)});
     LIVE={id:j.id, code:j.code, presenter_key:j.presenter_key};
     updateConsoleJoin(); pushJoin(); postSeamForCurrent();
@@ -5047,21 +5054,22 @@ function joinModeFor(b){
 }
 function pushJoin(){
   if(sw&&!sw.closed){ const b=pSlides[pIdx];
-    sw.postMessage({snbJoin:{code:LIVE?LIVE.code:"",url:liveJoinURL(),mode:joinModeFor(b)}},"*"); }
+    sw.postMessage({snbJoin:{code:LIVE?LIVE.code:"",url:liveJoinURL(),mode:joinModeFor(b),test:!!(LIVE&&LIVE.test)}},"*"); }
 }
 async function postSeamForCurrent(){
-  if(!LIVE) return;
+  if(!LIVE||LIVE.test) return;
   const seam=seamFor(pSlides[pIdx]);
   if(seam===LIVE_SEAM) return; LIVE_SEAM=seam;
   try{ await sbFn("update-live-session",{id:LIVE.id,presenter_key:LIVE.presenter_key,seam:seam}); }catch(err){}
 }
 function endLive(){
-  if(LIVE){ sbFn("update-live-session",{id:LIVE.id,presenter_key:LIVE.presenter_key,live:false}).catch(function(){}); }
+  if(LIVE&&!LIVE.test){ sbFn("update-live-session",{id:LIVE.id,presenter_key:LIVE.presenter_key,live:false}).catch(function(){}); }
   if(sw&&!sw.closed) sw.postMessage({snbJoin:{mode:"off"}},"*");
   LIVE=null; LIVE_SEAM=undefined; updateConsoleJoin();
 }
 function updateConsoleJoin(){
-  const txt=LIVE?((SHELL.testMode?"🧪 TEST · ":"")+"live · code "+LIVE.code+" · "+stripProto(liveJoinURL())):"";
+  const txt=LIVE?(LIVE.test?"🧪 test mode — nothing published; the app is not notified"
+                 :"live · code "+LIVE.code+" · "+stripProto(liveJoinURL())):"";
   const a=document.getElementById("pJoin"); if(a) a.textContent=txt;
   const b=document.getElementById("pJoinDial"); if(b) b.textContent=txt;
 }
@@ -5075,6 +5083,12 @@ function renderJoin(el,j){
   if(!el) return;
   if(!j||j.mode==="off"||!j.code){ el.style.display="none"; el.innerHTML=""; el.className="joinbox"; return; }
   el.style.display=""; el.className="joinbox snbjoin "+(j.mode==="big"?"big":"corner");
+  if(j.test){
+    el.innerHTML='<div class="jtext"><div class="jlead">🧪 test session</div>'+
+      '<div class="jcode">TEST</div>'+
+      '<div class="jlead">not published — the app is not notified</div></div>';
+    return;
+  }
   let img="";
   try{ const q=qrcode(0,"M"); q.addData(j.url); q.make();
        img='<img class="qr" src="'+q.createDataURL(j.mode==="big"?6:4,2)+'" alt="join code">'; }catch(e){}
