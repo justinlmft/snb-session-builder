@@ -204,14 +204,18 @@
 .snbframe .s.events h1 {font-size:clamp(24px,4.4cqw,76px)}
 .snbframe .s.story h1  {font-size:clamp(18px,3.2cqw,56px);font-weight:500;line-height:1.1;letter-spacing:-.02em}
 
-/* body block — one treatment */
-.snbframe .body{margin-top:var(--gut);line-height:1.55;color:#3b3f48;font-weight:400;
-  font-size:clamp(12px,1.75cqw,30px);max-width:74cqw}
+/* body block — one treatment, at the AAMFT body size (Justin, 2026-08-30:
+   "make the text very legible"). The AAMFT deck holds ONE size for every
+   body-copy role, sized off the frame HEIGHT so it never shrinks with a
+   narrow window. Base raised past the AAMFT 2.94cqh to 3.3cqh — Justin asked
+   for VERY legible, and the cohort vignettes are read aloud across Zoom. */
+.snbframe .body{margin-top:var(--gut);line-height:1.5;color:#3b3f48;font-weight:400;
+  font-size:max(13px,3.3cqh);max-width:74cqw}
 .snbframe.dark .body{color:#cfcdc6}
 .snbframe .body b{font-weight:600;color:#1a1f2a}
 .snbframe.dark .body b{color:#FAF9F5}
 .snbframe .body em{font-style:italic}
-.snbframe .s.story .body{font-size:clamp(12px,1.8cqw,31px);line-height:1.6;max-width:76cqw}
+.snbframe .s.story .body{font-size:max(13px,3.3cqh);line-height:1.5;max-width:76cqw}
 .snbframe .s.ptitle .body,.snbframe .s.checkin .body{color:#6b685f;max-width:70cqw}
 /* check-in slides host the big join panel in the AAMFT well slot, so their
    text keeps to the text column like any slide with a filled well */
@@ -244,10 +248,13 @@
   border-radius:var(--radius);overflow:hidden}
 .snbframe .well img{display:block;width:100%;height:100%;
   object-fit:cover;border-radius:var(--radius)}
-/* fit ramp — long vignettes step down instead of clipping the frame */
-.snbframe .s.story.x1 .body{font-size:clamp(11px,1.5cqw,26px);line-height:1.5}
-.snbframe .s.story.x2 .body{font-size:clamp(10px,1.28cqw,22px);line-height:1.42}
+/* fit ramp — a safety valve for the longest vignettes only. Kept shallow so
+   even a stepped-down slide stays close to the AAMFT body size. */
+.snbframe .s.story.x1 .body{font-size:max(12px,2.9cqh);line-height:1.45}
+.snbframe .s.story.x2 .body{font-size:max(11px,2.55cqh);line-height:1.38}
 .snbframe .s.story.x2 h1{font-size:clamp(16px,2.7cqw,46px)}
+.snbframe .s.story.x3 .body{font-size:max(10px,2.25cqh);line-height:1.34}
+.snbframe .s.story.x3 h1{font-size:clamp(16px,2.7cqw,46px)}
 
 /* ---- flow chips (session map on a cover slide) ---- */
 .snbframe .flow{display:flex;gap:1.4cqw;align-items:center;flex-wrap:wrap;margin-top:var(--gut)}
@@ -4869,7 +4876,7 @@ function renderSlide(c){
       /* long vignettes shrink to fit the frame instead of clipping; a portrait
          well counts as extra length since it narrows the text column */
       const blen = String(c.body||"").replace(/<[^>]+>/g,"").length + (c.img?250:0);
-      const fit = blen>900 ? " x2" : (blen>550 ? " x1" : "");
+      const fit = blen>1350 ? " x3" : blen>900 ? " x2" : (blen>550 ? " x1" : "");
       return '<div class="s story'+(c.img?' haswell':'')+fit+'">'+eb+'<h1>'+(c.h||"")+'</h1>'+
         (c.body?'<div class="body">'+c.body+'</div>':"")+wellHTML(c.img)+'</div>';
     }
@@ -5068,9 +5075,13 @@ async function publishLive(){
 }
 function seamFor(b){ return (ACTIVE.live && ACTIVE.seam) ? ACTIVE.seam(b) : null; }
 function joinModeFor(b){
+  /* AAMFT restraint (Justin, 2026-08-30: "we don't need the join code on
+     every slide"): the code appears ONLY where a practice asks for the BIG
+     panel — the opening and check-in slides. The per-slide corner reminder
+     is retired; its CSS stays as a harmless fallback. */
   if(!LIVE) return "off";
-  if(ACTIVE.joinMode) return ACTIVE.joinMode(b);
-  return "corner";
+  const m = ACTIVE.joinMode ? ACTIVE.joinMode(b) : "off";
+  return m==="big" ? "big" : "off";
 }
 function pushJoin(){
   if(sw&&!sw.closed){ const b=pSlides[pIdx];
