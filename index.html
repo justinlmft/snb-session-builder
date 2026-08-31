@@ -4451,10 +4451,13 @@ function buildBeats(){
 
   /* ---------- VIGNETTE ---------- */
   m=B.length;
+  /* the teaching beats come FIRST — name the concept, then show it lived in
+     the vignettes (Justin, 2026-08-31: "the few lessons slides need to come
+     before the vignettes"). They stay deliberately thin — pre-work carries
+     the load. */
+  (w.teach||[]).forEach(t=>B.push(info(t.h,t.body,t.note,t.img)));
   w.vig.forEach(v=>B.push(vig(v.h,v.body,v.note,v.who,v.state)));
   if(w.vigQ) B.push(q(w.vigQ.h,w.vigQ.note));
-  /* the teaching beats are deliberately thin — pre-work carries the load */
-  (w.teach||[]).forEach(t=>B.push(info(t.h,t.body,t.note,t.img)));
   sec("vignette",m);
 
   /* ---------- PRACTICE ---------- */
