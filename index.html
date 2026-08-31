@@ -125,22 +125,32 @@
 .mini .mopt.sel::before{content:"✓ ";font-weight:700}
 .hint{font-size:12px;color:var(--muted);margin:0 0 16px}
 
-/* live join overlay — shared chrome, sits above whichever practice frame is showing */
+/* live join overlay — AAMFT geometry (Justin, 2026-08-30: "everything should
+   feel the same as the AAMFT slides"). The BIG panel occupies the image-well
+   slot exactly — left on --artl, right on the margin, top on the body line,
+   bottom on the foot line — so a QR slide and a photo slide sit on the same
+   grid. The CORNER reminder is a compact text card in the foot band on the
+   same right margin (no QR: the scannable code lives on the check-in slides,
+   the corner carries the code and link). */
 .frame .snbjoin{display:flex;align-items:center;background:rgba(250,249,245,.94);
-  border:1px solid #1a1f2a24;border-radius:12px;box-shadow:0 6px 22px rgba(26,31,42,.10)}
+  border:1px solid #1a1f2a24;border-radius:var(--radius,12px);box-shadow:0 6px 22px rgba(26,31,42,.10)}
 .frame.dark .snbjoin{background:rgba(26,31,42,.9);color:#FAF9F5;border-color:#ffffff2b}
 .frame .snbjoin .qr{display:block;background:#fff;border-radius:7px}
 .frame .snbjoin .jlead{font-size:clamp(8px,1cqw,14px);letter-spacing:.13em;text-transform:uppercase;color:#8a877e}
 .frame .snbjoin .jcode{font-weight:700;letter-spacing:.16em}
 .frame .snbjoin .jlink{color:inherit;opacity:.72;text-decoration:none}
 .frame .snbjoin .jtext{display:flex;flex-direction:column;gap:.5cqh}
-.frame .snbjoin.big{background:#fff;box-shadow:none;top:50%;right:6.25cqw;transform:translateY(-50%);
-  flex-direction:column;text-align:center;gap:1.5cqh;padding:2.6cqh 2.4cqw;position:absolute}
-.frame .snbjoin.big .qr{width:min(24cqh,19cqw);height:auto;padding:5px}
+.frame .snbjoin.big{background:#fff;box-shadow:none;position:absolute;
+  left:var(--artl,68cqw);right:var(--mx,6.25cqw);
+  top:var(--bodyl,29.9cqh);bottom:calc(100cqh - var(--footl,90.5cqh));
+  flex-direction:column;justify-content:center;text-align:center;gap:1.5cqh;
+  padding:2.6cqh 1.6cqw}
+.frame .snbjoin.big .qr{width:min(26cqh,17cqw);height:auto;padding:5px}
 .frame .snbjoin.big .jcode{font-size:clamp(20px,3.1cqw,46px);margin-top:.3cqh}
 .frame .snbjoin.big .jlink{font-size:clamp(9px,1.15cqw,17px)}
-.frame .snbjoin.corner{position:absolute;bottom:6.5cqh;right:var(--railr,6.25cqw);gap:1.1cqw;padding:1cqh 1.3cqw}
-.frame .snbjoin.corner .qr{width:9cqh;height:9cqh;padding:3px}
+.frame .snbjoin.corner{position:absolute;bottom:1.4cqh;right:var(--railr,6.25cqw);
+  gap:1.1cqw;padding:.7cqh 1.2cqw;max-height:7.6cqh;box-sizing:border-box}
+.frame .snbjoin.corner .qr{display:none}
 .frame .snbjoin.corner .jtext{gap:.2cqh;text-align:left}
 .frame .snbjoin.corner .jlead{font-size:clamp(7px,.8cqw,11px)}
 .frame .snbjoin.corner .jcode{font-size:clamp(11px,1.5cqw,22px)}
@@ -165,8 +175,14 @@
 
 /* the invisible grid every slide snaps to.
    --railr is the right rail: the break clock and the join block both hang off
-   it, so they line up instead of drifting apart (Justin, 2026-08-10). */
-.snbframe{--mx:6.25cqw;--top:11cqh;--gut:3cqh;--foot:6.5cqh;--railr:5cqw;--veil:rgba(250,249,245,.70)}
+   it, so they line up instead of drifting apart (Justin, 2026-08-10). It now
+   sits ON the right margin, so everything on the right shares one edge.
+   The AAMFT lines (Justin, 2026-08-30: "everything should feel the same as
+   the AAMFT slides"): --artl is the image well's left edge, --bodyl the body
+   start line the well tops out on, --footl the foot line it bottoms out on —
+   lifted from the AAMFT 16:9 deck (artl 68cqw; body 29.9 / foot 90.5). */
+.snbframe{--mx:6.25cqw;--top:11cqh;--gut:3cqh;--foot:6.5cqh;--railr:6.25cqw;--veil:rgba(250,249,245,.70);
+  --artl:68cqw;--bodyl:29.9cqh;--footl:90.5cqh;--colgap:2cqw;--radius:1.8cqh}
 /* the two light-based scenes bring a dark field with them, as in the app */
 .snbframe.dark{background:#1a1f2a;color:#FAF9F5;--veil:rgba(26,31,42,.72)}
 
@@ -197,6 +213,10 @@
 .snbframe .body em{font-style:italic}
 .snbframe .s.story .body{font-size:clamp(12px,1.8cqw,31px);line-height:1.6;max-width:76cqw}
 .snbframe .s.ptitle .body,.snbframe .s.checkin .body{color:#6b685f;max-width:70cqw}
+/* check-in slides host the big join panel in the AAMFT well slot, so their
+   text keeps to the text column like any slide with a filled well */
+.snbframe .s.checkin h1{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
+.snbframe .s.checkin .body{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
 .snbframe.dark .s.ptitle .body,.snbframe.dark .s.checkin .body{color:#a9a69c}
 
 /* ---- prompt: the practice line. Sits on the same top line as every other
@@ -210,20 +230,20 @@
   transform:translate(-50%,-50%);width:118%;height:230%;border-radius:50%;pointer-events:none;
   background:radial-gradient(ellipse at center,var(--veil) 0%,var(--veil) 42%,transparent 74%)}
 
-/* ---- image well: a 3:4 panel on the right rail (AAMFT pattern).
-   Present only when the slide declares img and images/<marker> exists;
-   the text column narrows to make room and takes the grid back when the
-   well is empty. ---- */
-.snbframe .s.haswell h1{max-width:54cqw}
-.snbframe .s.haswell .body{max-width:52cqw}
-.snbframe .well{position:absolute;top:var(--top);right:var(--mx);width:27cqw}
-.snbframe .well img{display:block;width:100%;aspect-ratio:3/4;max-height:74cqh;
-  object-fit:cover;border-radius:3px}
-/* story slides carry a COMPACT portrait (the character), not the big panel —
-   vignette bodies are long and keep most of the grid */
-.snbframe .s.story.haswell h1{max-width:58cqw}
-.snbframe .s.story.haswell .body{max-width:58cqw}
-.snbframe .s.story .well{width:15cqw}
+/* ---- image well: THE AAMFT PANEL, verbatim geometry (Justin, 2026-08-30).
+   One right column for every slide kind: left edge on --artl, right edge on
+   the margin, top on the body line, bottom on the foot line — figure and text
+   share the same horizontal rules, exactly as in the AAMFT deck. Present only
+   when the slide declares img and images/<marker> exists; the text column
+   stops a --colgap short of the well and takes the grid back when the well
+   is empty. ---- */
+.snbframe .s.haswell h1{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
+.snbframe .s.haswell .body{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
+.snbframe .well{position:absolute;left:var(--artl);right:var(--mx);
+  top:var(--bodyl);bottom:calc(100cqh - var(--footl));
+  border-radius:var(--radius);overflow:hidden}
+.snbframe .well img{display:block;width:100%;height:100%;
+  object-fit:cover;border-radius:var(--radius)}
 /* fit ramp — long vignettes step down instead of clipping the frame */
 .snbframe .s.story.x1 .body{font-size:clamp(11px,1.5cqw,26px);line-height:1.5}
 .snbframe .s.story.x2 .body{font-size:clamp(10px,1.28cqw,22px);line-height:1.42}
