@@ -263,7 +263,12 @@
 .snbframe.dark .flow .step{border-color:#ffffff40}
 .snbframe .flow .arr{color:#8a877e;font-size:clamp(12px,1.7cqw,26px)}
 
-/* ---- footer: same baseline everywhere, and it never animates ---- */
+/* ---- footer: same baseline everywhere, and it never animates.
+   The persistent frame copy (.gfoot) shows only when the current slide
+   declares wfoot — it is never re-mounted, so it cannot re-announce
+   itself (Justin, 2026-08-31: "leave it there if it repeats"). ---- */
+.snbframe .foot.gfoot{display:none}
+.snbframe:has(.s.wfoot) .foot.gfoot{display:flex}
 .snbframe .foot{position:absolute;left:var(--mx);bottom:var(--foot);display:flex;align-items:center;gap:1.6cqw}
 .snbframe .foot .logo{height:clamp(20px,4.4cqh,50px);width:auto;display:block}
 .snbframe .foot .byline{font-size:clamp(6px,.78cqw,12px);letter-spacing:.1em;color:#8a877e;text-transform:uppercase}
@@ -4849,9 +4854,10 @@ function senseChips(){
      checkin {eyebrow, h, body}           app check-in, logo
      events  {eyebrow, h, rows}           the closing invitation
    ================================================================== */
-const FOOT = '<div class="foot">'+
-  '<img class="logo" src="https://static.wixstatic.com/media/2d354d_af56ea98dfab423d908b57ed57a01937~mv2.png" alt="Unstucking Academy">'+
-  '<span class="byline">JUSTIN SUNSERI, STUCKNOTBROKEN.COM</span></div>';
+/* The Unstucking Academy mark is FRAME chrome, not slide content (Justin,
+   2026-08-31: it must not re-animate in on every slide — leave it there if it
+   repeats). Slides that carry it declare the `wfoot` class; the one persistent
+   foot element lives in frameHTML and simply shows or hides. */
 
 function eyebrowHTML(t){ return '<div class="eyebrow">'+(t||"")+'</div>'; }
 /* IMAGE WELL — the AAMFT mechanism, browser-native. A slide that declares
@@ -4878,13 +4884,13 @@ function renderSlide(c){
     case "prompt":
       return '<div class="s prompt"><div class="p">'+(c.h||"")+'</div></div>';
     case "cover":
-      return '<div class="s cover">'+eb+'<h1>'+(c.h||"")+'</h1>'+(c.flow||"")+FOOT+'</div>';
+      return '<div class="s cover wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+(c.flow||"")+'</div>';
     case "ptitle":
-      return '<div class="s ptitle">'+eb+'<h1>'+(c.h||"")+'</h1>'+
-        (c.body?'<div class="body">'+c.body+'</div>':"")+FOOT+'</div>';
+      return '<div class="s ptitle wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+
+        (c.body?'<div class="body">'+c.body+'</div>':"")+'</div>';
     case "checkin":
-      return '<div class="s checkin">'+eb+'<h1>'+(c.h||"")+'</h1>'+
-        (c.body?'<div class="body">'+c.body+'</div>':"")+FOOT+'</div>';
+      return '<div class="s checkin wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+
+        (c.body?'<div class="body">'+c.body+'</div>':"")+'</div>';
     case "story": {
       /* long vignettes shrink to fit the frame instead of clipping; a portrait
          well counts as extra length since it narrows the text column */
@@ -4894,7 +4900,7 @@ function renderSlide(c){
         (c.body?'<div class="body">'+c.body+'</div>':"")+wellHTML(c.img)+'</div>';
     }
     case "events":
-      return '<div class="s events">'+eb+'<h1>'+(c.h||"")+'</h1>'+(c.rows||"")+FOOT+'</div>';
+      return '<div class="s events wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+(c.rows||"")+'</div>';
     case "info":
     default:
       return '<div class="s info'+(c.img?' haswell':'')+'">'+eb+'<h1>'+(c.h||"")+'</h1>'+
@@ -5264,6 +5270,11 @@ function openStudentWindow(){
 function frameHTML(b, sceneOn, dark, inner){
   return '<div class="frame snbframe'+(sceneOn?" scene-on":"")+(dark?" dark":"")+'">'+
     '<canvas class="ambient"></canvas><div class="slot">'+inner+'</div>'+
+    /* the mark + byline are a fixed frame element — created once, never
+       re-mounted, shown only when the slide declares wfoot */
+    '<div class="foot gfoot">'+
+      '<img class="logo" src="https://static.wixstatic.com/media/2d354d_af56ea98dfab423d908b57ed57a01937~mv2.png" alt="Unstucking Academy">'+
+      '<span class="byline">JUSTIN SUNSERI, STUCKNOTBROKEN.COM</span></div>'+
     '<div class="joinbox" id="joinbox" style="display:none"></div></div>';
 }
 window.addEventListener("message",e=>{
@@ -5273,8 +5284,18 @@ window.addEventListener("message",e=>{
     if(d.snbSceneName) AMB.set(d.snbSceneName);
     if(d.snbSlide!==undefined){
       const root=document.getElementById("stage");
-      root.innerHTML=frameHTML(null, !!d.snbScene, !!d.snbScene && AMB.isDark(), d.snbSlide);
-      AMB.attach(root.querySelector("canvas.ambient"));
+      /* keep the frame across slides: only the slot re-renders, so the
+         ambient canvas and the foot chrome are continuous elements */
+      let fr=root.querySelector(".frame");
+      if(!fr){
+        root.innerHTML=frameHTML(null, !!d.snbScene, !!d.snbScene && AMB.isDark(), d.snbSlide);
+        fr=root.querySelector(".frame");
+      }else{
+        fr.classList.toggle("scene-on", !!d.snbScene);
+        fr.classList.toggle("dark", !!d.snbScene && AMB.isDark());
+        fr.querySelector(".slot").innerHTML=d.snbSlide;
+      }
+      AMB.attach(fr.querySelector("canvas.ambient"));
       startBreakClock(root);
       applySNB(root);
       if(d.snbJoin) renderJoin(root.querySelector("#joinbox"), d.snbJoin);
