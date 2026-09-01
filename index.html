@@ -5,104 +5,153 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SNB Session Builder</title>
 <style>
-
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;400;500;600;700&display=swap');
+  /* ==================================================================
+     BUILDER + PRESENTER CHROME — the tool around the slides.
+     Refined 2026-09-01 (visual pass). Same panel, same controls, same
+     class names the four verbatim dial markups depend on; what changed
+     is the ink family (warmed to match the slide surface), the control
+     states, the tab set, and the presenter console's typography. No
+     dial, button or behaviour was added, removed or rewired.
+     ================================================================== */
   :root{
-    --bone:#FAF9F5; --ink:#1a1f2a; --line:#e4e1d8; --card:#ffffff;
-    --muted:#8a877e; --soft:#f1efe8; --draft:#b9842f; --notes:#6b685f;
+    --bone:#FAF9F5; --ink:#171c26; --line:#e6e2d8; --line2:#efece3; --card:#ffffff;
+    --muted:#8a877e; --soft:#f3f1ea; --draft:#b9842f; --notes:#4a4740;
     --safety:#3b6ea5; --defense:#a5573b;
+    --body:#353a44; --focus:#3b6ea5;
+    --sh1:0 1px 2px rgba(23,28,38,.04);
+    --sh2:0 8px 26px rgba(23,28,38,.08);
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    background:var(--bone);color:var(--ink);line-height:1.5;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-  header{padding:18px 26px;border-bottom:1px solid var(--line);flex:0 0 auto}
-  header h1{margin:0;font-size:19px;letter-spacing:.2px;font-weight:700}
+    background:var(--bone);color:var(--ink);line-height:1.5;height:100vh;overflow:hidden;display:flex;flex-direction:column;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+    font-feature-settings:"kern" 1,"liga" 1,"calt" 1}
+  :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:6px}
+  header{padding:16px 26px;border-bottom:1px solid var(--line);flex:0 0 auto;
+    background:linear-gradient(180deg,#FBFAF7,var(--bone))}
+  header h1{margin:0;font-size:19px;letter-spacing:-.018em;font-weight:600}
   .wrap{display:flex;flex:1;min-height:0}
   .panel{padding:22px 26px}
-  .dials{width:360px;flex:0 0 360px;overflow-y:auto;display:flex;flex-direction:column}
+  .dials{width:360px;flex:0 0 360px;overflow-y:auto;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,#FBFAF7,var(--bone) 160px);scrollbar-width:thin}
   #splitter{flex:0 0 7px;cursor:col-resize;border-left:1px solid var(--line);transition:background .12s}
   #splitter:hover,#splitter.dragging{background:var(--line)}
   .out{flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column}
   .out .tabs{flex:0 0 auto}
-  #slidesWrap{flex:1;min-height:0;overflow-y:auto;padding-top:2px}
-  .dial{margin-bottom:24px}
-  .dial.sep{border-top:2px solid var(--line);padding-top:22px;margin-top:2px}
-  .dial label.h{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--ink);margin-bottom:10px;font-weight:700}
-  .sub{font-size:12px;color:var(--muted);margin:-4px 0 10px;line-height:1.5}
+  #slidesWrap{flex:1;min-height:0;overflow-y:auto;padding-top:2px;scrollbar-width:thin}
+
+  /* ---------- dials ---------- */
+  .dial{margin-bottom:26px}
+  .dial.sep{border-top:1px solid var(--line);padding-top:24px;margin-top:2px}
+  .dial label.h{display:block;font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.15em;color:var(--ink);margin-bottom:11px;font-weight:600}
+  .sub{font-size:12px;color:var(--muted);margin:-4px 0 11px;line-height:1.55;text-wrap:pretty}
   .opts{display:flex;flex-wrap:wrap;gap:6px}
   .opt{border:1px solid var(--line);background:var(--card);color:var(--ink);
-    padding:7px 11px;border-radius:8px;cursor:pointer;font-size:13px;transition:.12s;display:flex;align-items:center;gap:7px}
-  .opt:hover{border-color:var(--ink)}
-  .opt.sel{background:var(--ink);border-color:var(--ink);color:var(--bone);font-weight:600}
+    padding:7px 12px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;
+    transition:background .14s,border-color .14s,color .14s,box-shadow .14s;
+    display:flex;align-items:center;gap:7px;box-shadow:var(--sh1)}
+  .opt:hover{border-color:#c9c4b6}
+  .opt.sel{background:var(--ink);border-color:var(--ink);color:var(--bone);font-weight:600;box-shadow:var(--sh1)}
   .opt .ord{width:18px;height:18px;border-radius:50%;background:var(--bone);color:var(--ink);
-    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
   .wkgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-  .wk{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 4px;cursor:pointer;
-    text-align:center;transition:.12s}
-  .wk:hover{border-color:var(--ink)}
+  .wk{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:9px 4px;cursor:pointer;
+    text-align:center;transition:background .14s,border-color .14s,color .14s;box-shadow:var(--sh1)}
+  .wk:hover{border-color:#c9c4b6}
   .wk.sel{background:var(--ink);border-color:var(--ink);color:var(--bone)}
-  .wk .n{font-size:15px;font-weight:800;line-height:1.1}
-  .wk .l{font-size:9px;letter-spacing:.3px;text-transform:uppercase;opacity:.75;margin-top:3px;line-height:1.15;
+  .wk .n{font-size:15px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+  .wk .l{font-size:9px;letter-spacing:.06em;text-transform:uppercase;opacity:.72;margin-top:4px;line-height:1.2;
     overflow-wrap:normal;word-break:keep-all}
-  .toggle{display:flex;align-items:flex-start;gap:9px;font-size:13px;cursor:pointer;margin-top:9px;line-height:1.45}
+  .toggle{display:flex;align-items:flex-start;gap:9px;font-size:13px;cursor:pointer;margin-top:9px;line-height:1.5}
   .toggle input{width:15px;height:15px;accent-color:var(--ink);margin-top:2px;flex:0 0 auto}
   .numrow{display:flex;align-items:center;gap:9px;font-size:13px}
-  .numrow input{width:64px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:13px}
-  .randbar{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
-  .tabs{display:flex;gap:6px;margin:0 0 14px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
-  .tab{padding:8px 16px;border:1px solid var(--line);border-bottom:none;background:var(--soft);color:var(--muted);
-    border-radius:9px 9px 0 0;cursor:pointer;font-size:13px;transition:.12s;position:relative;top:1px}
+  .numrow input{width:64px;padding:6px 9px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;
+    background:var(--card)}
+  .randbar{margin-top:auto;padding:18px 0 4px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+
+  /* ---------- output column ---------- */
+  /* one clean tab strip on a single rule — the raised folder tabs were the
+     last piece of chrome that didn't belong to the rest of the tool */
+  .tabs{display:flex;gap:22px;margin:0 0 16px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+  .tab{padding:9px 1px 11px;border:none;background:transparent;color:var(--muted);
+    cursor:pointer;font-size:13.5px;font-weight:500;transition:color .14s,box-shadow .14s;
+    box-shadow:inset 0 -2px 0 transparent}
   .tab:hover{color:var(--ink)}
-  .tab.sel{background:var(--bone);color:var(--ink);border-bottom:1px solid var(--bone);font-weight:600}
-  .name{font-size:17px;font-weight:700;margin:0 0 4px}
+  .tab.sel{color:var(--ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--ink)}
+  .name{font-size:17px;font-weight:600;letter-spacing:-.015em;margin:0 0 6px}
   .flow{display:flex;gap:8px;align-items:center;margin:2px 0 16px;flex-wrap:wrap}
   .flow .step{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--card);
-    border-radius:999px;padding:4px 12px 4px 5px;font-size:12.5px;font-weight:600}
+    border-radius:999px;padding:4px 12px 4px 5px;font-size:12.5px;font-weight:500;box-shadow:var(--sh1)}
   .flow .num{width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--bone);
-    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+    font-variant-numeric:tabular-nums}
   .flow .arr{color:var(--muted);font-size:14px}
-  .bar{display:flex;gap:9px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-  .btn{padding:8px 14px;border:1px solid var(--ink);background:var(--ink);color:var(--bone);
-    border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit}
-  .btn:hover{opacity:.85}
-  .btn.ghost{background:transparent;color:var(--ink)}
-  .count{font-size:12px;color:var(--muted)}
-  .slide{border:1px solid var(--line);border-radius:10px;padding:13px 16px;margin-bottom:10px;background:var(--card)}
-  .slide.fixedc{border-style:dashed;background:transparent}
-  .slide .tag{font-size:10px;text-transform:uppercase;letter-spacing:1.1px;margin-bottom:5px;color:var(--muted)}
-  .slide .stu{font-size:16px;margin:2px 0 0;font-weight:600}
-  .slide .bod{font-size:13px;color:var(--ink);opacity:.75;margin:5px 0 0;line-height:1.6}
-  .slide .note{font-size:12.5px;color:var(--notes);margin:8px 0 0;padding-left:10px;border-left:2px solid var(--line);line-height:1.6}
-  .slide .note b{font-weight:600;text-transform:uppercase;letter-spacing:.8px;font-size:10px;color:var(--muted)}
+  .bar{display:flex;gap:9px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+  .btn{padding:9px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--bone);
+    border-radius:9px;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;
+    transition:opacity .14s,background .14s,border-color .14s;box-shadow:var(--sh1)}
+  .btn:hover{opacity:.86}
+  .btn.ghost{background:var(--card);color:var(--ink);border-color:var(--line)}
+  .btn.ghost:hover{opacity:1;border-color:#c9c4b6}
+  .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .slide{border:1px solid var(--line2);border-radius:12px;padding:15px 18px;margin-bottom:10px;background:var(--card);
+    box-shadow:var(--sh1)}
+  .slide.fixedc{border-style:dashed;background:transparent;box-shadow:none}
+  .slide .tag{font-size:9.5px;text-transform:uppercase;letter-spacing:.13em;margin-bottom:6px;color:var(--muted);
+    font-weight:600}
+  .slide .stu{font-size:16px;margin:2px 0 0;font-weight:600;letter-spacing:-.012em}
+  .slide .bod{font-size:13px;color:var(--body);margin:6px 0 0;line-height:1.65;text-wrap:pretty}
+  .slide .note{font-size:12.5px;color:var(--notes);margin:10px 0 0;padding-left:12px;
+    border-left:2px solid var(--line);line-height:1.65;text-wrap:pretty}
+  .slide .note b{font-weight:600;text-transform:uppercase;letter-spacing:.11em;font-size:9.5px;color:var(--muted)}
 
-  /* ---------- PRESENTER CONSOLE ---------- */
+  /* ---------- PRESENTER CONSOLE ----------
+     Justin looks at this for ninety minutes at a stretch. The preview is the
+     reference and the notes are what he reads out loud, so the notes now get
+     a real measure and a real size, and the two halves are separated by tone
+     instead of only by a line. Same three regions, same controls. */
   #console{position:fixed;inset:0;background:var(--bone);display:none;flex-direction:column;z-index:50}
   #console.on{display:flex}
-  .cTop{display:flex;justify-content:space-between;align-items:center;padding:14px 26px;border-bottom:1px solid var(--line)}
-  .cTop .cnt{font-size:14px;color:var(--muted)}
-  .cTop .sec{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:700}
+  .cTop{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:13px 28px;
+    border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBFAF7,var(--bone))}
+  .cTop .cnt{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .cTop .sec{font-size:10.5px;text-transform:uppercase;letter-spacing:.15em;
+    color:var(--muted);font-weight:600;min-width:0}
   .cMain{flex:1;display:flex;min-height:0}
-  .cPrev{flex:0 0 46%;padding:22px;display:flex;flex-direction:column;gap:12px;border-right:1px solid var(--line)}
-  .pvLabel{font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:600}
-  .pvBox{border:1px solid var(--line);background:#fff;overflow:hidden;position:relative;width:100%;aspect-ratio:16/9;border-radius:6px}
-  .cNext{font-size:14px;color:var(--muted)}
+  .cPrev{flex:0 0 50%;padding:22px 26px;display:flex;flex-direction:column;gap:13px;
+    border-right:1px solid var(--line);background:linear-gradient(180deg,var(--soft),#f6f4ec)}
+  .pvLabel{font-size:9.5px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);font-weight:600}
+  .pvBox{border:1px solid var(--line);background:#fff;overflow:hidden;position:relative;width:100%;aspect-ratio:16/9;
+    border-radius:10px;box-shadow:var(--sh2)}
+  .cNext{font-size:13.5px;color:var(--muted);line-height:1.5;padding-top:2px;text-wrap:pretty}
   .cNext b{color:var(--ink);font-weight:600}
-  .cNotes{flex:1;padding:26px;overflow-y:auto}
-  .cNotes .nh{font-size:10px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:600;margin-bottom:12px}
-  .cNotes .nt{font-size:19px;line-height:1.6;color:var(--ink);max-width:660px}
-  .cNotes .nt p{margin:0 0 12px}
-  .cNotes .nt ul{margin:0 0 14px;padding-left:24px}
-  .cNotes .nt li{margin:5px 0}
-  .cNotes .nt:empty::before{content:"— (lots of quiet) —";color:var(--muted)}
-  .cBot{display:flex;justify-content:space-between;align-items:center;padding:14px 26px;border-top:1px solid var(--line)}
-  .cBot button{background:var(--ink);border:1px solid var(--ink);color:var(--bone);border-radius:8px;padding:9px 18px;cursor:pointer;font-size:14px;margin-left:8px;font-family:inherit}
-  .cBot button.ghost{background:transparent;color:var(--ink)}
+  .cNotes{flex:1;padding:26px 34px;overflow-y:auto;scrollbar-width:thin}
+  .cNotes .nh{font-size:9.5px;text-transform:uppercase;letter-spacing:.15em;
+    color:var(--muted);font-weight:600;margin-bottom:16px}
+  .cNotes .nt{font-size:20px;line-height:1.62;color:var(--ink);max-width:34em;font-weight:400;
+    letter-spacing:-.004em;text-wrap:pretty}
+  .cNotes .nt p{margin:0 0 15px}
+  .cNotes .nt ul{margin:0 0 16px;padding-left:1.1em;list-style:none}
+  .cNotes .nt li{margin:8px 0;position:relative}
+  .cNotes .nt li::before{content:"";position:absolute;left:-1.1em;top:.62em;width:.45em;height:0;
+    border-top:1px solid var(--muted)}
+  .cNotes .nt:empty::before{content:"— (lots of quiet) —";color:var(--muted);font-size:17px}
+  .cBot{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:13px 28px;
+    border-top:1px solid var(--line);background:linear-gradient(0deg,#FBFAF7,var(--bone))}
+  .cBot button{background:var(--ink);border:1px solid var(--ink);color:var(--bone);border-radius:9px;
+    padding:10px 20px;cursor:pointer;font-size:14px;font-weight:500;margin-left:8px;font-family:inherit;
+    transition:opacity .14s;box-shadow:var(--sh1)}
+  .cBot button:hover{opacity:.86}
+  .cBot button.ghost{background:var(--card);color:var(--ink);border-color:var(--line)}
+  .cBot button.ghost:hover{opacity:1;border-color:#c9c4b6}
   .shareTip{font-size:12px;color:var(--muted)}
 
   @media print{
     .dials,.bar,.tabs,#console,#splitter{display:none}
     body{background:#fff;color:#000;height:auto;overflow:visible;display:block}
-    .slide{border-color:#bbb;background:#fff;color:#000}
+    .slide{border-color:#bbb;background:#fff;color:#000;box-shadow:none}
     .wrap{display:block}
     .out{overflow:visible;display:block}
     #slidesWrap{overflow:visible}
@@ -118,12 +167,14 @@
 .opt .dr{font-size:10px;color:var(--draft);font-style:italic}
 .opt.sel .dr{color:var(--bone)}
 .toggle .dr{font-size:11px;color:var(--draft);font-style:italic}
-.vars{margin-top:10px;padding-top:9px;border-top:1px dashed var(--line)}
-.mini{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:13px}
-.mini .mopt{border:1px solid var(--line);background:var(--card);padding:3px 9px;border-radius:7px;cursor:pointer;font-size:12px}
+.vars{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.mini{display:flex;align-items:center;gap:7px;margin-top:8px;font-size:13px;flex-wrap:wrap}
+.mini .mopt{border:1px solid var(--line);background:var(--card);padding:4px 10px;border-radius:8px;cursor:pointer;
+  font-size:12px;transition:border-color .14s}
+.mini .mopt:hover{border-color:#c9c4b6}
 .mini .mopt.sel{background:var(--card);border-color:var(--ink);font-weight:600}
 .mini .mopt.sel::before{content:"✓ ";font-weight:700}
-.hint{font-size:12px;color:var(--muted);margin:0 0 16px}
+.hint{font-size:12px;color:var(--muted);margin:0 0 16px;line-height:1.55}
 
 /* live join overlay — AAMFT geometry (Justin, 2026-08-30: "everything should
    feel the same as the AAMFT slides"). The BIG panel occupies the image-well
@@ -131,23 +182,42 @@
    bottom on the foot line — so a QR slide and a photo slide sit on the same
    grid. The CORNER reminder is a compact text card in the foot band on the
    same right margin (no QR: the scannable code lives on the check-in slides,
-   the corner carries the code and link). */
-.frame .snbjoin{display:flex;align-items:center;background:rgba(250,249,245,.94);
-  border:1px solid #1a1f2a24;border-radius:var(--radius,12px);box-shadow:0 6px 22px rgba(26,31,42,.10)}
-.frame.dark .snbjoin{background:rgba(26,31,42,.9);color:#FAF9F5;border-color:#ffffff2b}
-.frame .snbjoin .qr{display:block;background:#fff;border-radius:7px}
-.frame .snbjoin .jlead{font-size:clamp(8px,1cqw,14px);letter-spacing:.13em;text-transform:uppercase;color:#8a877e}
-.frame .snbjoin .jcode{font-weight:700;letter-spacing:.16em}
-.frame .snbjoin .jlink{color:inherit;opacity:.72;text-decoration:none}
+   the corner carries the code and link).
+
+   Restyled 2026-09-01 (visual pass), geometry untouched: the panel is paper
+   with a hairline rather than a white card dropped on the slide, and only the
+   QR keeps a white tile — a scanner needs that, a slide does not. The code is
+   the hero of the stack, the link is the footnote. */
+.frame .snbjoin{display:flex;align-items:center;
+  background:var(--veil,rgba(250,249,245,.94));
+  border:1px solid var(--shair,rgba(23,28,38,.13));border-radius:var(--radius,12px);
+  box-shadow:0 6px 22px rgba(26,31,42,.08);color:var(--sink,#171c26)}
+.frame.dark .snbjoin{box-shadow:none}
+.frame .snbjoin .qr{display:block;background:#fff;border-radius:6px}
+.frame .snbjoin .jlead{font-size:clamp(8px,1cqw,14px);letter-spacing:.17em;text-transform:uppercase;
+  font-weight:500;color:var(--smuted,#8a877e)}
+.frame .snbjoin .jcode{font-weight:600;letter-spacing:.2em;font-variant-numeric:tabular-nums;
+  color:var(--sink,#171c26)}
+.frame .snbjoin .jlink{color:var(--smuted,#8a877e);text-decoration:none;letter-spacing:.01em}
 .frame .snbjoin .jtext{display:flex;flex-direction:column;gap:.5cqh}
-.frame .snbjoin.big{background:#fff;box-shadow:none;position:absolute;
+
+/* the big panel: one quiet stack — scan target, then the words to type. */
+.frame .snbjoin.big{position:absolute;
   left:var(--artl,68cqw);right:var(--mx,6.25cqw);
   top:var(--bodyl,29.9cqh);bottom:calc(100cqh - var(--footl,90.5cqh));
-  flex-direction:column;justify-content:center;text-align:center;gap:1.5cqh;
-  padding:2.6cqh 1.6cqw}
-.frame .snbjoin.big .qr{width:min(26cqh,17cqw);height:auto;padding:5px}
-.frame .snbjoin.big .jcode{font-size:clamp(20px,3.1cqw,46px);margin-top:.3cqh}
-.frame .snbjoin.big .jlink{font-size:clamp(9px,1.15cqw,17px)}
+  flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:0;
+  padding:3cqh 1.6cqw;background:transparent;border:1px solid var(--shair,rgba(23,28,38,.13));
+  box-shadow:none}
+.frame .snbjoin.big .qr{width:min(25cqh,16.5cqw);height:auto;padding:1.5cqh;
+  border-radius:calc(var(--radius,12px) * .55);
+  box-shadow:0 1px 0 rgba(23,28,38,.05),inset 0 0 0 1px rgba(23,28,38,.06)}
+.frame .snbjoin.big .jtext{gap:0;margin-top:2.6cqh;padding-top:2.4cqh;align-self:stretch;
+  border-top:1px solid var(--shair,rgba(23,28,38,.13))}
+.frame .snbjoin.big .jcode{font-size:clamp(20px,3.2cqw,48px);line-height:1.05;margin:.9cqh 0 0;
+  text-indent:.2em}
+.frame .snbjoin.big .jlink{font-size:clamp(9px,1.05cqw,16px);margin-top:1.2cqh;opacity:.9}
+
+/* the corner card — retired by joinModeFor(), kept as a harmless fallback */
 .frame .snbjoin.corner{position:absolute;bottom:1.4cqh;right:var(--railr,6.25cqw);
   gap:1.1cqw;padding:.7cqh 1.2cqw;max-height:7.6cqh;box-sizing:border-box}
 .frame .snbjoin.corner .qr{display:none}
@@ -168,10 +238,18 @@
    everything left-aligned on one Swiss grid, no colour rails, eyebrows
    left, a soft veil so text stays legible over the ambient field, and
    the rise-in motion on content only (logo + byline never animate).
+
+   Refined 2026-09-01 (visual pass). Nothing here moves the AAMFT grid
+   or changes a word: the tokens, the well, the rail and the one-size
+   body rule are exactly where they were. What changed is craft —
+   the ink palette, the head band that puts body copy ON the body line
+   the well already tops out on, wrap quality, and the motion.
    ================================================================== */
-.snbframe{position:absolute;inset:0;container-type:size;background:#FAF9F5;color:#1a1f2a;
+.snbframe{position:absolute;inset:0;container-type:size;
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;overflow:hidden;
-  transition:background-color .7s cubic-bezier(.22,1,.36,1)}
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  font-feature-settings:"kern" 1,"liga" 1,"calt" 1;
+  transition:background-color .7s cubic-bezier(.22,1,.36,1),color .7s cubic-bezier(.22,1,.36,1)}
 
 /* the invisible grid every slide snaps to.
    --railr is the right rail: the break clock and the join block both hang off
@@ -180,59 +258,95 @@
    The AAMFT lines (Justin, 2026-08-30: "everything should feel the same as
    the AAMFT slides"): --artl is the image well's left edge, --bodyl the body
    start line the well tops out on, --footl the foot line it bottoms out on —
-   lifted from the AAMFT 16:9 deck (artl 68cqw; body 29.9 / foot 90.5). */
-.snbframe{--mx:6.25cqw;--top:11cqh;--gut:3cqh;--foot:6.5cqh;--railr:6.25cqw;--veil:rgba(250,249,245,.70);
-  --artl:68cqw;--bodyl:29.9cqh;--footl:90.5cqh;--colgap:2cqw;--radius:1.8cqh}
+   lifted from the AAMFT 16:9 deck (artl 68cqw; body 29.9 / foot 90.5).
+   --ebh is the eyebrow band: fixing its height is what lets the head band
+   below resolve to a number, so body copy can actually LAND on --bodyl. */
+.snbframe{--mx:6.25cqw;--top:11cqh;--gut:3cqh;--foot:6.5cqh;--railr:6.25cqw;
+  --artl:68cqw;--bodyl:29.9cqh;--footl:90.5cqh;--colgap:2cqw;--radius:1.8cqh;--ebh:3.2cqh;
+  /* ink family — warmed to the bone paper it sits on, and the body step
+     deepened a little for a projected room. No type got smaller. */
+  --sink:#171c26;--sbody:#353a44;--smuted:#8a877e;--shair:rgba(23,28,38,.13);
+  --tray:rgba(23,28,38,.035);--chip:#ffffff;--chipnum:#FAF9F5;
+  --veil:rgba(251,250,247,.70);--veil2:rgba(251,250,247,.32);
+  color:var(--sink);
+  /* the page is paper, not a flat wash: one long, almost-invisible fall
+     toward the foot so a projector has something to hold. The top 44% is
+     held FLAT on purpose — that band is where headings and the prompt veil
+     live, and a veil can only disappear into a colour that isn't moving. */
+  background:#FAF9F5 linear-gradient(180deg,#FBFAF7 0%,#FBFAF7 44%,#FAF9F5 68%,#F6F4ED 100%) no-repeat}
 /* the two light-based scenes bring a dark field with them, as in the app */
-.snbframe.dark{background:#1a1f2a;color:#FAF9F5;--veil:rgba(26,31,42,.72)}
+.snbframe.dark{--sink:#FAF9F5;--sbody:#cfcdc6;--smuted:#a9a69c;--shair:rgba(255,255,255,.16);
+  --tray:rgba(255,255,255,.05);--chip:rgba(255,255,255,.07);--chipnum:#1a1f2a;
+  --veil:rgba(30,36,48,.72);--veil2:rgba(30,36,48,.34);
+  background:#1a1f2a linear-gradient(180deg,#1e2430 0%,#1e2430 44%,#1a1f2a 70%,#151a23 100%) no-repeat}
 
 .snbframe .s{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:flex-start;
   padding:var(--top) var(--mx) calc(var(--foot) + 4cqh)}
 
-/* eyebrow — meta line, top left, on the same column as everything else */
+/* eyebrow — meta line, top left, on the same column as everything else.
+   No leading rule or mark: Justin, 2026-09-01 — "the dashes in front of the
+   eyebrows are unnecessary". The band height is still fixed, because that is
+   what lets the head band below resolve to a number. */
 .snbframe .eyebrow{align-self:stretch;text-align:left;margin:0 0 var(--gut);
-  font-size:clamp(8px,1cqw,15px);font-weight:400;letter-spacing:.14em;text-transform:uppercase;
-  color:#8a877e;line-height:1.8;min-height:1.8em}
-.snbframe.dark .eyebrow{color:#a9a69c}
+  font-size:clamp(8px,1cqw,15px);font-weight:500;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--smuted);line-height:1.8;min-height:var(--ebh)}
 
-/* headline scale — one ramp, by slide weight */
-.snbframe h1{margin:0;font-weight:400;line-height:1.06;letter-spacing:-.03em;max-width:80cqw}
+/* headline scale — one ramp, by slide weight. Tracking is optical: the
+   biggest sizes take the tightest fit, the small story head barely any. */
+.snbframe h1{margin:0;font-weight:400;line-height:1.06;letter-spacing:-.03em;max-width:80cqw;
+  color:var(--sink);text-wrap:balance;hyphens:none}
 .snbframe .s.cover h1  {font-size:clamp(28px,5.4cqw,96px)}
 .snbframe .s.ptitle h1 {font-size:clamp(26px,5cqw,88px)}
 .snbframe .s.checkin h1{font-size:clamp(26px,5cqw,88px)}
-.snbframe .s.info h1   {font-size:clamp(24px,4.4cqw,76px);line-height:1.08}
-.snbframe .s.events h1 {font-size:clamp(24px,4.4cqw,76px)}
-.snbframe .s.story h1  {font-size:clamp(18px,3.2cqw,56px);font-weight:500;line-height:1.1;letter-spacing:-.02em}
+.snbframe .s.info h1   {font-size:clamp(24px,4.4cqw,76px);line-height:1.08;letter-spacing:-.026em}
+.snbframe .s.events h1 {font-size:clamp(24px,4.4cqw,76px);letter-spacing:-.026em}
+/* the story head names the person — it was reading as a bolder body line.
+   Raised a step and given its own weight so the vignette has a title. */
+.snbframe .s.story h1  {font-size:clamp(19px,3.55cqw,60px);font-weight:500;line-height:1.1;letter-spacing:-.018em}
+
+/* THE HEAD BAND — the reason body copy now starts where the well starts.
+   --bodyl is described everywhere as "the body start line the well tops out
+   on", but until now the body only landed near it by luck: it fell wherever
+   the headline happened to end, so on story slides (the ones WITH a picture,
+   where the misalignment is visible) text began ~3.4cqh above the well.
+   Reserving the band makes the promise true — figure top and text top share
+   one line on every slide kind. A headline too tall for the band still
+   pushes the body down rather than colliding with it. */
+.snbframe .s h1:has(~ .body),
+.snbframe .s h1:has(~ .flow),
+.snbframe .s h1:has(~ .sflow),
+.snbframe .s h1:has(~ .mmflow){min-height:calc(var(--bodyl) - var(--top) - var(--ebh) - var(--gut) * 2)}
 
 /* body block — one treatment, at the AAMFT body size (Justin, 2026-08-30:
    "make the text very legible"). The AAMFT deck holds ONE size for every
    body-copy role, sized off the frame HEIGHT so it never shrinks with a
    narrow window. Base raised past the AAMFT 2.94cqh to 3.3cqh — Justin asked
-   for VERY legible, and the cohort vignettes are read aloud across Zoom. */
-.snbframe .body{margin-top:var(--gut);line-height:1.5;color:#3b3f48;font-weight:400;
-  font-size:max(13px,3.3cqh);max-width:74cqw}
-.snbframe.dark .body{color:#cfcdc6}
-.snbframe .body b{font-weight:600;color:#1a1f2a}
-.snbframe.dark .body b{color:#FAF9F5}
+   for VERY legible, and the cohort vignettes are read aloud across Zoom.
+   text-wrap:pretty costs nothing and stops the one-word last line. */
+.snbframe .body{margin-top:var(--gut);line-height:1.5;color:var(--sbody);font-weight:400;
+  font-size:max(13px,3.3cqh);max-width:74cqw;letter-spacing:.004em;text-wrap:pretty;hyphens:none}
+.snbframe .body b{font-weight:600;color:var(--sink);letter-spacing:0}
 .snbframe .body em{font-style:italic}
 .snbframe .s.story .body{font-size:max(13px,3.3cqh);line-height:1.5;max-width:76cqw}
-.snbframe .s.ptitle .body,.snbframe .s.checkin .body{color:#6b685f;max-width:70cqw}
+.snbframe .s.ptitle .body,.snbframe .s.checkin .body{color:var(--smuted);max-width:70cqw}
 /* check-in slides host the big join panel in the AAMFT well slot, so their
    text keeps to the text column like any slide with a filled well */
 .snbframe .s.checkin h1{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
 .snbframe .s.checkin .body{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
-.snbframe.dark .s.ptitle .body,.snbframe.dark .s.checkin .body{color:#a9a69c}
 
 /* ---- prompt: the practice line. Sits on the same top line as every other
    heading so it stays clear of the busy part of the field (reeds rise from the
    bottom, the circles breathe in the middle). The veil keeps it legible over
-   any scene, light or dark. ---- */
+   any scene, light or dark — now with a long four-stop falloff, so it stops
+   reading as a pale oval drawn on the slide. ---- */
 .snbframe .s.prompt{padding:var(--top) var(--mx) calc(var(--foot) + 4cqh)}
-.snbframe .s.prompt .p{font-size:clamp(20px,4cqw,66px);font-weight:400;letter-spacing:-.02em;
-  line-height:1.14;max-width:80cqw;position:relative;isolation:isolate}
+.snbframe .s.prompt .p{font-size:clamp(20px,4cqw,66px);font-weight:400;letter-spacing:-.024em;
+  line-height:1.14;max-width:80cqw;position:relative;isolation:isolate;color:var(--sink);
+  text-wrap:balance;hyphens:none}
 .snbframe .s.prompt .p::before{content:"";position:absolute;z-index:-1;left:50%;top:50%;
-  transform:translate(-50%,-50%);width:118%;height:230%;border-radius:50%;pointer-events:none;
-  background:radial-gradient(ellipse at center,var(--veil) 0%,var(--veil) 42%,transparent 74%)}
+  transform:translate(-50%,-50%);width:132%;height:275%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(ellipse at center,var(--veil) 0%,var(--veil) 33%,
+    var(--veil2) 58%,transparent 82%)}
 
 /* ---- image well: THE AAMFT PANEL, verbatim geometry (Justin, 2026-08-30).
    One right column for every slide kind: left edge on --artl, right edge on
@@ -240,28 +354,51 @@
    share the same horizontal rules, exactly as in the AAMFT deck. Present only
    when the slide declares img and images/<marker> exists; the text column
    stops a --colgap short of the well and takes the grid back when the well
-   is empty. ---- */
+   is empty. The hairline is inset, not a border: it seats the photograph on
+   the paper without changing the panel's measured size by a pixel. ---- */
 .snbframe .s.haswell h1{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
 .snbframe .s.haswell .body{max-width:calc(var(--artl) - var(--mx) - var(--colgap))}
 .snbframe .well{position:absolute;left:var(--artl);right:var(--mx);
   top:var(--bodyl);bottom:calc(100cqh - var(--footl));
-  border-radius:var(--radius);overflow:hidden}
+  border-radius:var(--radius);overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(23,28,38,.07)}
+.snbframe.dark .well{box-shadow:inset 0 0 0 1px rgba(255,255,255,.10)}
 .snbframe .well img{display:block;width:100%;height:100%;
   object-fit:cover;border-radius:var(--radius)}
 /* fit ramp — a safety valve for the longest vignettes only. Kept shallow so
    even a stepped-down slide stays close to the AAMFT body size. */
 .snbframe .s.story.x1 .body{font-size:max(12px,2.9cqh);line-height:1.45}
 .snbframe .s.story.x2 .body{font-size:max(11px,2.55cqh);line-height:1.38}
-.snbframe .s.story.x2 h1{font-size:clamp(16px,2.7cqw,46px)}
+.snbframe .s.story.x2 h1{font-size:clamp(16px,2.9cqw,49px)}
 .snbframe .s.story.x3 .body{font-size:max(10px,2.25cqh);line-height:1.34}
-.snbframe .s.story.x3 h1{font-size:clamp(16px,2.7cqw,46px)}
+.snbframe .s.story.x3 h1{font-size:clamp(16px,2.9cqw,49px)}
 
-/* ---- flow chips (session map on a cover slide) ---- */
-.snbframe .flow{display:flex;gap:1.4cqw;align-items:center;flex-wrap:wrap;margin-top:var(--gut)}
-.snbframe .flow .step{border:1px solid #1a1f2a40;background:transparent;border-radius:999px;
-  padding:.9cqh 1.9cqw;font-size:clamp(11px,1.5cqw,23px);font-weight:500;white-space:nowrap}
-.snbframe.dark .flow .step{border-color:#ffffff40}
-.snbframe .flow .arr{color:#8a877e;font-size:clamp(12px,1.7cqw,26px)}
+/* ---- the session map on a cover slide — "1Mindfulness→2Balancing" ----
+   Each practice emits its own markup for this and NONE of it was ever
+   styled: Capacity Builder writes .sflow/.sstep/.snum/.sarr, Mindful Moment
+   writes .mmflow/.fstep/.farr, and the shared renderer can pass .flow/.step/
+   .arr. With no rules to catch them the three steps ran together as inline
+   text under the headline. Justin, 2026-09-01: make it the pill style the
+   practice picker uses. So: one soft tray on the body line, chips inside it,
+   the step number as a filled badge, the arrows quiet between.
+   The track class CB puts on each step (safety / defense) is deliberately NOT
+   coloured — no colour rails, the 2026-08-04 standard. ---- */
+.snbframe .flow,.snbframe .sflow,.snbframe .mmflow{
+  display:inline-flex;align-items:center;flex-wrap:wrap;gap:.45cqw;margin-top:var(--gut);
+  padding:.65cqh .65cqw;background:var(--tray);border:1px solid var(--shair);
+  border-radius:calc(var(--radius) * .92)}
+.snbframe .flow .step,.snbframe .sstep,.snbframe .fstep{
+  display:inline-flex;align-items:center;gap:.8cqw;white-space:nowrap;
+  background:var(--chip);border:1px solid var(--shair);border-radius:calc(var(--radius) * .6);
+  padding:.75cqh 1.35cqw;font-size:clamp(11px,1.45cqw,22px);font-weight:500;
+  color:var(--sink);letter-spacing:-.005em}
+.snbframe .flow .num,.snbframe .snum{
+  display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+  width:2.5cqh;height:2.5cqh;border-radius:50%;background:var(--sink);color:var(--chipnum);
+  font-size:clamp(8px,.95cqw,14px);font-weight:700;font-variant-numeric:tabular-nums;
+  letter-spacing:0;line-height:1}
+.snbframe .flow .arr,.snbframe .sarr,.snbframe .farr{
+  color:var(--smuted);font-size:clamp(10px,1.15cqw,18px);padding:0 .15cqw;opacity:.7}
 
 /* ---- footer: same baseline everywhere, and it never animates.
    The persistent frame copy (.gfoot) shows only when the current slide
@@ -271,35 +408,47 @@
 .snbframe:has(.s.wfoot) .foot.gfoot{display:flex}
 .snbframe .foot{position:absolute;left:var(--mx);bottom:var(--foot);display:flex;align-items:center;gap:1.6cqw}
 .snbframe .foot .logo{height:clamp(20px,4.4cqh,50px);width:auto;display:block}
-.snbframe .foot .byline{font-size:clamp(6px,.78cqw,12px);letter-spacing:.1em;color:#8a877e;text-transform:uppercase}
+.snbframe .foot .byline{font-size:clamp(6px,.78cqw,12px);letter-spacing:.14em;color:var(--smuted);
+  text-transform:uppercase;font-weight:500}
 
 /* ---- break clock, bottom right ---- */
 .snbframe .breakclock{position:absolute;right:var(--railr);bottom:5cqh;display:flex;flex-direction:column;
-  align-items:flex-end;gap:.4cqh;color:#8a877e}
-.snbframe .breakclock .bl{font-size:clamp(7px,.9cqw,13px);letter-spacing:.16em;text-transform:uppercase;opacity:.7}
-.snbframe .breakclock .bt{font-size:clamp(13px,1.9cqw,30px);font-variant-numeric:tabular-nums;opacity:.85}
+  align-items:flex-end;gap:.7cqh;color:var(--smuted);padding-top:1.1cqh;border-top:1px solid var(--shair)}
+.snbframe .breakclock .bl{font-size:clamp(7px,.9cqw,13px);letter-spacing:.18em;text-transform:uppercase;
+  font-weight:500;opacity:.85}
+.snbframe .breakclock .bt{font-size:clamp(15px,2.2cqw,34px);font-variant-numeric:tabular-nums;
+  font-weight:300;letter-spacing:-.01em;color:var(--sink);opacity:.8;line-height:1}
 
 /* ---- events list (the closing invitation) ---- */
 .snbframe .evlist{list-style:none;margin:var(--gut) 0 0;padding:0;align-self:stretch}
 .snbframe .evlist li{display:grid;grid-template-columns:1fr auto 14cqw;align-items:baseline;gap:3cqw;
-  padding:1.3cqh 0;border-bottom:1px solid #1a1f2a1f;font-size:clamp(11px,1.35cqw,23px)}
-.snbframe .evlist .evhead{font-size:clamp(8px,.92cqw,14px);letter-spacing:.1em;text-transform:uppercase;
-  color:#8a877e;border-bottom:1px solid #1a1f2a33}
-.snbframe .evlist .evname{font-weight:500}
-.snbframe .evlist .evwhen{color:#6b685f;font-size:clamp(10px,1.1cqw,18px)}
+  padding:1.4cqh 0;border-bottom:1px solid var(--shair);font-size:clamp(11px,1.35cqw,23px);color:var(--sbody)}
+.snbframe .evlist .evhead{font-size:clamp(8px,.92cqw,14px);letter-spacing:.14em;text-transform:uppercase;
+  font-weight:500;color:var(--smuted);border-bottom:1px solid var(--shair);padding-bottom:1cqh}
+.snbframe .evlist .evname{font-weight:500;color:var(--sink)}
+.snbframe .evlist .evwhen{color:var(--smuted);font-size:clamp(10px,1.1cqw,18px);font-variant-numeric:tabular-nums}
 .snbframe .evlist .evmark{text-align:right;font-size:clamp(10px,1.1cqw,18px)}
-.snbframe .evlist .evhead .evmark,.snbframe .evlist .evhead .evwhen{color:#8a877e;font-size:inherit}
+.snbframe .evlist .evhead .evmark,.snbframe .evlist .evhead .evwhen{color:var(--smuted);font-size:inherit}
 .snbframe .evlist li .evmark.yes{color:#3b6ea5;font-weight:700}
-.snbframe .evlist li .evmark.free{color:#8a877e;font-style:italic}
-.snbframe .evnote{margin-top:2.6cqh;font-size:clamp(9px,1.1cqw,17px);color:#8a877e}
+.snbframe.dark .evlist li .evmark.yes{color:#7ea6d6}
+.snbframe .evlist li .evmark.free{color:var(--smuted);font-style:italic}
+.snbframe .evnote{margin-top:2.6cqh;font-size:clamp(9px,1.1cqw,17px);color:var(--smuted)}
 
-/* ---- motion: the SNB rise-in, content only ---- */
-@keyframes snbRise{from{opacity:0;transform:translateY(10px);filter:blur(2px)}
-                   to{opacity:1;transform:none;filter:blur(0)}}
-.snbframe .s > *:not(.foot){animation:snbRise .62s cubic-bezier(.22,.61,.36,1) both}
-.snbframe .s > *:not(.foot):nth-child(2){animation-delay:.09s}
-.snbframe .s > *:not(.foot):nth-child(3){animation-delay:.18s}
-.snbframe .s > *:not(.foot):nth-child(4){animation-delay:.27s}
+/* ---- motion: the SNB rise-in, content only.
+   The clearing blur is gone — at 3.3cqh on a projector it read as a smear
+   rather than a settle. What is left is the same gesture, a little slower
+   and a little shorter, so the eye lands on type that is already sharp.
+   A well is not text: it resolves on its own, longer curve, and an image
+   held over from the last slide (holdart) still does not move at all. ---- */
+@keyframes snbRise{from{opacity:0;transform:translateY(9px)}
+                   to{opacity:1;transform:none}}
+@keyframes snbWell{from{opacity:0;transform:scale(1.014)}
+                   to{opacity:1;transform:none}}
+.snbframe .s > *:not(.foot):not(.well){animation:snbRise .66s cubic-bezier(.19,.72,.31,1) both}
+.snbframe .s > *:not(.foot):not(.well):nth-child(2){animation-delay:.08s}
+.snbframe .s > *:not(.foot):not(.well):nth-child(3){animation-delay:.16s}
+.snbframe .s > *:not(.foot):not(.well):nth-child(4){animation-delay:.24s}
+.snbframe .s > .well{animation:snbWell .92s cubic-bezier(.22,.61,.36,1) both;animation-delay:.12s}
 .snbframe .s .foot{animation:none}
 /* an image carried over from the previous slide is staying, not arriving —
    it does not re-animate (AAMFT rule; the presenter marks it holdart) */
@@ -310,18 +459,23 @@
 }
 
   /* ---------- practice picker (shell-only chrome) ---------- */
-  .pick{display:flex;gap:6px;align-items:center;margin-left:auto}
-  .pick .p{border:1px solid var(--line);background:var(--card);color:var(--ink);
-    padding:7px 13px;border-radius:8px;cursor:pointer;font-size:13px;transition:.12s;font-weight:500}
-  .pick .p:hover{border-color:var(--ink)}
-  .pick .p.sel{background:var(--ink);border-color:var(--ink);color:var(--bone);font-weight:600}
-  header .blurb{margin:3px 0 0;color:var(--muted);font-size:12.5px}
+  /* one segmented control rather than four loose buttons — the practice you
+     are in is the single most important state on the page */
+  .pick{display:flex;gap:4px;align-items:center;margin-left:auto;padding:4px;
+    background:var(--soft);border:1px solid var(--line);border-radius:11px}
+  .pick .p{border:1px solid transparent;background:transparent;color:var(--muted);
+    padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;
+    transition:background .14s,color .14s,border-color .14s,box-shadow .14s;white-space:nowrap}
+  .pick .p:hover{color:var(--ink)}
+  .pick .p.sel{background:var(--ink);border-color:var(--ink);color:var(--bone);font-weight:600;
+    box-shadow:var(--sh1)}
+  header .blurb{margin:4px 0 0;color:var(--muted);font-size:12.5px}
   /* the ambient field + slide slot are shell-owned; each practice's own frame
      class still styles everything inside .slot exactly as it did standalone */
   .frame{position:absolute;inset:0;container-type:size;overflow:hidden}
   .frame canvas.ambient{position:absolute;inset:0;width:100%;height:100%;z-index:0;
-    opacity:0;transition:opacity .9s cubic-bezier(.22,.61,.36,1);pointer-events:none}
-  .frame.scene-on canvas.ambient{opacity:.4}
+    opacity:0;transition:opacity 1.1s cubic-bezier(.22,.61,.36,1);pointer-events:none}
+  .frame.scene-on canvas.ambient{opacity:.42}
   .frame .slot{position:absolute;inset:0;z-index:1}
   .frame .joinbox{position:absolute;z-index:3}
 </style>
@@ -352,7 +506,8 @@
     <div class="dial sep">
       <label class="h">Live session</label>
       <label class="toggle"><input type="checkbox" id="tTestS" onchange="SHELL.testMode=this.checked;if(typeof LIVE!=='undefined'&&LIVE){endLive();publishLive();}render()"> 🧪 Test session <span style="color:var(--muted)">— publishes nothing; members are never notified</span></label>
-      <label class="h" style="margin-top:12px;display:block">Live room URL <input type="text" id="tRoomS" placeholder="https://… (blank = auto from the Academy calendar)" oninput="SHELL.room=this.value.trim()" style="display:block;width:100%;margin-top:5px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;box-sizing:border-box"></label>
+      <label class="h" style="margin-top:16px" for="tRoomS">Live room URL</label>
+      <input type="text" id="tRoomS" placeholder="https://… (blank = auto from the Academy calendar)" oninput="SHELL.room=this.value.trim()" style="display:block;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:13px;box-sizing:border-box;background:var(--card)">
       <p class="sub" id="liveNote" style="margin:10px 0 0"></p>
     </div>
 
@@ -5094,13 +5249,30 @@ const AMB=(function(){
         g.strokeStyle=col(aOut);g.beginPath();g.arc(rp.x*W,rp.y*H,R,0,6.283);g.stroke();
         g.strokeStyle=col(aIn); g.beginPath();g.arc(rp.x*W,rp.y*H,R*.62,0,6.283);g.stroke();});
     } else if(scene==='reeds'){
+      /* a reed tapers: the lower stalk carries the weight, the tip thins and
+         lightens toward nothing. Two strokes off the same curve, not one — a
+         constant-width hairline read as a scratch on the projector. */
       reeds.forEach(rd=>{const sw=Math.sin(sT*6.283/rd.per+rd.ph)*rd.amp;
         const bx=rd.x*W,by=H,hh=rd.h*H,tx=bx+sw*hh,ty=by-hh;
-        g.strokeStyle=col((rd.a!=null?rd.a:.5)*0.62);g.lineWidth=rd.w;g.lineCap='round';
-        g.beginPath();g.moveTo(bx,by);g.quadraticCurveTo(bx+sw*hh*.25,by-hh*.55,tx,ty);g.stroke();});
+        const a=(rd.a!=null?rd.a:.5);
+        const cx=bx+sw*hh*.25,cy=by-hh*.55;
+        /* split the quadratic at t=.55 (de Casteljau) so the halves meet exactly */
+        const t=.55,mx=(1-t)*(1-t)*bx+2*(1-t)*t*cx+t*t*tx,my=(1-t)*(1-t)*by+2*(1-t)*t*cy+t*t*ty;
+        const c1x=bx+(cx-bx)*t,c1y=by+(cy-by)*t;
+        const c2x=cx+(tx-cx)*t,c2y=cy+(ty-cy)*t;
+        g.lineCap='round';
+        g.strokeStyle=col(a*0.60);g.lineWidth=rd.w;
+        g.beginPath();g.moveTo(bx,by);g.quadraticCurveTo(c1x,c1y,mx,my);g.stroke();
+        g.strokeStyle=col(a*0.34);g.lineWidth=rd.w*0.58;
+        g.beginPath();g.moveTo(mx,my);g.quadraticCurveTo(c2x,c2y,tx,ty);g.stroke();});
     } else if(scene==='breeze'){
+      /* each strand fades in and out along its own length, so a drift across
+         the field reads as air rather than as a row of dashes */
       strands.forEach(s2=>{const y0=s2.y*H,x0=s2.x*W,L=s2.len*W;
-        g.strokeStyle=col(s2.a*0.55);g.lineWidth=1.6;g.lineCap='round';
+        const gr=g.createLinearGradient(x0,y0,x0+L,y0);
+        gr.addColorStop(0,col(0));gr.addColorStop(.28,col(s2.a*0.68));
+        gr.addColorStop(.72,col(s2.a*0.68));gr.addColorStop(1,col(0));
+        g.strokeStyle=gr;g.lineWidth=1.6;g.lineCap='round';
         g.beginPath();g.moveTo(x0,y0);g.lineTo(x0+L,y0);g.stroke();});
     } else if(scene==='sunbeam'){
       const A=a=>'rgba(246,228,180,'+a+')';
@@ -5411,7 +5583,11 @@ function bootStudent(){
   document.title="SNB — Slides";
   document.body.innerHTML='<div id="stage" style="position:absolute;inset:0"></div>';
   const css=document.createElement("style");
-  css.textContent='html,body{margin:0;height:100%;overflow:hidden;background:#FAF9F5}';
+  /* the student window is only ever the slide: the page under it carries the
+     same paper the frame does, so a projector never shows a seam */
+  css.textContent='html,body{margin:0;height:100%;overflow:hidden;background:#FAF9F5;'+
+    '-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}'+
+    '#stage{background:#FAF9F5}';
   document.head.appendChild(css);
   document.addEventListener("keydown",e=>{
     if(!window.opener)return;
