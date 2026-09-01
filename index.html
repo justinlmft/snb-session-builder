@@ -3231,7 +3231,7 @@ const COHORT = (function(){
     if (!c.last && c.next) {
       B.push(mk.cover("Next week:<br>"+c.next.title, c.nextNote || "", "WEEK "+c.next.n));
     } else {
-      B.push(mk.cover(c.finaleH || "You did it. 🎉", c.finaleNote || "",
+      B.push(mk.cover(c.finaleH || "You did it 🎉", c.finaleNote || "",
                       c.finaleEyebrow || "THANK YOU"));
     }
     return B;
@@ -4518,7 +4518,9 @@ function vig(h,body,note,who,state){ const w=(who||"JENNY");
      "Jenny" reads as a constant name from "Jenny" to "Jenny: Cue→Anchor" */
   h=String(h).replace(/\.$/,"");
   return {style:"vig",h,body:body||"",eyebrow:"Vignette",note:note||"",fixed:true,img:"char-"+w.toLowerCase()+(state?"-"+state:"")}; }
-function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:(phase?"CHECK IN":"STUCK NOT BROKEN APP"),note:note||"",fixed:true,phase:phase||""}; }
+/* one meta eyebrow for every app slide — the heading already says "Check in",
+   so the eyebrow must not repeat it (Justin, 2026-09-01) */
+function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:"STUCK NOT BROKEN APP",note:note||"",fixed:true,phase:phase||""}; }
 const MK = {cover:(h,n,e)=>cover(h,n,e), info:(h,b,n)=>info(h,b,n), app:(h,b,n,ph)=>app(h,b,n,ph)};
 function ptitle(h,tagline,note,body){ return {style:"ptitle",h,body:body||"",eyebrow:tagline||"",note:note||"",fixed:false}; }
 
@@ -5007,7 +5009,7 @@ function W(){ return WEEKS[st.week-1]; }
 
 function cover(h,eyebrow){ return {style:"cover",h,body:"",eyebrow:eyebrow||"",note:"",fixed:true}; }
 function info(h,body,note,eyebrow,img){ return {style:"info",h,body:body||"",eyebrow:eyebrow||"",note:note||"",fixed:true,img:img}; }
-function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:"CHECK IN",note:note||"",fixed:true,phase:phase||""}; }
+function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:"STUCK NOT BROKEN APP",note:note||"",fixed:true,phase:phase||""}; }
 const MK = {cover:(h,n,e)=>cover(h,e), info:(h,b,n)=>info(h,b,n), app:(h,b,n,ph)=>app(h,b,n,ph)};
 function vig(h,body,img){ return {style:"vig",h,body:body||"",eyebrow:"Vignette",note:"",fixed:true,img:img||"char-jenny"}; }
 function ptitle(h,eyebrow){ return {style:"ptitle",h,body:"",eyebrow:eyebrow||"",note:"",fixed:false}; }
@@ -5207,6 +5209,13 @@ function LISTIFY(body){
   return out.join("<br>").replace(/<br>(<div class="blist">)/g,"$1").replace(/(<\/div>)<br>/g,"$1");
 }
 
+/* Headings carry no trailing periods (Justin, 2026-09-01: "cut all Heading
+   periods") — stripped at render time, at the end of the heading and at the
+   end of each <br> line ("Week 1.<br>Cue→Anchor" → "Week 1<br>Cue→Anchor").
+   Question marks, ellipses and mid-sentence periods are untouched; prompt
+   lines (.p) keep their punctuation — they are instructions, not headings. */
+function hdots(h){ return String(h||"").replace(/([^.])\.(?=(?:<br[^>]*>)|$)/g,"$1"); }
+
 /* A story headline "Jenny: Witnessing" splits into a name span and a rest
    span, so the presenter can hold the repeated name still while only the new
    part rises in (Justin, 2026-09-01: "keep all repeating text static"). */
@@ -5222,29 +5231,29 @@ function renderSlide(c){
     case "prompt":
       return '<div class="s prompt"><div class="p">'+(c.h||"")+'</div></div>';
     case "cover":
-      return '<div class="s cover wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+(c.flow||"")+'</div>';
+      return '<div class="s cover wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+(c.flow||"")+'</div>';
     case "ptitle":
-      return '<div class="s ptitle wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+
+      return '<div class="s ptitle wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+'</div>';
     case "checkin":
-      return '<div class="s checkin wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+
+      return '<div class="s checkin wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+'</div>';
     case "story": {
       /* long vignettes shrink to fit the frame instead of clipping; a portrait
          well counts as extra length since it narrows the text column */
       const blen = String(c.body||"").replace(/<[^>]+>/g,"").length + (c.img?250:0);
       const fit = blen>1350 ? " x3" : blen>900 ? " x2" : (blen>550 ? " x1" : "");
-      return '<div class="s story'+(c.img?' haswell':'')+fit+'">'+eb+'<h1>'+splitH(c.h)+'</h1>'+
+      return '<div class="s story'+(c.img?' haswell':'')+fit+'">'+eb+'<h1>'+splitH(hdots(c.h))+'</h1>'+
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+
         /* discussion card — the slide stays put, the question pops over it */
         (c.ask?'<div class="discard"><span class="dtag">Discuss</span><div class="dq">'+c.ask+'</div></div>':"")+
         '</div>';
     }
     case "events":
-      return '<div class="s events wfoot">'+eb+'<h1>'+(c.h||"")+'</h1>'+(c.rows||"")+'</div>';
+      return '<div class="s events wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+(c.rows||"")+'</div>';
     case "info":
     default:
-      return '<div class="s info'+(c.img?' haswell':'')+'">'+eb+'<h1>'+(c.h||"")+'</h1>'+
+      return '<div class="s info'+(c.img?' haswell':'')+'">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+breakClockHTML(c.breakMin)+'</div>';
   }
 }
