@@ -3972,6 +3972,12 @@ PRACTICES.cb = (function(){
    Edit the source and re-run build.py; do not hand-edit here.
    ================================================================== */
 PRACTICES.srs = (function(){
+/* The anchor sense is FIXED per week (Justin, 2026-09-01): touch to start,
+   then a set rotation limited to touch / sight / sound — variety without a
+   dial to set. Touch returns on the heavier-skill weeks (Obstacles,
+   Pendulating, week 8) because it is the most grounding anchor; sight and
+   sound carry the lighter build weeks. The schedule lives on each week as
+   `sense:`; buildBeats() derives st.sense from it, so nothing else chooses. */
 const SENSES = {
   touch:      {label:"Touch"},
   sight:      {label:"Sight"},
@@ -3995,7 +4001,7 @@ const pickObstacles = LADDER.pickObstacles;
    ================================================================== */
 const WEEKS = [
 {
-  n:1, chip:"cue→<br>anchor", short:"Cue→Anchor", title:"cue → anchor.",
+  n:1, sense:"touch", chip:"cue→<br>anchor", short:"Cue→Anchor", title:"cue → anchor.",
   we:"turn a passive safety cue into an active safety anchor.",
   ice:"Hi, I’m _____. I’m from _____. I am here to _____.",
   iceNote:"Quick round. Name, where you are, and why you’re here. Keep it to a sentence each — we’re not spending the hour on this.",
@@ -4035,7 +4041,7 @@ const WEEKS = [
   ]
 },
 {
-  n:2, chip:"validate<br>normalize", short:"Validate & Normalize", title:"validating &amp;<br>normalizing.",
+  n:2, sense:"sound", chip:"validate<br>normalize", short:"Validate & Normalize", title:"validating &amp;<br>normalizing.",
   we:"anchor into safety — then Validate and Normalize one non-safety experience.",
   ice:"Share what you’re feeling in the chat using only emojis.",
   iceNote:"Emojis only. No sentences. — It’s a low-cost way to say something true, and it warms the room up without anyone having to perform.",
@@ -4068,7 +4074,7 @@ const WEEKS = [
   ]
 },
 {
-  n:3, chip:"imagery<br>invitation", short:"Imagery & Invitation", title:"imagery &amp;<br>invitation.",
+  n:3, sense:"sight", chip:"imagery<br>invitation", short:"Imagery & Invitation", title:"imagery &amp;<br>invitation.",
   we:"anchor into safety — Validate, Normalize, give the feeling an image, and invite it along.",
   ice:"What item cues safety?",
   iceNote:"One item in the chat. — You’ll notice how ordinary everyone’s answers are. Blankets, mugs, dogs, a window. That’s the point.",
@@ -4103,7 +4109,7 @@ const WEEKS = [
   ]
 },
 {
-  n:4, chip:"obstacles", short:"Obstacles", title:"obstacles.",
+  n:4, sense:"touch", chip:"obstacles", short:"Obstacles", title:"obstacles.",
   we:"anchor into safety — induce Obstacles through four statements — Validate, Normalize, Imagine &amp; Invite the Obstacle.",
   ice:"What texture cues safety?",
   iceNote:"One texture in the chat. — Warm-up only, keep it to fifteen seconds.",
@@ -4136,7 +4142,7 @@ const WEEKS = [
   ]
 },
 {
-  n:5, chip:"balancing", short:"Balancing", title:"balancing.",
+  n:5, sense:"sound", chip:"balancing", short:"Balancing", title:"balancing.",
   we:"anchor into safety — permit the smallest defense — shift back to safety.",
   ice:"What scene cues safety?",
   iceNote:"One scene in the chat. Fifteen seconds.",
@@ -4167,7 +4173,7 @@ const WEEKS = [
   ]
 },
 {
-  n:6, chip:"pendulate", short:"Pendulating", title:"pendulating.",
+  n:6, sense:"touch", chip:"pendulate", short:"Pendulating", title:"pendulating.",
   we:"anchor into safety — permit defense — Balance — then shift to defense and back to safety, on purpose.",
   ice:"What sound cues safety?",
   iceNote:"One sound in the chat. Fifteen seconds.",
@@ -4195,7 +4201,7 @@ const WEEKS = [
   ]
 },
 {
-  n:7, chip:"balance<br>+ describe", short:"Balancing + Description", title:"balancing with<br>description.",
+  n:7, sense:"sight", chip:"balance<br>+ describe", short:"Balancing + Description", title:"balancing with<br>description.",
   we:"Balance — and this time describe the defense too, not just witness it.",
   ice:"What’s your favorite hobby?",
   iceNote:"Deliberately light this week. Something that isn’t about any of this. — We’re going deep in a few minutes; give the room somewhere easy to start.",
@@ -4227,7 +4233,7 @@ const WEEKS = [
   ]
 },
 {
-  n:8, chip:"pendulate<br>+ describe", short:"Pendulating + Description", title:"pendulating with<br>description.",
+  n:8, sense:"touch", chip:"pendulate<br>+ describe", short:"Pendulating + Description", title:"pendulating with<br>description.",
   we:"the whole thing — anchor, permit, Balance, Pendulate to defense and describe it, Pendulate back to safety.",
   ice:"Use one word to describe your current experience.",
   iceNote:"One word. — Then look at the chat together for a second. Eight weeks ago this room could not have answered that question this easily.",
@@ -4270,7 +4276,7 @@ const WEEKS = [
    slides, a small corner card elsewhere, and off entirely during practice prompts.
    Failure is graceful — if the publish call fails the practice still runs, unchanged. ==== */
 let st = {
-  week:1, sense:"touch",
+  week:1, sense:"touch",   /* sense is derived from the week (see SENSES note) */
   scene:"",             // "" = surprise me (drawn once at Present)
   testMode:false,       // ON = the app popup tells members to ignore this session
   room:LIVE_ROOM_DEFAULT // live room URL sent at Present (the app's "watch live" button)
@@ -4451,7 +4457,7 @@ function practiceBeats(w, label){
 const TABS={open:"Open",vignette:"Vignette",practice:"Practice",close:"Close"};
 
 function buildBeats(){
-  const w=W(); let B=[];
+  const w=W(); st.sense=w.sense; let B=[];
   const sec=(name,from)=>{for(let i=from;i<B.length;i++) if(!B[i].section) B[i].section=name;};
 
   /* ---------- OPEN ---------- */
@@ -4582,21 +4588,25 @@ function sceneChips(){
   });
   const c=document.getElementById("sceneCap"); if(c) c.textContent=SCENE_CAP[st.scene]||"";
 }
+/* The anchor is fixed per week (Justin, 2026-09-01) — display only, no dial.
+   The chips show the restricted set; the current week's anchor is selected. */
 function senseChips(){
   const el=document.getElementById("senseOpts"); el.innerHTML="";
-  Object.keys(SENSES).forEach(k=>{
+  ["touch","sight","sound"].forEach(k=>{
     const d=document.createElement("div");
-    d.className="opt"+(st.sense===k?" sel":"");
+    d.className="opt"+(W().sense===k?" sel":"");
     d.textContent=SENSES[k].label;
-    d.onclick=()=>{ st.sense=k; render(); };
+    d.style.cursor="default";
+    if(W().sense!==k) d.style.opacity=".45";
     el.appendChild(d);
   });
+  const c=document.getElementById("senseCap");
+  if(c) c.textContent="set per week: "+WEEKS.map(w=>"W"+w.n+" "+SENSES[w.sense].label.toLowerCase()).join(" · ");
 }
 /* one roll changes both the anchor and the backdrop, so a repeat week never
    looks or feels like the last one. Picks a different value for each. */
 function randomAnchorScene(){
-  const senses=Object.keys(SENSES).filter(k=>k!==st.sense);
-  st.sense=senses[Math.floor(Math.random()*senses.length)];
+  /* the anchor is fixed per week now — only the backdrop rolls */
   const scenes=SRS_SCENES.filter(k=>k!==st.scene);
   st.scene=scenes[Math.floor(Math.random()*scenes.length)];
   render();
@@ -4606,13 +4616,13 @@ function randomAnchorScene(){
    BUILDER VIEW
    ================================================================== */
 
-  const DIALS = '    <div class="dial">\n      <label class="h">Week</label>\n      <div class="wkgrid" id="wkOpts"></div>\n    </div>\n\n    <div class="dial sep">\n      <label class="h">Anchor</label>\n      <div class="opts" id="senseOpts"></div>\n    </div>\n\n    ';
+  const DIALS = '    <div class="dial">\n      <label class="h">Week</label>\n      <div class="wkgrid" id="wkOpts"></div>\n    </div>\n\n    <div class="dial sep">\n      <label class="h">Anchor</label>\n      <div class="opts" id="senseOpts"></div>\n      <p class="sub" id="senseCap" style="margin:10px 0 0"></p>\n    </div>\n\n    ';
 
   return {
     id:"srs", label:"Self-Regulation Simplified", blurb:"8-week live cohort, practice-led",
     st:st, TABS:TABS, buildBeats:buildBeats,
     sessionName:function(){ const w=W();
-      return "Week "+w.n+" — "+w.short+" · anchor: "+SENSES[st.sense].label+" · break "+(BREAK_MIN[w.tail]||3)+" min"; },
+      return "Week "+w.n+" — "+w.short+" · anchor: "+SENSES[w.sense].label+" · break "+(BREAK_MIN[w.tail]||3)+" min"; },
     dialsHTML:DIALS,
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
@@ -4625,15 +4635,16 @@ function randomAnchorScene(){
     agenda:function(){ const b=BREAK_MIN[W().tail]||3;
       return ["Check in","Vignettes","Practice","Break "+b+"m","Reflect","Share","Practice 2","Break "+b+"m","Reflect","Share","Check in","Homework"]; },
     renderDials:function(){ weekChips(); senseChips(); },
-    roll:function(){ const k=Object.keys(SENSES).filter(x=>x!==st.sense);
-      st.sense=k[Math.floor(Math.random()*k.length)]; },
+    /* the anchor is fixed per week (2026-09-01) — the shared roll button
+       changes only the scene for SRS */
+    roll:function(){},
     globals:{},
     sceneOn:function(b){ return this.map(b).kind==="prompt"; },
     joinMode:function(b){ const k=this.map(b).kind;
       if(k==="prompt") return "off";
       if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
     seam:function(b){ return (b&&b.style==="app"&&b.phase)?("srs:"+b.phase):null; },
-    recipe:function(){ const w=W(); return {week:w.n, skill:w.short, sense:st.sense,
+    recipe:function(){ const w=W(); return {week:w.n, skill:w.short, sense:w.sense,
       scene:(SHELL.scene||"(surprise me)"), break_minutes:(BREAK_MIN[w.tail]||3)}; },
     live:{ type:"self-regulation-simplified", ref:"srs", minutes:120,
            seams:["srs:before","srs:after"],
@@ -4984,6 +4995,10 @@ function slidesHTML(beats, practice){
 /* Ambient practice scenes, ported from the SNB app player. One engine for every
    practice, drawn on a canvas that survives slide changes. */
 const SCENE_LIST=['circles','drift','pond','reeds','breeze','sunbeam','fireflies'];
+/* SRS runs a restricted backdrop set (Justin, 2026-09-01): the light, watery
+   scenes only — no dark-field scenes for the cohort. */
+const SRS_SCENE_LIST=['circles','reeds','breeze','pond','drift'];
+function sceneListFor(){ return (typeof ACTIVE!=="undefined" && ACTIVE && ACTIVE.id==="srs") ? SRS_SCENE_LIST : SCENE_LIST; }
 const SCENE_DARK={sunbeam:1,fireflies:1};
 const SCENE_CAP={
   '':'a different scene each session, chosen at random when you present.',
@@ -4996,7 +5011,7 @@ const SCENE_CAP={
   fireflies:'slow blinking on a dark field.'
 };
 let _sessionScene='circles';
-function rollSessionScene(){ _sessionScene=SCENE_LIST[Math.floor(Math.random()*SCENE_LIST.length)]; }
+function rollSessionScene(){ const L=sceneListFor(); _sessionScene=L[Math.floor(Math.random()*L.length)]; }
 const AMB=(function(){
   const INK=[26,31,42],BONE=[250,249,245];
   const reduce=(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -5244,6 +5259,10 @@ function setPractice(id, skipRender){
      `render()` as globals — point them at the active module. Same object, so
      mutations land on the module's own state. */
   window.st = ACTIVE.st;
+  /* a practice can restrict its scene set (SRS: no dark-field scenes) — drop a
+     now-disallowed pick back to "surprise me" and re-roll the session scene */
+  if(SHELL.scene && sceneListFor().indexOf(SHELL.scene)<0) SHELL.scene="";
+  if(sceneListFor().indexOf(_sessionScene)<0) rollSessionScene();
   Object.keys(ACTIVE.globals||{}).forEach(k=>{ if(ACTIVE.globals[k]!==undefined) window[k]=ACTIVE.globals[k]; });
   curTab = Object.keys(ACTIVE.TABS)[0];
   const dialsEl=document.getElementById("practiceDials");
@@ -5261,7 +5280,7 @@ function pickerHTML(){
 /* ---------------- scene picker (shared) ---------------- */
 function sceneChipsShell(){
   const el=document.getElementById("sceneOpts"); if(!el) return; el.innerHTML="";
-  [["","surprise me"]].concat(SCENE_LIST.map(x=>[x,x])).forEach(([v,label])=>{
+  [["","surprise me"]].concat(sceneListFor().map(x=>[x,x])).forEach(([v,label])=>{
     const d=document.createElement("div");
     d.className="opt"+(SHELL.scene===v?" sel":"");
     d.textContent=label;
@@ -5271,7 +5290,7 @@ function sceneChipsShell(){
   const c=document.getElementById("sceneCap"); if(c) c.textContent=SCENE_CAP[SHELL.scene]||"";
 }
 function rollAll(){
-  const scenes=SCENE_LIST.filter(s=>s!==SHELL.scene);
+  const scenes=sceneListFor().filter(s=>s!==SHELL.scene);
   SHELL.scene=scenes[Math.floor(Math.random()*scenes.length)];
   if(ACTIVE && typeof ACTIVE.roll==="function") ACTIVE.roll();
   render();
