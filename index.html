@@ -473,7 +473,7 @@
    Hanging indent keeps wrapped lines aligned after the dash, each item gets
    its own line of air, and the block clears the prose above it so a list
    never reads as part of the paragraph (Justin, 2026-09-01, items 4+5). ---- */
-.snbframe .body .blist{margin:1.7cqh 0 .5cqh}
+.snbframe .body .blist{margin:1.7cqh 0 1.7cqh}
 .snbframe .body .blist .li{padding-left:1.35em;text-indent:-1.35em;margin:.85cqh 0}
 .snbframe .body .blist .li::before{content:"—";color:var(--smuted);margin-right:.62em}
 
@@ -3102,7 +3102,7 @@ const LADDER = (function(){
   }
 
   /* the body of the capacity-check slide — identical in every tool */
-  const CAPACITY_H = "check your Capacity:";
+  const CAPACITY_H = "Check your capacity:";
   const CAPACITY_BODY =
     "1. Intolerable distress<br>2. Curiosity turns into evaluation<br>3. Losing connection with your breath<br>4. Intrusive cognitions" +
     "<br><br>Ask yourself:<br>– What do I need right now?<br>– Do I genuinely want to continue?<br>– Does my body genuinely want to continue?";
@@ -4223,7 +4223,7 @@ const WEEKS = [
      ask:[{h:"What was Arjun’s cue?", note:"Hands on the wheel, parked, engine on — the leather, the sound of his fingers squeezing it. Not soft, not a spa. Ask what makes it a legitimate safety cue anyway: it’s HIS."}]},
     {who:"ARJUN", state:"wheel", h:"Arjun: Witnessing.", body:"<b>Witnessing:</b> He checks in with his body and notices that “quiet” is strongest in his hands, and in his shoulders, which have dropped a little. The heat is still in his chest, but less."},
     {who:"ARJUN", state:"wheel", h:"Arjun: Experiencing.", body:"<b>Experiencing:</b> “Quiet” is light and cool in his hands. “They can finally stop.”", note:"Notice his anchor isn’t soft. No blanket, no candle. A steering wheel in a parked car. Movement is still a part of it. — Safety cues don’t have to look like a spa. They have to be yours. — And notice the defense didn’t leave. The heat is still there. Just noticeably less, especially his hands. — His practice is timed, too. Before work, before the day builds the anger. After work, before he brings it home. His alone time is an opportunity, not a flaw.",
-     ask:[{h:"Walk his A→W→E.", note:"Anchor at the wheel → Witness: “quiet,” strongest in his hands and dropped shoulders → Experience: light and cool, “they can finally stop.” Any of the three moves in the chat. — And the heat didn’t leave; it lessened. That’s the win to name."}]},
+     ask:[{h:"Where do you see A→W→E in what Arjun just did?", note:"Anchor at the wheel → Witness: “quiet,” strongest in his hands and dropped shoulders → Experience: light and cool, “they can finally stop.” Any of the three moves in the chat. — And the heat didn’t leave; it lessened. That’s the win to name."}]},
     {who:"SIMONE", state:"defense", h:"Simone.",
      body:"Simone looks fine to other people. Inside, her mind runs all day: the list, the worry, the rehearsing.<br><br>But when it’s time to actually do the thing — send the message, start the task, make the call — her body doesn’t move. She sits still for an hour and comes out more exhausted than if she had been working the whole time.<br><br>She blames herself and calls herself lazy, which leads to more worry and more sitting still.<br><br>She joins the cohort.",
      note:""},
@@ -4232,7 +4232,7 @@ const WEEKS = [
      ask:[{h:"What’s Simone’s cue — and when does she use it?", note:"Feet on the sidewalk, morning walk BEFORE work. Timing is design: freeze needs movement, so her anchor moves with her — before the freeze is too high, before it’s too collapsed."}]},
     {who:"SIMONE", state:"shoes", h:"Simone: Witnessing.", body:"<b>Witnessing:</b> She checks in with her body and notices that “relief” feels lighter overall and is more specifically in her chest with bigger breaths. The tension is still there, but less."},
     {who:"SIMONE", state:"shoes", h:"Simone: Experiencing.", body:"<b>Experiencing:</b> “Relief” is an expansive sphere in her torso that extends outside of her skin, but also deeply within it. It’s blue and has a shimmer to it, pulsing from inside to out. And it’s warm and silent.", note:"Her check-in is brief on purpose, and she doesn’t stop walking to do it. She needs movement. Freeze does not do well with immobility. She mobilizes before the freeze is too high, like at work. And before the freeze is too collapsed, like after work.",
-     ask:[{h:"How is her anchor different from Jenny’s?", note:"Jenny sits still with a blanket; Simone anchors mid-motion, briefly, without stopping. Same lesson, two nervous systems. — The takeaway for the room: your anchor has to fit YOUR system, not copy someone else’s."}]}
+     ask:[{h:"Why does a moving anchor work better for Simone?", note:"Jenny sits still with a blanket; Simone anchors mid-motion, briefly, without stopping. Same lesson, two nervous systems. — The takeaway for the room: your anchor has to fit YOUR system, not copy someone else’s."}]}
   ],
   vigQ:{h:"What’s your one thing?", note:"One word or one object in the chat. Not the story about it — just the thing. — Whatever you name is what we’ll use in about two minutes."},
   tail:"none",
@@ -4513,7 +4513,11 @@ function info(h,body,note,img){ return {style:"info",h,body:body||"",eyebrow:"",
 /* the eyebrow is META (Justin, 2026-09-01: "the Arjun slide should not say
    Arjun in the eyebrow and the header") — the character's name lives in the
    headline; `who` still picks the portrait */
-function vig(h,body,note,who,state){ const w=(who||"JENNY"); return {style:"vig",h,body:body||"",eyebrow:"Vignette",note:note||"",fixed:true,img:"char-"+w.toLowerCase()+(state?"-"+state:"")}; }
+function vig(h,body,note,who,state){ const w=(who||"JENNY");
+  /* vignette headings drop their trailing period (Justin, 2026-09-01) so
+     "Jenny" reads as a constant name from "Jenny" to "Jenny: Cue→Anchor" */
+  h=String(h).replace(/\.$/,"");
+  return {style:"vig",h,body:body||"",eyebrow:"Vignette",note:note||"",fixed:true,img:"char-"+w.toLowerCase()+(state?"-"+state:"")}; }
 function app(h,body,note,phase){ return {style:"app",h,body:body||"",eyebrow:(phase?"CHECK IN":"STUCK NOT BROKEN APP"),note:note||"",fixed:true,phase:phase||""}; }
 const MK = {cover:(h,n,e)=>cover(h,n,e), info:(h,b,n)=>info(h,b,n), app:(h,b,n,ph)=>app(h,b,n,ph)};
 function ptitle(h,tagline,note,body){ return {style:"ptitle",h,body:body||"",eyebrow:tagline||"",note:note||"",fixed:false}; }
@@ -4536,17 +4540,22 @@ const BREAK_MIN={none:3,vn:3,ii:3,obs:3,bal:5,pend:5,baldesc:5,penddesc:5};
    Two fixed prompts + one weekly. Read the prompt, then stop talking: silence is the
    reflection working. Answers go in the chat or stay private — both count. */
 const REFLECT_NOTE="Read the prompt, then stop talking. Silence is the reflection working, not the room failing. Chat or private — both count.";
-function reflectOne(){ return q("One word.","Your body, right now. One word in the chat, or just to yourself. — "+REFLECT_NOTE); }
+/* The slide carries ONE plainly written instruction or question (Justin,
+   2026-09-01: "write this instruction out in a sentence"); the coaching
+   qualifiers ride in the presenter notes. Reflection screens are also
+   scene-free — the visualizer belongs to practice prompts only. */
+function reflectOne(){ const b=q("Put one word (or emoji) in the chat to describe your practice experience.","Or just to yourself. — "+REFLECT_NOTE); b.noscene=true; return b; }
 const REFLECT_WEEK={
- 1:"Where did safety show up in your body? One place. However small — tiny counts.",
- 2:"Say your Validate sentence to yourself one more time. Does it feel true, or borrowed? Both are fine — which?",
- 3:"When you invited your image, what did it do? Stay, shrink, shift, nothing — all four are answers.",
- 4:"Which statement got a rise out of you? Where did you feel it first?",
- 5:"How small was your smallest defense? Could you have caught it even smaller?",
- 6:"How many trips did you take — and did you stop on purpose, or run out? (Stopping on purpose is the skill.)",
- 7:"What did describing change? More room around it, or too close today? Either is information.",
- 8:"One sentence: what can you do now that you couldn’t in week one?"
+ 1:{h:"Where did safety show up in your body?", n:"One place. However small — tiny counts."},
+ 2:{h:"Say your Validate sentence to yourself one more time. Does it feel true, or borrowed?", n:"Both are fine — which?"},
+ 3:{h:"When you invited your image, what did it do?", n:"Stay, shrink, shift, nothing — all four are answers."},
+ 4:{h:"Which statement got a rise out of you? Where did you feel it first?", n:""},
+ 5:{h:"How small was your smallest defense?", n:"Could you have caught it even smaller?"},
+ 6:{h:"How many trips did you take — and did you stop on purpose?", n:"Or did you run out? Stopping on purpose is the skill."},
+ 7:{h:"What did describing change?", n:"More room around it, or too close today? Either is information."},
+ 8:{h:"What can you do now that you couldn’t in week one?", n:"One sentence."}
 };
+function reflectWeek(n){ const r=REFLECT_WEEK[n], b=q(r.h,(r.n?r.n+" — ":"")+REFLECT_NOTE); b.noscene=true; return b; }
 
 /* ---------- THE ANCHOR LADDER (sense-aware, from the SRS decks) ---------- */
 /* The anchor ladder is no longer defined here. Capacity Builder is the standard
@@ -4706,7 +4715,7 @@ function buildBeats(){
         "— connect with stuck defense by Week 8<br>— learn many self-regulation practices and skills<br>— practice many self-regulation practices and skills<br>— build mastery of 50% of the practices<br>— increase frequency of safety moments<br>— increase safety baseline noticeably<br>— decrease daily defensive activation<br>— at least begin to shift stuck defense",
         "The honest list. 50% mastery is the real number — say it plainly, it builds trust."),
       info("How to get the best results.",
-        "Actively participate.<br>Do the homework.<br>Ask questions when stuck.<br>Prioritize safety and recovery.<br>— small daily mindfulness practices<br>— pause when needed, recover, try again later",
+        "— Actively participate<br>— Do the homework<br>— Ask questions when stuck<br>— Prioritize safety and recovery: small daily mindfulness practices, and pause when needed, recover, try again later",
         ""),
       info("The start.",
         "You know PVT and can access safety.<br><br>Self-Regulation Simplified is the start of:<br>— connecting with defense &amp; safety in your body<br>— building vagal brake strength<br>— self-regulation",
@@ -4741,9 +4750,9 @@ function buildBeats(){
   w.vig.forEach(v=>{
     B.push(vig(v.h,v.body,v.note,v.who,v.state));
     (v.ask||[]).forEach(k=>{ const d=vig(v.h,v.body,"",v.who,v.state);
-      d.style="disc"; d.ask=k.h; d.note=k.note; B.push(d); });
+      d.style="disc"; d.ask=k.h; d.note=""; B.push(d); });  /* no presenter notes on Discuss cards (Justin, 2026-09-01) */
   });
-  if(w.vigQ) B.push(q(w.vigQ.h,w.vigQ.note));
+  if(w.vigQ){ const b=q(w.vigQ.h,w.vigQ.note); b.noscene=true; B.push(b); }
   sec("vignette",m);
 
   /* ---------- PRACTICE ---------- */
@@ -4754,8 +4763,8 @@ function buildBeats(){
   B.push(capacityCheck(BMIN,
     "Capacity check, then break. Read the four, ask the three, then give them the "+BMIN+" minutes and actually stop talking. — Leave your camera on or off, nobody needs to perform a break. — The countdown is on the slide so nobody has to watch me for the cue."));
   B.push(reflectOne());
-  B.push(q(REFLECT_WEEK[w.n],REFLECT_NOTE));
-  B.push(info("What was that like?","",
+  B.push(reflectWeek(w.n));
+  B.push(info("Other reflections?","",
     "Open mics. Let the silence sit for a few seconds before you fill it — people need a moment to come back into words. — You are not teaching here. Reflect, normalize, and let members respond to each other. If two members start talking to each other, stay out of it — that’s the co-regulation doing its job."));
   {
     /* Interest Impulse — condensed from the original deck (pp46–50), restored
@@ -4769,7 +4778,7 @@ function buildBeats(){
     practiceBeats(w,"Practice 2").forEach(b=>B.push(b));
     B.push(capacityCheck(BMIN));
     B.push(reflectOne());
-    B.push(q("Was the second one different?","Not better. Different. What changed? — This is the comparative rep, and it feeds the share-out that follows."));
+    { const b=q("Was the second one different?","Not better. Different. What changed? — This is the comparative rep, and it feeds the share-out that follows."); b.noscene=true; B.push(b); }
     B.push(info("And that one?","",
       "Shorter share this time. — Worth asking: was the second one different from the first? Usually it is, and hearing that from each other is more convincing than hearing it from me."));
   }
@@ -4872,7 +4881,9 @@ function randomAnchorScene(){
        changes only the scene for SRS */
     roll:function(){},
     globals:{},
-    sceneOn:function(b){ return this.map(b).kind==="prompt"; },
+    /* the visualizer belongs to PRACTICE prompts only (Justin, 2026-09-01) —
+       reflection and vignette-question prompts set noscene */
+    sceneOn:function(b){ return this.map(b).kind==="prompt" && !b.noscene; },
     joinMode:function(b){ const k=this.map(b).kind;
       if(k==="prompt") return "off";
       if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
@@ -5289,9 +5300,23 @@ const AMB=(function(){
   const fieldW=()=>(canvases[0]&&canvases[0].clientWidth)||1280;
   function seed(){
     motes=[];reeds=[];rips=[];strands=[];dust=[];flies=[];ripNext=0;sT=0;sLast=0;
-    const RN=reduce?7:Math.round(Math.max(7,Math.min(22,fieldW()/100)));
-    for(let i=0;i<RN;i++)reeds.push({x:(i/(RN-1))*.96+.02+(Math.random()-.5)*.028,h:.24+Math.random()*.42,
-      per:8+Math.random()*8,ph:Math.random()*6.283,amp:.035+Math.random()*.045,w:1.1+Math.random()*1.5,a:.3+Math.random()*.32});
+    /* reeds populate by walking random gaps, not by dividing the width —
+       tight clusters and open water, the way a real bank grows (Justin,
+       2026-09-01: "wabi-sabi. Not planned and spaced evenly"). A cluster
+       shares a family height so it reads as one stand. */
+    const RMAX=reduce?8:Math.round(Math.max(8,Math.min(26,fieldW()/85)));
+    let rx=.02+Math.random()*.05;
+    while(rx<.97&&reeds.length<RMAX){
+      const stand=1+Math.floor(Math.random()*(Math.random()<.4?3:1)); /* sometimes a clump of 2–3 */
+      const fh=.22+Math.random()*.4;
+      for(let k=0;k<stand&&rx<.97;k++){
+        reeds.push({x:rx,h:Math.max(.14,fh+(Math.random()-.5)*.14),
+          per:8+Math.random()*8,ph:Math.random()*6.283,amp:.035+Math.random()*.045,
+          w:1.1+Math.random()*1.5,a:.3+Math.random()*.32});
+        rx+=.008+Math.random()*.02; /* inside a stand: close */
+      }
+      rx+=.03+Math.random()*.14+(Math.random()<.22?.12:0); /* between stands: uneven, sometimes open water */
+    }
     const MN=reduce?9:Math.round(Math.max(9,Math.min(20,fieldW()/70)));
     for(let i=0;i<MN;i++)motes.push({x:Math.random(),y:Math.random(),r:1.5+Math.random()*3.5,
       v:(3.5+Math.random()*8)/1000,dx:(Math.random()-.5)*.003,a:.18+Math.random()*.3});
@@ -5717,8 +5742,10 @@ function pRender(){
     const hh=c?String(c.h||""):"";
     if(c && c.eyebrow && c.eyebrow===_lastEb) holds.push("holdeb");
     if(hh && hh===_lastH) holds.push("holdh1");
-    else{ const p=hh.match(/^([^:<]+:)/), lp=(_lastH||"").match(/^([^:<]+:)/);
-          if(p&&lp&&p[1]===lp[1]) holds.push("holdpre"); }
+    else{ /* the NAME holds — whether the last slide was "Jenny" or "Jenny: X" */
+          const nm=x=>{const m=String(x||"").match(/^([^:<]+?):?\s*$|^([^:<]+):/);return m?(m[1]||m[2]).trim():null;};
+          const p=hh.match(/^([^:<]+):/);
+          if(p&&nm(_lastH)&&p[1].trim()===nm(_lastH)) holds.push("holdpre"); }
     if(c && c.body && c.body===_lastBody) holds.push("holdbody");
     if(holds.length) slideHTML=slideHTML.replace('<div class="s ','<div class="s '+holds.join(' ')+' ');
     _lastEb=(c&&c.eyebrow)||null; _lastH=hh||null; _lastBody=(c&&c.body)||null;
