@@ -4452,6 +4452,35 @@ function buildBeats(){
     ice:w.ice, iceNote:w.iceNote
   }, MK).forEach(b=>B.push(b));
 
+  /* ---------- ORIENTATION (week 1 only) ---------- */
+  /* The original deck's cohort orientation, restored 2026-09-01 (Justin: "add
+     in the orientation block") — copy verbatim from Self-Regulation
+     Simplified.pdf pp.2–7, one idea per screen. Sits after the baseline
+     check-in, before the ice-melter. The survey slide stays retired. */
+  if(w.n===1){
+    const ORIENT=[
+      info("what to expect.",
+        "You will gradually connect with your felt sense of defense through a series of incremental practices.<br>— starting from safety<br>— each one builds off the previous<br><br>Ease and progress will vary for the cohort.",
+        "First session only, and a quick pass — they read faster than you talk. The one line to say out loud: it varies, and that's expected."),
+      info("realistically, you will…",
+        "— connect with stuck defense by Week 8<br>— learn many self-regulation practices and skills<br>— practice many self-regulation practices and skills<br>— build mastery of 50% of the practices<br>— increase frequency of safety moments<br>— increase safety baseline noticeably<br>— decrease daily defensive activation<br>— at least begin to shift stuck defense",
+        "The honest list. 50% mastery is the real number — say it plainly, it builds trust."),
+      info("how to get the best results.",
+        "Actively participate.<br>Do the homework.<br>Ask questions when stuck.<br>Prioritize safety and recovery.<br>— small daily mindfulness practices<br>— pause when needed, recover, try again later",
+        ""),
+      info("the start.",
+        "You know PVT and can access safety.<br><br>Self-Regulation Simplified is the start of:<br>— connecting with defense &amp; safety in your body<br>— building vagal brake strength<br>— self-regulation",
+        ""),
+      info("disclaimer.",
+        "Self-Regulation Simplified is not:<br>— individual or group therapy<br>— individual or group coaching<br>— personal life advice<br>— a replacement for appropriate professional services",
+        "Read it as written, once, without apology. Then move on."),
+      info("capacity &amp; safety.",
+        "These are the absolute priority.<br><br>Work within your capacity and challenge level.<br><br>Safety is the priority to begin, maintain, and end.",
+        "This is the one orientation slide worth slowing down for. It's the safety rail for all eight weeks.")
+    ];
+    const ice=B.findIndex(b=>b.h==="ice-melter.");
+    B.splice(ice<0?B.length:ice,0,...ORIENT);
+  }
   sec("open",m);
 
   /* ---------- VIGNETTE ---------- */
