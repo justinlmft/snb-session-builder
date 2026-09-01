@@ -523,6 +523,23 @@
   .frame.scene-on canvas.ambient{opacity:.42}
   .frame .slot{position:absolute;inset:0;z-index:1}
   .frame .joinbox{position:absolute;z-index:3}
+  /* ---------- copy editor (shell-only chrome) ---------- */
+  #slidesView.editing .slide{cursor:pointer}
+  #slidesView.editing .slide:hover{outline:2px solid var(--ink);outline-offset:-2px;border-radius:6px}
+  .slide .ovt{color:#3b6ea5;font-weight:700}
+  #editPanel{position:fixed;inset:0;z-index:60;background:rgba(23,28,38,.28);
+    display:flex;align-items:stretch;justify-content:flex-end}
+  #editPanel[hidden]{display:none}
+  .ep-card{width:min(580px,94vw);overflow:auto;background:var(--card,#fff);
+    box-shadow:-12px 0 40px rgba(0,0,0,.18);padding:22px 26px;box-sizing:border-box}
+  .ep-card label.h{display:block;margin:16px 0 6px}
+  .ep-card input[type=text],.ep-card textarea{width:100%;box-sizing:border-box;padding:9px 11px;
+    border:1px solid var(--line);border-radius:9px;font:inherit;font-size:13px;background:var(--card);line-height:1.5}
+  .ep-card textarea{resize:vertical}
+  .ep-head{display:flex;justify-content:space-between;align-items:center}
+  .ep-x{border:none;background:none;font-size:16px;cursor:pointer;color:var(--muted)}
+  .ep-btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
+  .ep-card [hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -554,6 +571,11 @@
       <label class="h" style="margin-top:16px" for="tRoomS">Live room URL</label>
       <input type="text" id="tRoomS" placeholder="https://… (blank = auto from the Academy calendar)" oninput="SHELL.room=this.value.trim()" style="display:block;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:13px;box-sizing:border-box;background:var(--card)">
       <p class="sub" id="liveNote" style="margin:10px 0 0"></p>
+    </div>
+
+    <div class="dial sep">
+      <label class="h">Copy editor</label>
+      <label class="toggle"><input type="checkbox" id="tEditS" onchange="SBEDIT.toggle(this.checked)"> ✏️ Edit mode <span style="color:var(--muted)">— click any slide card to edit its copy; edits save for every device</span></label>
     </div>
 
     <div class="randbar">
@@ -2918,7 +2940,7 @@ var qrcode = function() {
    ================================================================== */
 const PRACTICES = {};
 const IS_STUDENT = /[?&]student=1/.test(location.search);
-const SHELL = { scene:"", testMode:false, room:"" };
+const SHELL = { scene:"", testMode:false, room:"", editMode:false };
 /* referenced by a practice's verbatim state block; the shell owns the real value */
 const LIVE_ROOM_DEFAULT = "";
 let ACTIVE = null, curTab = null;
@@ -5260,17 +5282,25 @@ function renderSlide(c){
 
 /* the builder's slide list — also one implementation for every practice */
 function slidesHTML(beats, practice){
+  /* copy overrides apply here too, so the builder card list shows what the
+     room will see; in edit mode each card opens the editor (data-ei indexes
+     into the list SBEDIT keeps). */
+  if(typeof SBEDIT!=="undefined") SBEDIT.list=beats;
+  const ov = b => (typeof OV!=="undefined") ? OV.apply(b) : b;
   let html="";
-  beats.forEach(b=>{
-    const c = practice.map(b) || {};
+  beats.forEach((b,ei)=>{
+    const ob = ov(b);
+    const c = practice.map(ob) || {};
+    const edited = (typeof OV!=="undefined") && OV.edited(b);
     const head = String(c.h||"").replace(/<br>/g," ");
     const meta = [c.kind, (b.fixed?"fixed":"varies with dials")]
-      .concat(c.eyebrow?[String(c.eyebrow).replace(/<br>/g," / ")]:[]).join(" · ");
-    html += '<div class="slide'+(b.fixed?" fixedc":"")+'">'+
+      .concat(c.eyebrow?[String(c.eyebrow).replace(/<br>/g," / ")]:[]).join(" · ")
+      + (edited?' · <span class="ovt">edited</span>':"");
+    html += '<div class="slide'+(b.fixed?" fixedc":"")+'" data-ei="'+ei+'">'+
       '<div class="tag">'+meta+'</div>'+
       '<p class="stu">'+head+'</p>'+
       (c.body?'<p class="bod">'+String(c.body).replace(/<br>/g," · ")+'</p>':"")+
-      (b.note?'<p class="note"><b>presenter notes</b> &nbsp;'+b.note+'</p>'
+      (ob.note?'<p class="note"><b>presenter notes</b> &nbsp;'+ob.note+'</p>'
              :'<p class="note" style="color:var(--muted)">— (lots of quiet) —</p>')+
       '</div>';
   });
@@ -5508,6 +5538,62 @@ function updateConsoleJoin(){
   const a=document.getElementById("pJoin"); if(a) a.textContent=txt;
   const b=document.getElementById("pJoinDial"); if(b) b.textContent=txt;
 }
+
+/* ---- copy overrides: the in-builder copy editor (Justin, 2026-09-01) ----
+   Presenter-edited slide copy lives in Supabase (sb_copy_overrides via the
+   copy-overrides edge function), keyed by a hash of the slide's PRISTINE
+   content, and applied wherever a beat is consumed for DISPLAY --- presenter
+   preview, student window, the builder card list, print. buildBeats() output
+   stays pristine, so the parity suite (MM byte-identity) is untouched by
+   construction, and editing a slide's source later detaches its override
+   (new hash) instead of silently shadowing the new copy. Writes are gated
+   server-side by the copy_edit_key vault secret; the key is asked for once
+   and lives only in the presenter's browser. Load failure is graceful ---
+   the builder runs on its built-in copy. */
+const OV=(function(){
+  let map={};
+  function h32(x){ let h=5381; x=String(x||""); for(let i=0;i<x.length;i++){ h=((h<<5)+h+x.charCodeAt(i))>>>0; } return h.toString(36); }
+  function keyFor(pid,b){ return pid+":"+h32([b.h||"",b.body||"",b.note||"",b.ask||""].join("|~|")); }
+  async function load(){
+    try{
+      const j=await sbFn("copy-overrides",{action:"list"});
+      map={}; (j.rows||[]).forEach(r=>{ map[r.k]=r; });
+      if(!IS_STUDENT && typeof render==="function" && ACTIVE) render();
+    }catch(e){ /* offline or blocked: pristine copy */ }
+  }
+  function get(b){ return (ACTIVE && b && map[keyFor(ACTIVE.id,b)])||null; }
+  function apply(b){
+    const ov=get(b); if(!ov) return b;
+    const c=Object.assign({},b);
+    if(ov.h!=null) c.h=ov.h;
+    if(ov.body!=null) c.body=ov.body;
+    if(ov.note!=null) c.note=ov.note;
+    if(ov.ask!=null && b.ask!=null) c.ask=ov.ask;
+    return c;
+  }
+  function edited(b){ return !!get(b); }
+  function editKey(){
+    let k=""; try{ k=localStorage.getItem("sb_edit_key")||""; }catch(e){}
+    if(!k){ k=(prompt("Edit key (asked once --- it stays in this browser):")||"").trim();
+      if(k){ try{ localStorage.setItem("sb_edit_key",k); }catch(e){} } }
+    return k;
+  }
+  function forgetKey(){ try{ localStorage.removeItem("sb_edit_key"); }catch(e){} }
+  async function save(b,fields){
+    const key=editKey(); if(!key) throw new Error("no edit key entered");
+    const k=keyFor(ACTIVE.id,b);
+    await sbFn("copy-overrides",Object.assign({action:"save",key:key,k:k,practice:ACTIVE.id,
+      orig:{h:b.h||"",body:b.body||"",note:b.note||"",ask:b.ask||""}},fields));
+    map[k]=Object.assign({k:k},fields);
+  }
+  async function revert(b){
+    const key=editKey(); if(!key) throw new Error("no edit key entered");
+    const k=keyFor(ACTIVE.id,b);
+    await sbFn("copy-overrides",{action:"delete",key:key,k:k});
+    delete map[k];
+  }
+  return {load:load, apply:apply, edited:edited, save:save, revert:revert, forgetKey:forgetKey};
+})();
 function showLiveError(err){
   const msg="live check-in unavailable (the practice still runs)";
   const a=document.getElementById("pJoin"); if(a) a.textContent=msg;
@@ -5642,8 +5728,12 @@ function render(){
     d.onclick=()=>{ curTab=k; render(); };
     tabsEl.appendChild(d);
   });
-  document.getElementById("slidesView").innerHTML = slidesHTML(beats.filter(b=>b.section===curTab), ACTIVE);
-  applySNB(document.getElementById("slidesView"));
+  { const t=document.getElementById("tEditS"); if(t) t.checked=!!SHELL.editMode; }
+  const sv=document.getElementById("slidesView");
+  sv.innerHTML = slidesHTML(beats.filter(b=>b.section===curTab), ACTIVE);
+  sv.classList.toggle("editing", !!SHELL.editMode);
+  sv.onclick = e=>SBEDIT.cardClick(e);
+  applySNB(sv);
 }
 window.addEventListener("beforeprint",()=>{ if(!IS_STUDENT) document.getElementById("slidesView").innerHTML=slidesHTML(ACTIVE.buildBeats(), ACTIVE); });
 window.addEventListener("afterprint",()=>{ if(!IS_STUDENT) render(); });
@@ -5738,7 +5828,7 @@ function pRender(){
   /* AAMFT rule (Justin, 2026-08-30): an image carried over unchanged from the
      slide we just left is not arriving, it is staying — hold it still and let
      only the new content move. Same mechanism as the AAMFT deck's hold-*. */
-  const c=ACTIVE.map(b);
+  const c=ACTIVE.map(OV.apply(b));   /* copy overrides apply at display time */
   let slideHTML=renderSlide(c);
   if(c && c.img && c.img===_lastImg)
     slideHTML=slideHTML.replace('<div class="well">','<div class="well holdart">');
@@ -5767,9 +5857,9 @@ function pRender(){
   AMB.attach(pv.querySelector("canvas.ambient"));
   startBreakClock(pv); applySNB(pv);
   renderJoin(pv.querySelector("#joinbox"), join);
-  document.getElementById("cNotes").innerHTML=fmtNote(b.note);
+  document.getElementById("cNotes").innerHTML=fmtNote(OV.apply(b).note);
   const nxt=pSlides[pIdx+1];
-  document.getElementById("cNext").innerHTML=nxt?("Next: <b>"+String(nxt.h||"").replace(/<br>/g," ")+"</b>"):"Next: — end of session —";
+  document.getElementById("cNext").innerHTML=nxt?("Next: <b>"+String(OV.apply(nxt).h||"").replace(/<br>/g," ")+"</b>"):"Next: — end of session —";
   document.getElementById("pCount").textContent=(pIdx+1)+" / "+pSlides.length;
   document.getElementById("pSec").textContent=(ACTIVE.TABS[b.section]||"")+" · "+ACTIVE.label;
   postSeamForCurrent();
@@ -5816,8 +5906,87 @@ document.addEventListener("keydown",e=>{
 (function(){
   const want=(location.search.match(/[?&]p=([a-z]+)/)||[])[1];
   if(IS_STUDENT){ setPractice(want||practiceKeys()[0], true); bootStudent(); }
-  else { setPractice(want||practiceKeys()[0]); fetchSNB(); }
+  else { setPractice(want||practiceKeys()[0]); fetchSNB(); OV.load(); }
 })();
+</script>
+
+<!-- copy editor panel: opens over the builder when an edit-mode card is clicked.
+     Fields hold the CURRENT copy (override if one exists, built-in otherwise);
+     Save stores only the fields that differ from the built-in copy. -->
+<div id="editPanel" hidden onclick="if(event.target===this)SBEDIT.close()">
+  <div class="ep-card">
+    <div class="ep-head"><b>Edit slide copy</b><button class="ep-x" onclick="SBEDIT.close()">✕</button></div>
+    <p class="sub" id="epWhere" style="margin:6px 0 0"></p>
+    <label class="h" for="epH">Heading</label><input id="epH" type="text">
+    <label class="h" for="epB">Body <span style="color:var(--muted);font-weight:400">— blank lines and — list lines work as on the slide</span></label>
+    <textarea id="epB" rows="9"></textarea>
+    <label class="h" for="epAsk" id="epAskL">Discuss question</label><input id="epAsk" type="text">
+    <label class="h" for="epN">Presenter note</label><textarea id="epN" rows="4"></textarea>
+    <div class="ep-btns">
+      <button class="btn" onclick="SBEDIT.save()">Save</button>
+      <button class="btn ghost" onclick="SBEDIT.revert()">Revert to original</button>
+      <button class="btn ghost" onclick="SBEDIT.close()">Cancel</button>
+    </div>
+    <p class="sub" id="epMsg" style="margin:12px 0 0"></p>
+  </div>
+</div>
+<script>
+/* ---------------- copy editor (Justin, 2026-09-01: "an interface in the
+   Session Builder that allows me to change the copy manually") ---------------- */
+const SBEDIT={
+  list:[], cur:null,
+  toggle(on){ SHELL.editMode=!!on; render(); },
+  cardClick(ev){
+    if(!SHELL.editMode) return;
+    const card=ev.target.closest(".slide"); if(!card||!card.hasAttribute("data-ei")) return;
+    this.open(this.list[+card.getAttribute("data-ei")]);
+  },
+  open(b){
+    if(!b) return; this.cur=b;
+    const ob=OV.apply(b);
+    const toTxt=x=>String(x==null?"":x).replace(/<br\s*\/?>/gi,"\n");
+    document.getElementById("epWhere").textContent=(ACTIVE.label||"")+" · "+String(ob.h||"").replace(/<[^>]+>/g,"").slice(0,80);
+    document.getElementById("epH").value=toTxt(ob.h);
+    document.getElementById("epB").value=toTxt(ob.body);
+    document.getElementById("epN").value=toTxt(ob.note);
+    const hasAsk=(b.ask!=null);
+    document.getElementById("epAskL").hidden=!hasAsk;
+    document.getElementById("epAsk").hidden=!hasAsk;
+    document.getElementById("epAsk").value=hasAsk?toTxt(ob.ask):"";
+    document.getElementById("epMsg").textContent=OV.edited(b)?"This slide carries a saved edit.":"";
+    document.getElementById("editPanel").hidden=false;
+  },
+  fields(){
+    const toHtml=x=>String(x).replace(/\r/g,"").replace(/\n/g,"<br>");
+    const f={ h:toHtml(document.getElementById("epH").value),
+              body:toHtml(document.getElementById("epB").value),
+              note:toHtml(document.getElementById("epN").value) };
+    if(this.cur.ask!=null) f.ask=toHtml(document.getElementById("epAsk").value);
+    for(const k of ["h","body","note","ask"])
+      if(f[k]!==undefined && f[k]===String(this.cur[k]==null?"":this.cur[k])) f[k]=null;
+    return f;
+  },
+  _repaint(){ render(); try{ if(sw&&!sw.closed&&pSlides&&pSlides.length) pRender(); }catch(e){} },
+  async save(){
+    try{
+      const f=this.fields();
+      const allNull=["h","body","note","ask"].every(k=>f[k]==null);
+      if(allNull && OV.edited(this.cur)) await OV.revert(this.cur);
+      else if(!allNull) await OV.save(this.cur,f);
+      this.close(); this._repaint();
+    }catch(e){ this._err(e); }
+  },
+  async revert(){
+    try{ if(OV.edited(this.cur)) await OV.revert(this.cur); this.close(); this._repaint(); }
+    catch(e){ this._err(e); }
+  },
+  _err(e){
+    const m=String((e&&e.message)||e);
+    document.getElementById("epMsg").textContent="Not saved: "+m;
+    if(/bad edit key|403/i.test(m)) OV.forgetKey();
+  },
+  close(){ document.getElementById("editPanel").hidden=true; this.cur=null; }
+};
 </script>
 </body>
 </html>
