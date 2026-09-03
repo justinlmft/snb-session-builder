@@ -3227,7 +3227,9 @@ const COHORT = (function(){
   function open(c, mk){
     const B = [];
     B.push(mk.cover("Week "+c.n+".<br>"+c.title, c.coverNote || "", c.eyebrow));
-    B.push(mk.app("Check in.",
+    /* a cohort may place its opening check-in itself (SRS puts it directly
+       before Practice 1 — Justin, 2026-09-01); checkin:false skips it here */
+    if (c.checkin !== false) B.push(mk.app("Check in.",
       c.checkinBody || CHECKIN_BEFORE_BODY,
       c.checkinNote || N.checkinBefore, "before"));
     B.push(mk.info("Ice-melter.", c.ice, c.iceNote));
@@ -4720,7 +4722,7 @@ function buildBeats(){
   /* structure + the generic presenter notes come from the shared COHORT skeleton */
   let m=0;
   COHORT.open({
-    n:w.n, title:w.title, eyebrow:"SELF-REGULATION SIMPLIFIED",
+    n:w.n, title:w.title, eyebrow:"SELF-REGULATION SIMPLIFIED", checkin:false,
     coverNote:"Welcome back. — Week "+w.n+" of eight. Today is "+w.short+". — Quick reminder of how this room works: the lessons live in the Academy, and you review them on your own time. In here we practice. That’s it. — No pressure to participate out loud. Cameras on or off. Chat if you want it.",
     ice:w.ice, iceNote:w.iceNote
   }, MK).forEach(b=>B.push(b));
@@ -4783,6 +4785,16 @@ function buildBeats(){
   /* every practice ends the same way: reconnect → break (timed) → share-out */
   m=B.length;
   const BMIN = BREAK_MIN[w.tail] || 3;
+  /* Check-ins bracket the PRACTICES, not the session (Justin, 2026-09-01:
+     "the checkin screen needs to happen before the first practice… another
+     between the first and second… and then another after the second").
+     #1 sits directly before Practice 1, #2 between the practices, and #3 is
+     the closing "Check in again" that already follows Practice 2's share.
+     Seams: #1 srs:before and #3 srs:after keep their existing names so the
+     app's current behavior is untouched; #2 rides a NEW srs2:before seam and
+     a second practices entry — the app auto-prompts once App Designer wires
+     it, and until then the slide itself tells the room what to do. */
+  B.push(app("Check in.", COHORT.CHECKIN_BEFORE_BODY, COHORT.NOTES.checkinBefore, "before"));
   practiceBeats(w,"Practice 1").forEach(b=>B.push(b));
   B.push(capacityCheck(BMIN,
     "Capacity check, then break. Read the four, ask the three, then give them the "+BMIN+" minutes and actually stop talking. — Leave your camera on or off, nobody needs to perform a break. — The countdown is on the slide so nobody has to watch me for the cue."));
@@ -4790,6 +4802,10 @@ function buildBeats(){
   B.push(reflectWeek(w.n));
   B.push(info("Other reflections?","",
     "Open mics. Let the silence sit for a few seconds before you fill it — people need a moment to come back into words. — You are not teaching here. Reflect, normalize, and let members respond to each other. If two members start talking to each other, stay out of it — that’s the co-regulation doing its job."));
+  B.push(app("Check in.",
+    "Open the app and check in between practices.",
+    "The middle reading — where are you after the first practice? Thirty seconds of honest data, not a share. — Three readings make the picture: where you started, what one practice did, and where the second one leaves you.",
+    "mid"));
   {
     /* Interest Impulse — condensed from the original deck (pp46–50), restored
        2026-09-01. Framed as practice instruction, not a lesson: it explains
@@ -4899,7 +4915,7 @@ function randomAnchorScene(){
       return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, breakMin:b.breakMin, img:b.img};
     },
     agenda:function(){ const b=BREAK_MIN[W().tail]||3;
-      return ["Check in","Vignettes","Practice","Break "+b+"m","Reflect","Share","Practice 2","Break "+b+"m","Reflect","Share","Check in","Homework"]; },
+      return ["Vignettes","Check in","Practice 1","Break "+b+"m","Reflect","Share","Check in","Practice 2","Break "+b+"m","Reflect","Share","Check in","Homework"]; },
     renderDials:function(){ weekChips(); senseChips(); },
     /* the anchor is fixed per week (2026-09-01) — the shared roll button
        changes only the scene for SRS */
@@ -4911,13 +4927,17 @@ function randomAnchorScene(){
     joinMode:function(b){ const k=this.map(b).kind;
       if(k==="prompt") return "off";
       if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
-    seam:function(b){ return (b&&b.style==="app"&&b.phase)?("srs:"+b.phase):null; },
+    /* the middle check-in ("mid") stamps srs2:before — a second practices
+       entry for the app — while before/after keep their long-standing names */
+    seam:function(b){ if(!(b&&b.style==="app"&&b.phase)) return null;
+      return b.phase==="mid" ? "srs2:before" : ("srs:"+b.phase); },
     recipe:function(){ const w=W(); return {week:w.n, skill:w.short, sense:w.sense,
       scene:(SHELL.scene||"(surprise me)"), break_minutes:(BREAK_MIN[w.tail]||3)}; },
     live:{ type:"self-regulation-simplified", ref:"srs", minutes:120,
-           seams:["srs:before","srs:after"],
+           seams:["srs:before","srs2:before","srs:after"],
            invite:"we're practicing self-regulation simplified together right now.",
-           practices:[{ref:"srs",label:"Self-Regulation Simplified",checkins:["before","after"]}] }
+           practices:[{ref:"srs", label:"Self-Regulation Simplified", checkins:["before","after"]},
+                      {ref:"srs2", label:"Practice 2", checkins:["before"]}] }
   };
 })();
 
