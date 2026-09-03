@@ -4158,7 +4158,7 @@ PRACTICES.cb = (function(){
         eyebrow:[b.kind,b.tagline].filter(Boolean).join("<br>"), h:b.h};
       /* a capacity slide that carries a reading shows the check-in line under
          the capacity questions; the slide is otherwise unchanged. */
-      return {kind:"info", eyebrow:b.eyebrow||"", h:b.h,
+      return {kind:"info", ask:b.ask, eyebrow:b.eyebrow||"", h:b.h,
         body:b.body+(b.ciBody?'<br><br><b>'+b.ciBody+'</b>':""), breakMin:b.breakMin};
     },
     agenda:function(){ return ["Mindfulness", skillName(st.p2), skillName(st.p3)]; },
@@ -4910,12 +4910,12 @@ function randomAnchorScene(){
     dialsHTML:DIALS,
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
-      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img};
+      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img, ask:b.ask};
       if(b.style==="disc")   return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img, ask:b.ask};
-      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body};
+      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body, ask:b.ask};
       if(b.style==="ptitle") return {kind:"ptitle", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="cover")  return {kind:"cover", eyebrow:b.eyebrow, h:b.h};
-      return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, breakMin:b.breakMin, img:b.img};
+      return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, breakMin:b.breakMin, img:b.img, ask:b.ask};
     },
     agenda:function(){ const b=BREAK_MIN[W().tail]||3;
       return ["Vignettes","Check in","Practice 1","Break "+b+"m","Reflect","Share","Check in","Practice 2","Break "+b+"m","Reflect","Share","Check in","Homework"]; },
@@ -5163,11 +5163,11 @@ function senseChips(){
     st:st, TABS:TABS, buildBeats:buildBeats, sessionName:sessionName, dialsHTML:DIALS,
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
-      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img};
+      if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img, ask:b.ask};
       if(b.style==="ptitle") return {kind:"ptitle", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="cover")  return {kind:"cover", eyebrow:b.eyebrow, h:b.h};
-      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body};
-      return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img};
+      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body, ask:b.ask};
+      return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img, ask:b.ask};
     },
     agenda:function(){ const w=W();
       const mid = (w.items||[]).length ? ["Three items"]
@@ -5264,6 +5264,13 @@ function hdots(h){ return String(h||"").replace(/([^.])\.(?=(?:<br[^>]*>)|$)/g,"
 /* A story headline "Jenny: Witnessing" splits into a name span and a rest
    span, so the presenter can hold the repeated name still while only the new
    part rises in (Justin, 2026-09-01: "keep all repeating text static"). */
+/* the Discuss card — on any slide whose (possibly overridden) ask is
+   non-empty. Titles, practice prompts and the capacity check never get one
+   (their kinds/branches simply don't call this). */
+function askHTML(c){
+  return c.ask ? '<div class="discard"><span class="dtag">Discuss</span><div class="dq">'+c.ask+'</div></div>' : "";
+}
+
 function splitH(h){
   const m=String(h||"").match(/^([^:<]+:)\s*(.*)$/);
   return m ? '<span class="hpre">'+m[1]+'</span> <span class="hrest">'+m[2]+'</span>' : (h||"");
@@ -5282,7 +5289,7 @@ function renderSlide(c){
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+'</div>';
     case "checkin":
       return '<div class="s checkin wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
-        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+'</div>';
+        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+askHTML(c)+'</div>';
     case "story": {
       /* long vignettes shrink to fit the frame instead of clipping; a portrait
          well counts as extra length since it narrows the text column */
@@ -5290,16 +5297,15 @@ function renderSlide(c){
       const fit = blen>1350 ? " x3" : blen>900 ? " x2" : (blen>550 ? " x1" : "");
       return '<div class="s story'+(c.img?' haswell':'')+fit+'">'+eb+'<h1>'+splitH(hdots(c.h))+'</h1>'+
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+
-        /* discussion card — the slide stays put, the question pops over it */
-        (c.ask?'<div class="discard"><span class="dtag">Discuss</span><div class="dq">'+c.ask+'</div></div>':"")+
-        '</div>';
+        askHTML(c)+'</div>';
     }
     case "events":
       return '<div class="s events wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+(c.rows||"")+'</div>';
     case "info":
     default:
       return '<div class="s info'+(c.img?' haswell':'')+'">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
-        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+breakClockHTML(c.breakMin)+'</div>';
+        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+breakClockHTML(c.breakMin)+
+        askHTML(c)+'</div>';
   }
 }
 
@@ -5592,7 +5598,11 @@ const OV=(function(){
     if(ov.h!=null) c.h=ov.h;
     if(ov.body!=null) c.body=ov.body;
     if(ov.note!=null) c.note=ov.note;
-    if(ov.ask!=null && b.ask!=null) c.ask=ov.ask;
+    /* an override may ADD a Discuss question to any eligible slide, or blank
+       an authored one — the renderer shows the card only when ask is
+       non-empty (Justin, 2026-09-01: "a blank Discuss field on every slide…
+       if empty, nothing shows; if I put something in, the viewer sees it") */
+    if(ov.ask!=null) c.ask=ov.ask;
     return c;
   }
   function edited(b){ return !!get(b); }
@@ -5955,7 +5965,7 @@ document.addEventListener("keydown",e=>{
     <label class="h" for="epH">Heading</label><input id="epH" type="text">
     <label class="h" for="epB">Body <span style="color:var(--muted);font-weight:400">— blank lines and — list lines work as on the slide</span></label>
     <textarea id="epB" rows="9"></textarea>
-    <label class="h" for="epAsk" id="epAskL">Discuss question</label><input id="epAsk" type="text">
+    <label class="h" for="epAsk" id="epAskL">Discuss question <span style="color:var(--muted);font-weight:400">— empty = no card; filled = the card shows live on this slide</span></label><input id="epAsk" type="text">
     <label class="h" for="epN">Presenter note</label><textarea id="epN" rows="4"></textarea>
     <div class="ep-btns">
       <button class="btn" onclick="SBEDIT.save()">Save</button>
@@ -5986,10 +5996,14 @@ const SBEDIT={
     document.getElementById("epH").value=toTxt(ob.h);
     document.getElementById("epB").value=toTxt(ob.body);
     document.getElementById("epN").value=toTxt(ob.note);
-    const hasAsk=(b.ask!=null);
-    document.getElementById("epAskL").hidden=!hasAsk;
-    document.getElementById("epAsk").hidden=!hasAsk;
-    document.getElementById("epAsk").value=hasAsk?toTxt(ob.ask):"";
+    /* the Discuss field is offered on every slide EXCEPT titles, practice
+       prompts and the capacity check (Justin, 2026-09-01) */
+    const kind=(ACTIVE.map(b)||{}).kind;
+    const askable=(kind==="story"||kind==="info"||kind==="checkin") && !/^Check your capacity/.test(String(b.h||""));
+    this._askable=askable;
+    document.getElementById("epAskL").hidden=!askable;
+    document.getElementById("epAsk").hidden=!askable;
+    document.getElementById("epAsk").value=askable?toTxt(ob.ask):"";
     const hid=OV.hidden(b);
     document.getElementById("epHide").hidden=hid;
     document.getElementById("epRestore").hidden=!hid;
@@ -6002,7 +6016,7 @@ const SBEDIT={
     const f={ h:toHtml(document.getElementById("epH").value),
               body:toHtml(document.getElementById("epB").value),
               note:toHtml(document.getElementById("epN").value) };
-    if(this.cur.ask!=null) f.ask=toHtml(document.getElementById("epAsk").value);
+    if(this._askable) f.ask=toHtml(document.getElementById("epAsk").value);
     for(const k of ["h","body","note","ask"])
       if(f[k]!==undefined && f[k]===String(this.cur[k]==null?"":this.cur[k])) f[k]=null;
     return f;
