@@ -4255,7 +4255,7 @@ const WEEKS = [
      body:"Simone looks fine to other people. Inside, her mind runs all day: a list of pending tasks, worry about what happens when she doesn't do them, rehearsing her response when her manager says something.<br><br>She wants to get more done, but can't seem to get her body to follow. She sits at her cubicle, tense. She feels worn out at the end of the day even though she got little done.<br><br>She blames herself and calls herself lazy, which leads to more worry and less motivation.<br><br>She joins the cohort.",
      ask:[{h:"What is Simone\u2019s dominant defensive state?"}],
      note:""},
-    {who:"SIMONE", state:"shoes", h:"Simone: Cue→Anchor.", body:"Before the cohort, Simone had noticed that small physical actions sometimes loosen the stuck feeling, especially after taking in one big breath and extending her exhale. <br>So, she has been mindfully stretching at her work desk regularly. She also uses her work breaks to move, like walking around the building. While walking, she is mindfully aware of her senses and reduces stimulation by not listening to anything."},
+    {who:"SIMONE", state:"shoes", h:"Simone: Cue→Anchor.", body:"Before the cohort, Simone had noticed that small physical actions sometimes loosen the stuck feeling, especially after taking in one big breath and extending her exhale. <br><br>So, she has been mindfully stretching at her work desk regularly. She also uses her work breaks to move, like walking around the building. While walking, she is mindfully aware of her senses and reduces stimulation by not listening to anything."},
     {who:"SIMONE", state:"shoes", h:"Simone: Anchored Awareness.", body:"<b>Anchored Awareness:</b> She identified her best opportunity to practice Anchored Awareness as a mindful walk around her block before work, at home.<br><br>She steps out her front door and begins a lap around her block. She pays attention to the rhythmic sound of her feet on the sidewalk and the feel of her feet pushing off of the concrete. She feels her muscles flexing and contracting. She also feels the morning air on her skin and hears the neighborhood: birds, a passing car, someone’s sprinkler.<br><br>She identifies feeling “present.” And then she feels “relief.”",
      ask:[{h:"How do you think Simone\u2019s safety practice affects her freeze?"}]},
     {who:"SIMONE", state:"shoes", h:"Simone: Witnessing.", body:"<b>Witnessing:</b> She checks in with her body and notices that “relief” feels lighter overall and is more specifically in her chest with bigger breaths. The tension is still there, but less."},
@@ -4568,14 +4568,13 @@ const BREAK_MIN={none:3,vn:3,ii:3,obs:3,bal:5,pend:5,baldesc:5,penddesc:5};
 /* ---------- REFLECTION (between break and share-out — Justin 2026-08-29) ----------
    Two fixed prompts + one weekly. Read the prompt, then stop talking: silence is the
    reflection working. Answers go in the chat or stay private — both count. */
-const REFLECT_NOTE="Read the prompt, then stop talking. Silence is the reflection working, not the room failing. Chat or private — both count.";
-/* The slide carries ONE plainly written instruction or question (Justin,
-   2026-09-01: "write this instruction out in a sentence"); the coaching
-   qualifiers ride in the presenter notes. Reflection screens are also
+/* The slide carries ONE plainly written instruction or question; presenter
+   notes stay minimal (Justin, 2026-09-03: stripped the reflection coaching
+   boilerplate live, carried to every week). Reflection screens are
    scene-free — the visualizer belongs to practice prompts only. */
-function reflectOne(){ const b=q("Put one word (or emoji) in the chat to describe your practice experience.","Or just to yourself. — "+REFLECT_NOTE); b.noscene=true; return b; }
+function reflectOne(){ const b=q("Put one word (or emoji) in the chat to describe your practice experience.",""); b.noscene=true; return b; }
 const REFLECT_WEEK={
- 1:{h:"Where did safety show up in your body?", n:"One place. However small — tiny counts."},
+ 1:{h:"Where did safety show up in your body?", n:"Generally? Specifically?"},
  2:{h:"Say your Validate sentence to yourself one more time. Does it feel true, or borrowed?", n:"Both are fine — which?"},
  3:{h:"When you invited your image, what did it do?", n:"Stay, shrink, shift, nothing — all four are answers."},
  4:{h:"Which statement got a rise out of you? Where did you feel it first?", n:""},
@@ -4584,7 +4583,7 @@ const REFLECT_WEEK={
  7:{h:"What did describing change?", n:"More room around it, or too close today? Either is information."},
  8:{h:"What can you do now that you couldn’t in week one?", n:"One sentence."}
 };
-function reflectWeek(n){ const r=REFLECT_WEEK[n], b=q(r.h,(r.n?r.n+" — ":"")+REFLECT_NOTE); b.noscene=true; return b; }
+function reflectWeek(n){ const r=REFLECT_WEEK[n], b=q(r.h,r.n||""); b.noscene=true; return b; }
 
 /* ---------- THE ANCHOR LADDER (sense-aware, from the SRS decks) ---------- */
 /* The anchor ladder is no longer defined here. Capacity Builder is the standard
@@ -4784,7 +4783,8 @@ function buildBeats(){
     if(v.ask&&v.ask.length) b.ask=v.ask.map(k=>k.h);
     B.push(b);
   });
-  if(w.vigQ){ const b=q(w.vigQ.h,w.vigQ.note); b.noscene=true; B.push(b); }
+  /* the personal vigQ is retired (Justin, 2026-09-03: hid W1's live and asked
+     for the change in every week). Data stays on the weeks, dormant. */
   sec("vignette",m);
 
   /* ---------- PRACTICE ---------- */
@@ -4806,8 +4806,7 @@ function buildBeats(){
     "Capacity check, then break. Read the four, ask the three, then give them the "+BMIN+" minutes and actually stop talking. — Leave your camera on or off, nobody needs to perform a break. — The countdown is on the slide so nobody has to watch me for the cue."));
   B.push(reflectOne());
   B.push(reflectWeek(w.n));
-  B.push(info("Other reflections?","",
-    "Open mics. Let the silence sit for a few seconds before you fill it — people need a moment to come back into words. — You are not teaching here. Reflect, normalize, and let members respond to each other. If two members start talking to each other, stay out of it — that’s the co-regulation doing its job."));
+  B.push(info("Other reflections? Questions?","",""));
   B.push(app("Check in.",
     "Open the app and check in between practices.",
     "The middle reading — where are you after the first practice? Thirty seconds of honest data, not a share. — Three readings make the picture: where you started, what one practice did, and where the second one leaves you.",
@@ -4824,9 +4823,7 @@ function buildBeats(){
     practiceBeats(w,"Practice 2").forEach(b=>B.push(b));
     B.push(capacityCheck(BMIN));
     B.push(reflectOne());
-    { const b=q("Was the second one different?","Not better. Different. What changed? — This is the comparative rep, and it feeds the share-out that follows."); b.noscene=true; B.push(b); }
-    B.push(info("And that one?","",
-      "Shorter share this time. — Worth asking: was the second one different from the first? Usually it is, and hearing that from each other is more convincing than hearing it from me."));
+    { const b=q("Was the second practice different?","Was it easier to connect with safety?"); b.noscene=true; B.push(b); }
   }
   sec("practice",m);
 
@@ -4920,7 +4917,7 @@ function randomAnchorScene(){
       return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, breakMin:b.breakMin, img:b.img, ask:b.ask};
     },
     agenda:function(){ const b=BREAK_MIN[W().tail]||3;
-      return ["Vignettes","Check in","Practice 1","Break "+b+"m","Reflect","Share","Check in","Practice 2","Break "+b+"m","Reflect","Share","Check in","Homework"]; },
+      return ["Vignettes","Check in","Practice 1","Break "+b+"m","Reflect","Share","Check in","Practice 2","Break "+b+"m","Reflect","Check in","Homework"]; },
     renderDials:function(){ weekChips(); senseChips(); },
     /* the anchor is fixed per week (2026-09-01) — the shared roll button
        changes only the scene for SRS */
