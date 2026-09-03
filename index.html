@@ -540,6 +540,9 @@
   .ep-x{border:none;background:none;font-size:16px;cursor:pointer;color:var(--muted)}
   .ep-btns{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap}
   .ep-card [hidden]{display:none!important}
+  .ep-danger{color:#a04040!important;border-color:#a0404055!important}
+  .slide.ovhide{opacity:.45}
+  .slide .ovh{color:#a04040;font-weight:700}
 </style>
 </head>
 <body>
@@ -5312,11 +5315,12 @@ function slidesHTML(beats, practice){
     const ob = ov(b);
     const c = practice.map(ob) || {};
     const edited = (typeof OV!=="undefined") && OV.edited(b);
+    const hid = (typeof OV!=="undefined") && OV.hidden(b);
     const head = String(c.h||"").replace(/<br>/g," ");
     const meta = [c.kind, (b.fixed?"fixed":"varies with dials")]
       .concat(c.eyebrow?[String(c.eyebrow).replace(/<br>/g," / ")]:[]).join(" · ")
-      + (edited?' · <span class="ovt">edited</span>':"");
-    html += '<div class="slide'+(b.fixed?" fixedc":"")+'" data-ei="'+ei+'">'+
+      + (hid?' · <span class="ovh">removed from deck</span>':(edited?' · <span class="ovt">edited</span>':""));
+    html += '<div class="slide'+(b.fixed?" fixedc":"")+(hid?" ovhide":"")+'" data-ei="'+ei+'">'+
       '<div class="tag">'+meta+'</div>'+
       '<p class="stu">'+head+'</p>'+
       (c.body?'<p class="bod">'+String(c.body).replace(/<br>/g," · ")+'</p>':"")+
@@ -5592,6 +5596,14 @@ const OV=(function(){
     return c;
   }
   function edited(b){ return !!get(b); }
+  /* an override row may HIDE its slide from the deck entirely (Justin,
+     2026-09-01: "the editing power to delete a slide"). Hidden slides are
+     dropped from Present, the builder list (outside edit mode) and print;
+     edit mode still shows them, dimmed, for one-click restore. Note: hiding
+     targets the slide's CONTENT hash, so two beats with byte-identical copy
+     (e.g. the repeated reflection prompt) hide together. */
+  function hidden(b){ const ov=get(b); return !!(ov&&ov.hide); }
+  function filterBeats(list){ return list.filter(b=>!hidden(b)); }
   function editKey(){
     let k=""; try{ k=localStorage.getItem("sb_edit_key")||""; }catch(e){}
     if(!k){ k=(prompt("Edit key (asked once --- it stays in this browser):")||"").trim();
@@ -5612,7 +5624,8 @@ const OV=(function(){
     await sbFn("copy-overrides",{action:"delete",key:key,k:k});
     delete map[k];
   }
-  return {load:load, apply:apply, edited:edited, save:save, revert:revert, forgetKey:forgetKey};
+  return {load:load, apply:apply, edited:edited, hidden:hidden, filterBeats:filterBeats,
+          save:save, revert:revert, forgetKey:forgetKey};
 })();
 function showLiveError(err){
   const msg="live check-in unavailable (the practice still runs)";
@@ -5737,11 +5750,13 @@ function render(){
   document.getElementById("sAgenda").innerHTML =
     agenda.map((n,i)=>'<span class="step"><span class="num">'+(i+1)+'</span>'+n+'</span>').join('<span class="arr">→</span>');
 
-  const beats = ACTIVE.buildBeats();
-  document.getElementById("slideCount").textContent = beats.length+" slides total";
+  /* hidden slides leave the deck; edit mode still lists them (dimmed) so
+     they can be restored */
+  const beats = SHELL.editMode ? ACTIVE.buildBeats() : OV.filterBeats(ACTIVE.buildBeats());
+  document.getElementById("slideCount").textContent = OV.filterBeats(beats).length+" slides total";
   const tabsEl=document.getElementById("tabs"); tabsEl.innerHTML="";
   Object.keys(ACTIVE.TABS).forEach(k=>{
-    const n=beats.filter(b=>b.section===k).length;
+    const n=OV.filterBeats(beats.filter(b=>b.section===k)).length;
     const d=document.createElement("div");
     d.className="tab"+(curTab===k?" sel":"");
     d.innerHTML=ACTIVE.TABS[k]+' <span style="opacity:.6">'+n+'</span>';
@@ -5755,7 +5770,7 @@ function render(){
   sv.onclick = e=>SBEDIT.cardClick(e);
   applySNB(sv);
 }
-window.addEventListener("beforeprint",()=>{ if(!IS_STUDENT) document.getElementById("slidesView").innerHTML=slidesHTML(ACTIVE.buildBeats(), ACTIVE); });
+window.addEventListener("beforeprint",()=>{ if(!IS_STUDENT) document.getElementById("slidesView").innerHTML=slidesHTML(OV.filterBeats(ACTIVE.buildBeats()), ACTIVE); });
 window.addEventListener("afterprint",()=>{ if(!IS_STUDENT) render(); });
 
 /* ---------------- present: student window + presenter console ---------------- */
@@ -5886,7 +5901,7 @@ function pRender(){
 }
 function startPresent(){
   if(!openStudentWindow())return;
-  pSlides=ACTIVE.buildBeats();
+  pSlides=OV.filterBeats(ACTIVE.buildBeats());
   pIdx=Math.max(0,pSlides.findIndex(b=>b.section===curTab));
   if(!SHELL.scene) rollSessionScene();
   document.getElementById("console").classList.add("on");
@@ -5946,6 +5961,8 @@ document.addEventListener("keydown",e=>{
       <button class="btn" onclick="SBEDIT.save()">Save</button>
       <button class="btn ghost" onclick="SBEDIT.revert()">Revert to original</button>
       <button class="btn ghost" onclick="SBEDIT.close()">Cancel</button>
+      <button class="btn ghost ep-danger" id="epHide" onclick="SBEDIT.hideSlide()">Remove slide from deck</button>
+      <button class="btn ghost" id="epRestore" onclick="SBEDIT.restore()" hidden>Restore slide to deck</button>
     </div>
     <p class="sub" id="epMsg" style="margin:12px 0 0"></p>
   </div>
@@ -5973,7 +5990,11 @@ const SBEDIT={
     document.getElementById("epAskL").hidden=!hasAsk;
     document.getElementById("epAsk").hidden=!hasAsk;
     document.getElementById("epAsk").value=hasAsk?toTxt(ob.ask):"";
-    document.getElementById("epMsg").textContent=OV.edited(b)?"This slide carries a saved edit.":"";
+    const hid=OV.hidden(b);
+    document.getElementById("epHide").hidden=hid;
+    document.getElementById("epRestore").hidden=!hid;
+    document.getElementById("epMsg").textContent=
+      hid?"This slide is REMOVED from the deck.":(OV.edited(b)?"This slide carries a saved edit.":"");
     document.getElementById("editPanel").hidden=false;
   },
   fields(){
@@ -5999,6 +6020,20 @@ const SBEDIT={
   async revert(){
     try{ if(OV.edited(this.cur)) await OV.revert(this.cur); this.close(); this._repaint(); }
     catch(e){ this._err(e); }
+  },
+  /* remove/restore: hide rides the same override row, so field edits survive
+     a hide→restore round trip. Identical twin slides (same exact copy) hide
+     together — by design, e.g. the repeated reflection prompt. */
+  async hideSlide(){
+    try{ const f=this.fields(); f.hide=true; await OV.save(this.cur,f);
+      this.close(); this._repaint(); }catch(e){ this._err(e); }
+  },
+  async restore(){
+    try{ const f=this.fields();
+      const bare=["h","body","note","ask"].every(k=>f[k]==null);
+      if(bare) await OV.revert(this.cur);
+      else { f.hide=false; await OV.save(this.cur,f); }
+      this.close(); this._repaint(); }catch(e){ this._err(e); }
   },
   _err(e){
     const m=String((e&&e.message)||e);
