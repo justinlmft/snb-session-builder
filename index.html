@@ -5829,28 +5829,25 @@ const OV=(function(){
      (e.g. the repeated reflection prompt) hide together. */
   function hidden(b){ const ov=get(b); return !!(ov&&ov.hide); }
   function filterBeats(list){ return list.filter(b=>!hidden(b)); }
-  function editKey(){
-    let k=""; try{ k=localStorage.getItem("sb_edit_key")||""; }catch(e){}
-    if(!k){ k=(prompt("Edit key (asked once --- it stays in this browser):")||"").trim();
-      if(k){ try{ localStorage.setItem("sb_edit_key",k); }catch(e){} } }
-    return k;
-  }
-  function forgetKey(){ try{ localStorage.removeItem("sb_edit_key"); }catch(e){} }
+  /* NO EDIT KEY (Justin, 2026-09-09: "i don't even want this here. i want to just
+     edit when i want to"). The builder used to prompt once per browser for a secret
+     held in Vault, which nobody remembered. Editing is now open to anyone who opens
+     the builder. Nothing is destroyed by an edit: every override row keeps `orig`,
+     hidden slides are dropped from the deck rather than deleted, and both restore in
+     one click from edit mode — so the worst case is a visible mess, not lost copy. */
   async function save(b,fields){
-    const key=editKey(); if(!key) throw new Error("no edit key entered");
     const k=keyFor(ACTIVE.id,b);
-    await sbFn("copy-overrides",Object.assign({action:"save",key:key,k:k,practice:ACTIVE.id,
+    await sbFn("copy-overrides",Object.assign({action:"save",k:k,practice:ACTIVE.id,
       orig:{h:b.h||"",body:b.body||"",note:b.note||"",ask:b.ask||""}},fields));
     map[k]=Object.assign({k:k},fields);
   }
   async function revert(b){
-    const key=editKey(); if(!key) throw new Error("no edit key entered");
     const k=keyFor(ACTIVE.id,b);
-    await sbFn("copy-overrides",{action:"delete",key:key,k:k});
+    await sbFn("copy-overrides",{action:"delete",k:k});
     delete map[k];
   }
   return {load:load, apply:apply, edited:edited, hidden:hidden, filterBeats:filterBeats,
-          save:save, revert:revert, forgetKey:forgetKey};
+          save:save, revert:revert};
 })();
 
 /* A slide's Discuss questions in normal form: the authored array, or an
@@ -6296,7 +6293,6 @@ const SBEDIT={
   _err(e){
     const m=String((e&&e.message)||e);
     document.getElementById("epMsg").textContent="Not saved: "+m;
-    if(/bad edit key|403/i.test(m)) OV.forgetKey();
   },
   close(){ document.getElementById("editPanel").hidden=true; this.cur=null; }
 };
