@@ -2974,53 +2974,31 @@ const LADDER = (function(){
     function descBeats(P, ctx, sense, v) {
       const b = mkq(P),
         B = [];
-      /* THREE PASSES, TWO DECKS (Justin, 2026-09-10).
-         · The ANCHOR pass ("object") is literal, external mindfulness, so it stays
-           sense-swapped — a sound has no colour, it has pitch and volume. Four slots.
-         · SAFETY and DEFENSE are the same instrument pointed at two different insides,
-           so they run the SAME six slots from the SAME selection: colour, shape,
-           temperature, texture, sound, movement. Only the first slide names which one
-           you are describing; the rest say "it" — the recording script's own rule,
-           "`-01` names the thing, `-02` through `-05` say it. Never name it twice."
-           Safety used to name itself four times out of five, against that rule. */
-      let keys;
-      if (ctx === "object") keys = ["color", "shape", "temp", "texture"];
-      else {
-        if (ctx === "defense" && !v.descOn) return B;
-        keys = (v && v.delems && v.delems.length) ? v.delems : DELEMS_ALL;
-      }
-      const named = ctx === "safety" ? "your safety" : ctx === "defense" ? "that non-safety emotion" : null;
+      /* ONE DECK, TWO INSIDES. Safety and defense are the same instrument pointed at
+         two different insides, so they run the SAME six slots from the SAME selection:
+         colour, shape, temperature, texture, sound, movement. Only the first slide
+         names which one you are describing; the rest say "it" — the recording
+         script's own rule, "`-01` names the thing, `-02` through `-05` say it. Never
+         name it twice."
+         THE ANCHOR NO LONGER HAS A DESCRIBE PASS (Justin, 2026-09-10: the sound path
+         "still has the prompts and slide text for volume, thinness, fullness"). It was
+         four sense-swapped slides built on a single held object, which sight and sound
+         do not have. The script gives each anchor exactly ONE closer-look clip —
+         `ANCHORING-SOUND-06`, `-SIGHT-03`, `-TOUCH-04`, `-MOVEMENT-10`,
+         `-IMAGINATION-09` — with its dimensions spread across the takes, one per take.
+         That single beat is CLOSER() below. */
+      if (ctx === "defense" && !v.descOn) return B;
+      const keys = (v && v.delems && v.delems.length) ? v.delems : DELEMS_ALL;
+      const named = ctx === "safety" ? "your safety" : "that non-safety emotion";
       let first = true;
       keys.forEach(k => {
         const name = (s, it) => { const t = first ? s : it; first = false; return t; };
-        if (k === "color") {
-          if (ctx === "object" && sense === "sound") B.push(b("What pitch is it?", "High or low? Or somewhere in between?"));
-          else if (ctx === "object" && sense === "movement") B.push(b("What pace is it?", "Slow or quick? Or somewhere in between?"));
-          else if (ctx === "object") B.push(b("What color is it?"));
-          else B.push(b(name("What color is " + named + "?", "What color is it?")));
-        }
-        if (k === "shape") {
-          if (ctx === "object" && sense === "sound") B.push(b("Is it thin or full?", "Sparse or rich? Simple or layered?"));
-          else if (ctx === "object" && sense === "movement") B.push(b("How big is the movement?", "Small or large? Subtle or full?"));
-          else if (ctx === "object") B.push(b("What shape is it?"));
-          else B.push(b(name("What shape is " + named + "?", "What shape is it?")));
-        }
-        if (k === "temp") {
-          if (ctx === "object") {
-            if (sense === "sight") B.push(b("What brightness is it?"));
-            else if (sense === "sound") B.push(b("What volume is it?", "Loud or soft? Or somewhere between?"));
-            else if (sense === "movement") B.push(b("What temperature is it?", "Any warmth building?"));
-            else B.push(b("What temperature is it?"));
-          } else B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
-        }
-        if (k === "texture") {
-          if (ctx === "object" && sense === "sound") B.push(b("What texture does it have?", "Smooth, rough, sharp, soft?"));
-          else if (ctx === "object" && sense === "movement") B.push(b("What texture does it have?", "Fluid or stiff? Smooth or jerky?"));
-          else if (ctx === "object") B.push(b("What texture is it?"));
-          else B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
-        }
-        if (k === "sound" && ctx !== "object") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
-        if (k === "doing" && ctx !== "object") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
+        if (k === "color") B.push(b(name("What color is " + named + "?", "What color is it?")));
+        if (k === "shape") B.push(b(name("What shape is " + named + "?", "What shape is it?")));
+        if (k === "temp") B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
+        if (k === "texture") B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
+        if (k === "sound") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
+        if (k === "doing") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
       });
       return B;
     }
@@ -3039,6 +3017,21 @@ const LADDER = (function(){
     const BREATH_NOTE_FULL = "Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don’t change your breathing, just notice it. If it changes by itself because you’ve paid attention to it, that’s fine. — Chest or belly? Full or shallow? Tense or relaxed?";
     const BREATH_NOTE_SHORT = "Not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
     const HEAR_NOTE = "Anything? Or silence? — Outside your space first: what reaches you from further away. Then inside your space: what is close by. — What comes and goes, appearing and disappearing. What stays constant underneath. And the silence between. — Nothing to hold onto; sound is always passing through.";
+    /* The MINDFULNESS OPENER's two sense notes. Deliberately thinner than the anchor
+       notes above — this is a pass, not a dwell. */
+    const SEE_NOTE_LIGHT = "A pass, not a dwell. — Let your eyes go where they want. What is pulling at them right now: a color, a movement, a texture? — Name it and move on.";
+    const HEAR_NOTE_LIGHT = "A pass, not a dwell. — Anything, or silence? Close by, and further away. — Don’t settle into any of it yet.";
+    /* ONE closer-look beat per anchor, straight off the script's single clip. The
+       dimensions live in the note because the script spreads them across takes — the
+       presenter picks one, they are not all asked. */
+    function CLOSER(P, sense) {
+      const b = mkq(P);
+      if (sense === "touch") return b("What does it feel like on your skin?", "Different parts of the hand — fingertips, palm, knuckles, wrist. Stick with whichever feels best. — Is there a motion your hand wants to make? A squeeze, or something else?");
+      if (sense === "sight") return b("Look a little closer.", "Its color — bright, or dull? Does it hold, or fade? — How the light hugs its edges, and how the shadows fall from it. — Any movement at all? If not, the stillness. — Its texture: grooves, dents, the imperfections.");
+      if (sense === "sound") return b("Stay with that sound, or the silence.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
+      if (sense === "movement") return b("What does the movement feel like in your body?", "Where is it strongest — the joint, the muscle, the whole limb? — How does the rest of you answer it? — Play with it on purpose: bigger, smaller, or all the way to still. Keep whichever feels best.");
+      return b("Get closer to it.", "Can you touch it? What does it feel like under your hand? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+    }
     function ladderBeats(P, sense, o, v) { // o = {rate}
       const b = mkq(P),
         B = [];
@@ -3050,6 +3043,18 @@ const LADDER = (function(){
          outside → in (Justin, 2026-09-07). "Imagine & Invite anything else" is a look
          INWARD, so it opens the practice instead of interrupting the outside-in sense run
          halfway through, which is where it used to sit. */
+      /* THE MINDFULNESS OPENER (Justin, 2026-09-10): "before we get to the anchoring
+         potential (like sound), we need to first use mindfulness… a few slides
+         front-loaded… to help settle into the moment and transition into a deeper
+         connection with their anchor and into felt safety." It mimics the script's
+         MIND arc — MIND-05 sight, MIND-03 sound, MIND-02 breath — then hands to
+         MIND-06/07 (Imagine & Invite) exactly as the script does, and only THEN to
+         the anchor. Sight → sound → breath is the outside-in order.
+         MM and CB Practice 1 run the full arc as a standalone practice and do not
+         call this, so nothing doubles up. */
+      B.push(b("Notice what you see.", SEE_NOTE_LIGHT));
+      B.push(b("Notice what you hear.", HEAR_NOTE_LIGHT));
+      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
       if (v.skill !== "imagery") B.push(b("Imagine & Invite anything else you may be feeling right now."));
       /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
          the same amount of work"). The exploring moved into the note, drawn from the
@@ -3073,14 +3078,18 @@ const LADDER = (function(){
          them to notice what they are hearing or seeing in the present moment and that it
          changes with each moment." The script agrees — only TOUCH identifies an object.
          Every anchor now runs like/dislike, and touch keeps its feel-on-the-skin beat. */
-      if (sense === "touch") {
-        B.push(b("What does it feel like on your skin?", "Does it feel different on different parts of your hand? Fingertips? Palm? Knuckles? Wrist?"));
-      }
+      /* LIKE/DISLIKE, THEN THE ONE CLOSER LOOK, THEN THE SHARED TAIL. That is the
+         script's order for touch (`-TOUCH-03` → `-04`), movement (`-MOVEMENT-08` →
+         `-09`/`-10`) and imagination (`-IMAGINATION-08` → `-09`); sight and sound run
+         it the other way round, so the majority sets one shape for all five rather
+         than five anchors disagreeing. The touch skin beat used to sit BEFORE
+         like/dislike, which was backwards against its own clip order — it is now the
+         touch closer look and lands in the same slot as every other anchor's. */
       B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-      /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`, which every
-         anchor hands into. It follows like/dislike, not the sense beat. */
-      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
-      descBeats(P, "object", sense, v).forEach(x => B.push(x));
+      B.push(CLOSER(P, sense));
+      /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`. The
+         duplicate "How is your body breathing?" that used to sit here is gone: it is
+         MIND-02 and now runs in the opener, where the script puts it. */
       B.push(b("As you mindfully experience it, how does it affect your breath?", "Chest or belly? Full or shallow? Tense or relaxed?"));
       B.push(b("As you mindfully experience it, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
       B.push(b("As you mindfully experience it, are you more or less likely to smile?", "Let yourself smile if so."));
@@ -3600,53 +3609,31 @@ PRACTICES.cb = (function(){
     function descBeats(P, ctx, sense, v) {
       const b = mkq(P),
         B = [];
-      /* THREE PASSES, TWO DECKS (Justin, 2026-09-10).
-         · The ANCHOR pass ("object") is literal, external mindfulness, so it stays
-           sense-swapped — a sound has no colour, it has pitch and volume. Four slots.
-         · SAFETY and DEFENSE are the same instrument pointed at two different insides,
-           so they run the SAME six slots from the SAME selection: colour, shape,
-           temperature, texture, sound, movement. Only the first slide names which one
-           you are describing; the rest say "it" — the recording script's own rule,
-           "`-01` names the thing, `-02` through `-05` say it. Never name it twice."
-           Safety used to name itself four times out of five, against that rule. */
-      let keys;
-      if (ctx === "object") keys = ["color", "shape", "temp", "texture"];
-      else {
-        if (ctx === "defense" && !v.descOn) return B;
-        keys = (v && v.delems && v.delems.length) ? v.delems : DELEMS_ALL;
-      }
-      const named = ctx === "safety" ? "your safety" : ctx === "defense" ? "that non-safety emotion" : null;
+      /* ONE DECK, TWO INSIDES. Safety and defense are the same instrument pointed at
+         two different insides, so they run the SAME six slots from the SAME selection:
+         colour, shape, temperature, texture, sound, movement. Only the first slide
+         names which one you are describing; the rest say "it" — the recording
+         script's own rule, "`-01` names the thing, `-02` through `-05` say it. Never
+         name it twice."
+         THE ANCHOR NO LONGER HAS A DESCRIBE PASS (Justin, 2026-09-10: the sound path
+         "still has the prompts and slide text for volume, thinness, fullness"). It was
+         four sense-swapped slides built on a single held object, which sight and sound
+         do not have. The script gives each anchor exactly ONE closer-look clip —
+         `ANCHORING-SOUND-06`, `-SIGHT-03`, `-TOUCH-04`, `-MOVEMENT-10`,
+         `-IMAGINATION-09` — with its dimensions spread across the takes, one per take.
+         That single beat is CLOSER() below. */
+      if (ctx === "defense" && !v.descOn) return B;
+      const keys = (v && v.delems && v.delems.length) ? v.delems : DELEMS_ALL;
+      const named = ctx === "safety" ? "your safety" : "that non-safety emotion";
       let first = true;
       keys.forEach(k => {
         const name = (s, it) => { const t = first ? s : it; first = false; return t; };
-        if (k === "color") {
-          if (ctx === "object" && sense === "sound") B.push(b("What pitch is it?", "High or low? Or somewhere in between?"));
-          else if (ctx === "object" && sense === "movement") B.push(b("What pace is it?", "Slow or quick? Or somewhere in between?"));
-          else if (ctx === "object") B.push(b("What color is it?"));
-          else B.push(b(name("What color is " + named + "?", "What color is it?")));
-        }
-        if (k === "shape") {
-          if (ctx === "object" && sense === "sound") B.push(b("Is it thin or full?", "Sparse or rich? Simple or layered?"));
-          else if (ctx === "object" && sense === "movement") B.push(b("How big is the movement?", "Small or large? Subtle or full?"));
-          else if (ctx === "object") B.push(b("What shape is it?"));
-          else B.push(b(name("What shape is " + named + "?", "What shape is it?")));
-        }
-        if (k === "temp") {
-          if (ctx === "object") {
-            if (sense === "sight") B.push(b("What brightness is it?"));
-            else if (sense === "sound") B.push(b("What volume is it?", "Loud or soft? Or somewhere between?"));
-            else if (sense === "movement") B.push(b("What temperature is it?", "Any warmth building?"));
-            else B.push(b("What temperature is it?"));
-          } else B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
-        }
-        if (k === "texture") {
-          if (ctx === "object" && sense === "sound") B.push(b("What texture does it have?", "Smooth, rough, sharp, soft?"));
-          else if (ctx === "object" && sense === "movement") B.push(b("What texture does it have?", "Fluid or stiff? Smooth or jerky?"));
-          else if (ctx === "object") B.push(b("What texture is it?"));
-          else B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
-        }
-        if (k === "sound" && ctx !== "object") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
-        if (k === "doing" && ctx !== "object") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
+        if (k === "color") B.push(b(name("What color is " + named + "?", "What color is it?")));
+        if (k === "shape") B.push(b(name("What shape is " + named + "?", "What shape is it?")));
+        if (k === "temp") B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
+        if (k === "texture") B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
+        if (k === "sound") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
+        if (k === "doing") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
       });
       return B;
     }
@@ -3772,6 +3759,21 @@ PRACTICES.cb = (function(){
     const BREATH_NOTE_FULL = "Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don’t change your breathing, just notice it. If it changes by itself because you’ve paid attention to it, that’s fine. — Chest or belly? Full or shallow? Tense or relaxed?";
     const BREATH_NOTE_SHORT = "Not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
     const HEAR_NOTE = "Anything? Or silence? — Outside your space first: what reaches you from further away. Then inside your space: what is close by. — What comes and goes, appearing and disappearing. What stays constant underneath. And the silence between. — Nothing to hold onto; sound is always passing through.";
+    /* The MINDFULNESS OPENER's two sense notes. Deliberately thinner than the anchor
+       notes above — this is a pass, not a dwell. */
+    const SEE_NOTE_LIGHT = "A pass, not a dwell. — Let your eyes go where they want. What is pulling at them right now: a color, a movement, a texture? — Name it and move on.";
+    const HEAR_NOTE_LIGHT = "A pass, not a dwell. — Anything, or silence? Close by, and further away. — Don’t settle into any of it yet.";
+    /* ONE closer-look beat per anchor, straight off the script's single clip. The
+       dimensions live in the note because the script spreads them across takes — the
+       presenter picks one, they are not all asked. */
+    function CLOSER(P, sense) {
+      const b = mkq(P);
+      if (sense === "touch") return b("What does it feel like on your skin?", "Different parts of the hand — fingertips, palm, knuckles, wrist. Stick with whichever feels best. — Is there a motion your hand wants to make? A squeeze, or something else?");
+      if (sense === "sight") return b("Look a little closer.", "Its color — bright, or dull? Does it hold, or fade? — How the light hugs its edges, and how the shadows fall from it. — Any movement at all? If not, the stillness. — Its texture: grooves, dents, the imperfections.");
+      if (sense === "sound") return b("Stay with that sound, or the silence.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
+      if (sense === "movement") return b("What does the movement feel like in your body?", "Where is it strongest — the joint, the muscle, the whole limb? — How does the rest of you answer it? — Play with it on purpose: bigger, smaller, or all the way to still. Keep whichever feels best.");
+      return b("Get closer to it.", "Can you touch it? What does it feel like under your hand? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+    }
 
     /* ---------- THE ANCHORING LADDER (opens P2 and P3, per the decks) ---------- */
     function ladderBeats(P, sense, o, v) { // o = {rate}
@@ -3785,6 +3787,18 @@ PRACTICES.cb = (function(){
          outside → in (Justin, 2026-09-07). "Imagine & Invite anything else" is a look
          INWARD, so it opens the practice instead of interrupting the outside-in sense run
          halfway through, which is where it used to sit. */
+      /* THE MINDFULNESS OPENER (Justin, 2026-09-10): "before we get to the anchoring
+         potential (like sound), we need to first use mindfulness… a few slides
+         front-loaded… to help settle into the moment and transition into a deeper
+         connection with their anchor and into felt safety." It mimics the script's
+         MIND arc — MIND-05 sight, MIND-03 sound, MIND-02 breath — then hands to
+         MIND-06/07 (Imagine & Invite) exactly as the script does, and only THEN to
+         the anchor. Sight → sound → breath is the outside-in order.
+         MM and CB Practice 1 run the full arc as a standalone practice and do not
+         call this, so nothing doubles up. */
+      B.push(b("Notice what you see.", SEE_NOTE_LIGHT));
+      B.push(b("Notice what you hear.", HEAR_NOTE_LIGHT));
+      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
       if (v.skill !== "imagery") B.push(b("Imagine & Invite anything else you may be feeling right now."));
       /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
          the same amount of work"). The exploring moved into the note, drawn from the
@@ -3808,14 +3822,18 @@ PRACTICES.cb = (function(){
          them to notice what they are hearing or seeing in the present moment and that it
          changes with each moment." The script agrees — only TOUCH identifies an object.
          Every anchor now runs like/dislike, and touch keeps its feel-on-the-skin beat. */
-      if (sense === "touch") {
-        B.push(b("What does it feel like on your skin?", "Does it feel different on different parts of your hand? Fingertips? Palm? Knuckles? Wrist?"));
-      }
+      /* LIKE/DISLIKE, THEN THE ONE CLOSER LOOK, THEN THE SHARED TAIL. That is the
+         script's order for touch (`-TOUCH-03` → `-04`), movement (`-MOVEMENT-08` →
+         `-09`/`-10`) and imagination (`-IMAGINATION-08` → `-09`); sight and sound run
+         it the other way round, so the majority sets one shape for all five rather
+         than five anchors disagreeing. The touch skin beat used to sit BEFORE
+         like/dislike, which was backwards against its own clip order — it is now the
+         touch closer look and lands in the same slot as every other anchor's. */
       B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-      /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`, which every
-         anchor hands into. It follows like/dislike, not the sense beat. */
-      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
-      descBeats(P, "object", sense, v).forEach(x => B.push(x));
+      B.push(CLOSER(P, sense));
+      /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`. The
+         duplicate "How is your body breathing?" that used to sit here is gone: it is
+         MIND-02 and now runs in the opener, where the script puts it. */
       B.push(b("As you mindfully experience it, how does it affect your breath?", "Chest or belly? Full or shallow? Tense or relaxed?"));
       B.push(b("As you mindfully experience it, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
       B.push(b("As you mindfully experience it, are you more or less likely to smile?", "Let yourself smile if so."));
