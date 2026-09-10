@@ -2963,26 +2963,47 @@ const LADDER = (function(){
       temp: "Temperature",
       texture: "Texture",
       sound: "Sound",
-      doing: "Doing"
+      doing: "Movement"
     };
+    /* The full deck, in order. `doing` keeps its key for stored dial state but the slot is
+       called MOVEMENT — that is its name in the recording script (`DESC-SAFETY-05`, "what's
+       it doing, if anything — is there a movement to it, or not?"). Safety and defense both
+       run this list, from one shared selection (Justin, 2026-09-10). SRS and SS run all six,
+       always. */
+    const DELEMS_ALL = ["color", "shape", "temp", "texture", "sound", "doing"];
     function descBeats(P, ctx, sense, v) {
       const b = mkq(P),
         B = [];
+      /* THREE PASSES, TWO DECKS (Justin, 2026-09-10).
+         · The ANCHOR pass ("object") is literal, external mindfulness, so it stays
+           sense-swapped — a sound has no colour, it has pitch and volume. Four slots.
+         · SAFETY and DEFENSE are the same instrument pointed at two different insides,
+           so they run the SAME six slots from the SAME selection: colour, shape,
+           temperature, texture, sound, movement. Only the first slide names which one
+           you are describing; the rest say "it" — the recording script's own rule,
+           "`-01` names the thing, `-02` through `-05` say it. Never name it twice."
+           Safety used to name itself four times out of five, against that rule. */
       let keys;
-      if (ctx === "defense") {
-        if (!v.descOn) return B;
-        keys = v.delems;
-      } else keys = ["color", "shape", "temp", "texture", "doing"]; // safety & object: always the full deck sequence
+      if (ctx === "object") keys = ["color", "shape", "temp", "texture"];
+      else {
+        if (ctx === "defense" && !v.descOn) return B;
+        keys = (v && v.delems && v.delems.length) ? v.delems : DELEMS_ALL;
+      }
+      const named = ctx === "safety" ? "your safety" : ctx === "defense" ? "that non-safety emotion" : null;
+      let first = true;
       keys.forEach(k => {
+        const name = (s, it) => { const t = first ? s : it; first = false; return t; };
         if (k === "color") {
           if (ctx === "object" && sense === "sound") B.push(b("What pitch is it?", "High or low? Or somewhere in between?"));
           else if (ctx === "object" && sense === "movement") B.push(b("What pace is it?", "Slow or quick? Or somewhere in between?"));
-          else B.push(b(ctx === "safety" ? "What color is your safety?" : "What color is it?"));
+          else if (ctx === "object") B.push(b("What color is it?"));
+          else B.push(b(name("What color is " + named + "?", "What color is it?")));
         }
         if (k === "shape") {
           if (ctx === "object" && sense === "sound") B.push(b("Is it thin or full?", "Sparse or rich? Simple or layered?"));
           else if (ctx === "object" && sense === "movement") B.push(b("How big is the movement?", "Small or large? Subtle or full?"));
-          else B.push(b(ctx === "safety" ? "What shape is your safety?" : "What shape is it?"));
+          else if (ctx === "object") B.push(b("What shape is it?"));
+          else B.push(b(name("What shape is " + named + "?", "What shape is it?")));
         }
         if (k === "temp") {
           if (ctx === "object") {
@@ -2990,15 +3011,16 @@ const LADDER = (function(){
             else if (sense === "sound") B.push(b("What volume is it?", "Loud or soft? Or somewhere between?"));
             else if (sense === "movement") B.push(b("What temperature is it?", "Any warmth building?"));
             else B.push(b("What temperature is it?"));
-          } else B.push(b(ctx === "safety" ? "What temperature is your safety?" : "What temperature is it?"));
+          } else B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
         }
         if (k === "texture") {
           if (ctx === "object" && sense === "sound") B.push(b("What texture does it have?", "Smooth, rough, sharp, soft?"));
           else if (ctx === "object" && sense === "movement") B.push(b("What texture does it have?", "Fluid or stiff? Smooth or jerky?"));
-          else B.push(b(ctx === "safety" ? "What texture is your safety?" : "What texture is it?"));
+          else if (ctx === "object") B.push(b("What texture is it?"));
+          else B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
         }
-        if (k === "sound") B.push(b(ctx === "object" ? "What sound does it make?" : "Does it have a sound?"));
-        if (k === "doing" && ctx !== "object") B.push(b("What is it doing?", "Is there movement to it or not?"));
+        if (k === "sound" && ctx !== "object") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
+        if (k === "doing" && ctx !== "object") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
       });
       return B;
     }
@@ -3016,7 +3038,7 @@ const LADDER = (function(){
     }
     const BREATH_NOTE_FULL = "Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don’t change your breathing, just notice it. If it changes by itself because you’ve paid attention to it, that’s fine. — Chest or belly? Full or shallow? Tense or relaxed?";
     const BREATH_NOTE_SHORT = "Not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
-    const HEAR_NOTE = "Anything? Silence? Outside the room… what do you hear? Inside the room… what do you hear?";
+    const HEAR_NOTE = "Anything? Or silence? — Outside your space first: what reaches you from further away. Then inside your space: what is close by. — What comes and goes, appearing and disappearing. What stays constant underneath. And the silence between. — Nothing to hold onto; sound is always passing through.";
     function ladderBeats(P, sense, o, v) { // o = {rate}
       const b = mkq(P),
         B = [];
@@ -3029,74 +3051,42 @@ const LADDER = (function(){
          INWARD, so it opens the practice instead of interrupting the outside-in sense run
          halfway through, which is where it used to sit. */
       if (v.skill !== "imagery") B.push(b("Imagine & Invite anything else you may be feeling right now."));
+      /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
+         the same amount of work"). The exploring moved into the note, drawn from the
+         recording script's takes. Sight and sound in particular do NOT pick one thing to
+         hold — the script keeps them in the moment ("what's pulling at your eyes IN THIS
+         MOMENT… it might change; it probably will"). Touch is the exception: it has a real
+         object, so `ANCHORING-TOUCH-01` identifies one and `-04` asks how it feels. */
       if (sense === "touch") {
-        /* GENERAL → SPECIFIC. Touch used to name one object before establishing any field,
-           the only sense that did. Whole-body contact first, then the skin, then the one thing. */
-        B.push(b("Notice everything your body is in contact with.", "Whatever is holding you — chair, floor, bed. Firm or soft?"));
-        B.push(b("Now narrow to your skin.", "The air, your clothes, anything close enough to reach."));
-        B.push(b("Identify one thing in your space."));
-        B.push(b("What do you hear?", HEAR_NOTE));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
       } else if (sense === "sight") {
-        B.push(b("Let your eyes gaze however they like."));
-        B.push(b("What do you hear?", HEAR_NOTE));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
       } else if (sense === "sound") {
-        B.push(b("Notice the sounds outside your space.", "Beyond the room — what reaches you from further away?"));
-        B.push(b("Now bring your hearing inside your space.", "Right around you — what’s here, close by?"));
-        B.push(b("Notice what comes and goes.", "A bird, a voice, a passing car — sounds that pop in, then fade. Here, then gone."));
-        B.push(b("Notice what stays constant.", "A hum, a fan, the AC — sound holding steady underneath the rest."));
-        B.push(b("Notice the silence too.", "The spaces between sounds — the quiet they arrive into and leave behind."));
-        B.push(b("Let each sound be temporary.", "Nothing to hold onto. One moment, then the next — sound is always passing through."));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("What do you hear?", HEAR_NOTE));
       } else if (sense === "movement") {
-        B.push(b("Begin to move, gently and on purpose.", "Small and easy — you’re not performing. Just enough to feel it."));
-        /* TOP → BOTTOM working inward. This ran ankles-up before 2026-09-07. */
-        B.push(b("Roll your neck, slowly.", "Small arcs, only where it feels good. Skip anything sharp."));
-        B.push(b("Roll your shoulders.", "Up, back, and down — let them drop."));
-        B.push(b("Roll your wrists.", "Let your hands soften."));
-        B.push(b("Roll your ankles.", "Slow, both directions. No strain."));
-        B.push(b("Let yourself stretch into whatever wants to lengthen.", "Reach, or a slight side bend — just to the easy edge."));
-        B.push(b("Pause. Notice what lingers.", "The sensation doesn’t stop the moment you do — feel it settle."));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Top to bottom: roll your neck slowly, small arcs. Your shoulders, up, back and down. Your wrists, hands soft. Your ankles, both directions. — Then stretch into whatever wants to lengthen, and pause. The sensation doesn’t stop the moment you do."));
       } else if (sense === "imagination") {
-        B.push(b("Bring to mind a place where you feel at ease.", "Real or imagined — a memory, or made up. Somewhere you’d like to be."));
-        B.push(b("Let your eyes be as they want."));
-        B.push(b("Let the place take shape.", "Indoors or out? Day or night? Where are you in it?"));
-        B.push(b("Look around — what do you see?", "Colors, light, what’s near and what’s far."));
-        B.push(b("What do you hear there?", "Or is it quiet?"));
-        B.push(b("What do you feel there?", "The air, the temperature, the ground beneath you."));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you."));
       }
+      /* NO SINGLE ANCHOR OBJECT (Justin, 2026-09-10): "When I lead people through anchoring
+         using sound and sight, I don't ask them to pay attention to one thing. Instead, I ask
+         them to notice what they are hearing or seeing in the present moment and that it
+         changes with each moment." The script agrees — only TOUCH identifies an object.
+         Every anchor now runs like/dislike, and touch keeps its feel-on-the-skin beat. */
       if (sense === "touch") {
-        B.push(b("Focus on your one thing."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
         B.push(b("What does it feel like on your skin?", "Does it feel different on different parts of your hand? Fingertips? Palm? Knuckles? Wrist?"));
-      } else if (sense === "sight") {
-        B.push(b("Notice what your eyes are drawn towards."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("How do your eyes interact with it?", "Let your eyes take your attention where they want."));
-      } else if (sense === "sound") {
-        B.push(b("Choose what to anchor on.", "A group of sounds together, a sound that comes and goes, or a constant sound — whichever is easiest to stay with. Let that be your anchor."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("How does it arrive to you?", "Steady or rhythmic? Close or distant? Does it pulse, or hold?"));
-      } else if (sense === "movement") {
-        B.push(b("Choose one movement to return to.", "Whichever felt best, or most available — let that be your anchor."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("Make it bigger, smaller, or still.", "You’re the one in control of it — notice that."));
-        B.push(b("What does the movement feel like in your body?", "Where do you feel it most? In the joint, the muscle, the whole limb?"));
-      } else if (sense === "imagination") {
-        B.push(b("Let one part of the place hold your attention.", "The detail or spot that feels best — let that be your anchor."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("Notice you can shift it.", "Move closer, change the light, add or remove something — it’s yours."));
       }
+      B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
+      /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`, which every
+         anchor hands into. It follows like/dislike, not the sense beat. */
+      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
       descBeats(P, "object", sense, v).forEach(x => B.push(x));
       B.push(b("As you mindfully experience it, how does it affect your breath?", "Chest or belly? Full or shallow? Tense or relaxed?"));
       B.push(b("As you mindfully experience it, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
       B.push(b("As you mindfully experience it, are you more or less likely to smile?", "Let yourself smile if so."));
       B.push(b("Do you feel more or less connection…?", "…to the present? To your senses? Your breath? Your inner experience? — Check your capacity."));
-      B.push(b("What emotion word best fits your current safety experience?", "Calm? Still? Playful? Joy? Curious? — “Something like…”"));
-      B.push(b("Does it make sense that you feel this right now?", "Given where you are and what you just did. — “I feel _____, which makes sense based on my life context.”"));
+      B.push(b("Validate", "Name the safety experience. Calm? Still? Playful? Joy? Curious? — “Something like…”"));
+      B.push(b("Normalize", "A yes-or-no question, not a case to argue. Does it make sense you feel this, given where you are and what you just did? — “I feel _____, which makes sense based on my life context.”"));
       /* READING ONE OF TWO (Justin, 2026-09-07): "cognitive monitoring and subtle capacity
          gauge, and also a comparison to before and after." The defense half rates intensity
          right after naming and before the body; the safety half now does the same, so the
@@ -3129,7 +3119,7 @@ const LADDER = (function(){
        the witness stage heard its own "Validate that experience." and then the ladder's
        "What emotion word best fits…" — the same move twice, back to back, in different words.
        So the ladder now yields FOUR stages and the naming pair is its own. */
-    const nStart = at("What emotion word best fits");
+    const nStart = at("Validate");
     const wStart = at("Notice how safety feels in your body generally");
     const eStart = at("What color is your safety");
     const end = i => i >= 0 ? i : all.length;
@@ -3229,7 +3219,7 @@ const LADDER = (function(){
         "If your eyes are closed, let them open when they’re ready. — What do you see? What do you hear?"));
     B.push(b("Let your body move however feels good (or stay just as you are).",
         "Stretch, shift, settle. If you’ve been moving, keep going. — Push, pull, squeeze, wiggle, clench, roll, stand, stretch, hug… There’s no wrong way."));
-    B.push(b("Give yourself kindness if you have it.",
+    B.push(b("Kindness or acknowledgement",
         "Real, not performative. If there isn’t one available right now, that’s alright — you showed up, and that stands on its own whether or not you can say it to yourself."));
     B.push(b("Take one intentional breath."));
     return B;
@@ -3238,7 +3228,7 @@ const LADDER = (function(){
           OBSTACLE_STATEMENTS:OBSTACLE_STATEMENTS, pickObstacles:pickObstacles,
           CAPACITY_BODY:CAPACITY_BODY, CAPACITY_H:CAPACITY_H, IMAGERY_TAIL:IMAGERY_TAIL, OBSTACLES_TAIL:OBSTACLES_TAIL,
           BREATH_NOTE_FULL:BREATH_NOTE_FULL, BREATH_NOTE_SHORT:BREATH_NOTE_SHORT,
-          HEAR_NOTE:HEAR_NOTE, DELEMS:['color','shape','temp','texture','doing']};
+          HEAR_NOTE:HEAR_NOTE, DELEMS:DELEMS_ALL, DESC_LABELS:DESC_LABELS};
 })();
 
 
@@ -3335,15 +3325,15 @@ const AFTER_BODY="open the app and check-in again.";
 const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app. if you're not in yet, scan the code or tap the link on screen.<br>notice where you are right now. there's no right answer.<br>take your time.";
 const AFTER_NOTE="let's check in one more time.<br>open the app again and notice where you are now.<br>not better or worse, just what's true.";
 const SENSES = {
-  touch:{ word:"touch", note:
+  touch:{ word:"Touch", note:
     "Now, let’s check in with touch. We’ll start with your entire body. — What is it you’re sitting, standing, laying, or leaning on? Can you feel its firmness? Or is it soft? Does it let you sink into it? — What can you feel specifically on your skin? The air? The fabric of your clothes? Something you can hold onto nearby?" },
-  sight:{ word:"sight", note:
+  sight:{ word:"Sight", note:
     "Now, we’ll use your eyes. Open them if they’re closed, as they’re ready to open. You don’t need to do anything special — just look where they want you to look. If your neck wants to move to help your eyes see more, let your neck and eyes work together. — Is there one thing pulling at your eyes? What’s its shape? Let your eyes trace the edges. Notice how the light from the room touches it. And the shadows it creates." },
-  sound:{ word:"sound", note:
+  sound:{ word:"Sound", note:
     "Now, what do you hear? Anything? Silence? — Outside the room… what do you hear? — Inside the room… what do you hear?" },
-  movement:{ word:"movement", note:
+  movement:{ word:"Movement", note:
     "Let’s add some gentle, on-purpose movement. Small and easy — you’re not performing. — Roll your neck slowly, small arcs. Roll your shoulders — up, back, and down — let them drop. Roll your wrists, let your hands soften. Roll your ankles, slow, both directions. Stretch into whatever wants to lengthen. — Then pause. Notice what lingers. The sensation doesn’t stop the moment you do." },
-  imagination:{ word:"imagination", note:
+  imagination:{ word:"Imagination", note:
     "Let’s use your imagination. Bring to mind a place where you feel at ease — real or imagined, a memory or made up. Let it take shape. Indoors or out? Day or night? Where are you in it? — Look around: what do you see? What do you hear there, or is it quiet? What do you feel there — the air, the temperature, the ground beneath you?" }
 };
 
@@ -3415,7 +3405,7 @@ function buildBeats(){
   let m=B.length;
   B.push(checkinBeat("before"));
   if(st.acknowledge){
-    B.push(word("acknowledge",
+    B.push(word("Acknowledge",
       "As we begin, acknowledge what else you might be holding onto — a current or past context. Not going into details. Just acknowledge what else you have, and give yourself permission to also practice mindfulness. — These Mindful Moments aren’t dismissive of what else you have, and aren’t rejecting it. They create space to acknowledge it, and eventually pave the way for those other feelings when you’re ready — the deeper work of the Unstucking Academy. For now, we acknowledge, and give ourselves permission to also be more present."));
   }
   
@@ -3425,11 +3415,11 @@ function buildBeats(){
   B.push(word("One intentional breath", "One breath in on purpose. — Then we stop steering it: from here your body breathes the way it wants, and we just pay attention. One more on purpose at the very end."));
 
   st.order.forEach(k=>{
-    if(st.breathEach) B.push(word("breath",BREATH_NOTE));
+    if(st.breathEach) B.push(word("Breath",BREATH_NOTE));
     const s=SENSES[k];
     if(s) B.push(word(s.word,s.note));
   });
-  if(st.breathEach && st.order.length) B.push(word("breath",BREATH_NOTE));
+  if(st.breathEach && st.order.length) B.push(word("Breath",BREATH_NOTE));
   sec("practice",m);
 
   /* OUTRO (fixed arc) */
@@ -3439,11 +3429,11 @@ function buildBeats(){
      an offer with a real way to decline — it used to say "you've earned it", which is a
      verdict on someone who may not be able to take it. */
   if(st.closeMove){
-    B.push(word("move",
+    B.push(word("Move",
       "The way we always close, inside the Unstucking Academy. Let your body move in whatever way it would like to. There’s no wrong way. No prescriptive movement. — Push, pull, squeeze, wiggle, jump, squat, stand, stretch, lie down, shimmy, or shake… Turn your camera off if you’d like, if you need to do something silly."));
   }
   if(st.kindness){
-    B.push(word("kindness","If you’ve got a genuine kind word for yourself, this is the time for it. Real, not performative. And if there isn’t one available right now, that’s alright — you showed up and practiced, and that stands on its own whether or not you can say it to yourself."));
+    B.push(word("Kindness or acknowledgement","If you’ve got a genuine kind word for yourself, this is the time for it. Real, not performative. And if there isn’t one available right now, that’s alright — you showed up and practiced, and that stands on its own whether or not you can say it to yourself."));
   }
   B.push(word("One intentional breath", "One more on purpose to finish — the pair to the one we started with. In on purpose, and let the exhale leave however it likes."));
   B.push(checkinBeat("after"));
@@ -3598,27 +3588,48 @@ PRACTICES.cb = (function(){
       temp: "Temperature",
       texture: "Texture",
       sound: "Sound",
-      doing: "Doing"
+      doing: "Movement"
     };
+    /* The full deck, in order. `doing` keeps its key for stored dial state but the slot is
+       called MOVEMENT — that is its name in the recording script (`DESC-SAFETY-05`, "what's
+       it doing, if anything — is there a movement to it, or not?"). Safety and defense both
+       run this list, from one shared selection (Justin, 2026-09-10). SRS and SS run all six,
+       always. */
+    const DELEMS_ALL = ["color", "shape", "temp", "texture", "sound", "doing"];
 
     function descBeats(P, ctx, sense, v) {
       const b = mkq(P),
         B = [];
+      /* THREE PASSES, TWO DECKS (Justin, 2026-09-10).
+         · The ANCHOR pass ("object") is literal, external mindfulness, so it stays
+           sense-swapped — a sound has no colour, it has pitch and volume. Four slots.
+         · SAFETY and DEFENSE are the same instrument pointed at two different insides,
+           so they run the SAME six slots from the SAME selection: colour, shape,
+           temperature, texture, sound, movement. Only the first slide names which one
+           you are describing; the rest say "it" — the recording script's own rule,
+           "`-01` names the thing, `-02` through `-05` say it. Never name it twice."
+           Safety used to name itself four times out of five, against that rule. */
       let keys;
-      if (ctx === "defense") {
-        if (!v.descOn) return B;
-        keys = v.delems;
-      } else keys = ["color", "shape", "temp", "texture", "doing"]; // safety & object: always the full deck sequence
+      if (ctx === "object") keys = ["color", "shape", "temp", "texture"];
+      else {
+        if (ctx === "defense" && !v.descOn) return B;
+        keys = (v && v.delems && v.delems.length) ? v.delems : DELEMS_ALL;
+      }
+      const named = ctx === "safety" ? "your safety" : ctx === "defense" ? "that non-safety emotion" : null;
+      let first = true;
       keys.forEach(k => {
+        const name = (s, it) => { const t = first ? s : it; first = false; return t; };
         if (k === "color") {
           if (ctx === "object" && sense === "sound") B.push(b("What pitch is it?", "High or low? Or somewhere in between?"));
           else if (ctx === "object" && sense === "movement") B.push(b("What pace is it?", "Slow or quick? Or somewhere in between?"));
-          else B.push(b(ctx === "safety" ? "What color is your safety?" : "What color is it?"));
+          else if (ctx === "object") B.push(b("What color is it?"));
+          else B.push(b(name("What color is " + named + "?", "What color is it?")));
         }
         if (k === "shape") {
           if (ctx === "object" && sense === "sound") B.push(b("Is it thin or full?", "Sparse or rich? Simple or layered?"));
           else if (ctx === "object" && sense === "movement") B.push(b("How big is the movement?", "Small or large? Subtle or full?"));
-          else B.push(b(ctx === "safety" ? "What shape is your safety?" : "What shape is it?"));
+          else if (ctx === "object") B.push(b("What shape is it?"));
+          else B.push(b(name("What shape is " + named + "?", "What shape is it?")));
         }
         if (k === "temp") {
           if (ctx === "object") {
@@ -3626,15 +3637,16 @@ PRACTICES.cb = (function(){
             else if (sense === "sound") B.push(b("What volume is it?", "Loud or soft? Or somewhere between?"));
             else if (sense === "movement") B.push(b("What temperature is it?", "Any warmth building?"));
             else B.push(b("What temperature is it?"));
-          } else B.push(b(ctx === "safety" ? "What temperature is your safety?" : "What temperature is it?"));
+          } else B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
         }
         if (k === "texture") {
           if (ctx === "object" && sense === "sound") B.push(b("What texture does it have?", "Smooth, rough, sharp, soft?"));
           else if (ctx === "object" && sense === "movement") B.push(b("What texture does it have?", "Fluid or stiff? Smooth or jerky?"));
-          else B.push(b(ctx === "safety" ? "What texture is your safety?" : "What texture is it?"));
+          else if (ctx === "object") B.push(b("What texture is it?"));
+          else B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
         }
-        if (k === "sound") B.push(b(ctx === "object" ? "What sound does it make?" : "Does it have a sound?"));
-        if (k === "doing" && ctx !== "object") B.push(b("What is it doing?", "Is there movement to it or not?"));
+        if (k === "sound" && ctx !== "object") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
+        if (k === "doing" && ctx !== "object") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
       });
       return B;
     }
@@ -3658,7 +3670,7 @@ PRACTICES.cb = (function(){
         skip: false,
         descSafety: true,
         descOn: false,
-        delems: ["color", "shape", "temp", "texture", "doing"]
+        delems: DELEMS_ALL.slice()
       },
       p3: {
         skill: "pendulating",
@@ -3670,7 +3682,7 @@ PRACTICES.cb = (function(){
         skip: false,
         descSafety: true,
         descOn: true,
-        delems: ["color", "shape", "temp", "texture", "doing"]
+        delems: DELEMS_ALL.slice()
       }
     };
 
@@ -3759,7 +3771,7 @@ PRACTICES.cb = (function(){
 
     const BREATH_NOTE_FULL = "Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don’t change your breathing, just notice it. If it changes by itself because you’ve paid attention to it, that’s fine. — Chest or belly? Full or shallow? Tense or relaxed?";
     const BREATH_NOTE_SHORT = "Not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
-    const HEAR_NOTE = "Anything? Silence? Outside the room… what do you hear? Inside the room… what do you hear?";
+    const HEAR_NOTE = "Anything? Or silence? — Outside your space first: what reaches you from further away. Then inside your space: what is close by. — What comes and goes, appearing and disappearing. What stays constant underneath. And the silence between. — Nothing to hold onto; sound is always passing through.";
 
     /* ---------- THE ANCHORING LADDER (opens P2 and P3, per the decks) ---------- */
     function ladderBeats(P, sense, o, v) { // o = {rate}
@@ -3774,74 +3786,42 @@ PRACTICES.cb = (function(){
          INWARD, so it opens the practice instead of interrupting the outside-in sense run
          halfway through, which is where it used to sit. */
       if (v.skill !== "imagery") B.push(b("Imagine & Invite anything else you may be feeling right now."));
+      /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
+         the same amount of work"). The exploring moved into the note, drawn from the
+         recording script's takes. Sight and sound in particular do NOT pick one thing to
+         hold — the script keeps them in the moment ("what's pulling at your eyes IN THIS
+         MOMENT… it might change; it probably will"). Touch is the exception: it has a real
+         object, so `ANCHORING-TOUCH-01` identifies one and `-04` asks how it feels. */
       if (sense === "touch") {
-        /* GENERAL → SPECIFIC. Touch used to name one object before establishing any field,
-           the only sense that did. Whole-body contact first, then the skin, then the one thing. */
-        B.push(b("Notice everything your body is in contact with.", "Whatever is holding you — chair, floor, bed. Firm or soft?"));
-        B.push(b("Now narrow to your skin.", "The air, your clothes, anything close enough to reach."));
-        B.push(b("Identify one thing in your space."));
-        B.push(b("What do you hear?", HEAR_NOTE));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
       } else if (sense === "sight") {
-        B.push(b("Let your eyes gaze however they like."));
-        B.push(b("What do you hear?", HEAR_NOTE));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
       } else if (sense === "sound") {
-        B.push(b("Notice the sounds outside your space.", "Beyond the room — what reaches you from further away?"));
-        B.push(b("Now bring your hearing inside your space.", "Right around you — what’s here, close by?"));
-        B.push(b("Notice what comes and goes.", "A bird, a voice, a passing car — sounds that pop in, then fade. Here, then gone."));
-        B.push(b("Notice what stays constant.", "A hum, a fan, the AC — sound holding steady underneath the rest."));
-        B.push(b("Notice the silence too.", "The spaces between sounds — the quiet they arrive into and leave behind."));
-        B.push(b("Let each sound be temporary.", "Nothing to hold onto. One moment, then the next — sound is always passing through."));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("What do you hear?", HEAR_NOTE));
       } else if (sense === "movement") {
-        B.push(b("Begin to move, gently and on purpose.", "Small and easy — you’re not performing. Just enough to feel it."));
-        /* TOP → BOTTOM working inward. This ran ankles-up before 2026-09-07. */
-        B.push(b("Roll your neck, slowly.", "Small arcs, only where it feels good. Skip anything sharp."));
-        B.push(b("Roll your shoulders.", "Up, back, and down — let them drop."));
-        B.push(b("Roll your wrists.", "Let your hands soften."));
-        B.push(b("Roll your ankles.", "Slow, both directions. No strain."));
-        B.push(b("Let yourself stretch into whatever wants to lengthen.", "Reach, or a slight side bend — just to the easy edge."));
-        B.push(b("Pause. Notice what lingers.", "The sensation doesn’t stop the moment you do — feel it settle."));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Top to bottom: roll your neck slowly, small arcs. Your shoulders, up, back and down. Your wrists, hands soft. Your ankles, both directions. — Then stretch into whatever wants to lengthen, and pause. The sensation doesn’t stop the moment you do."));
       } else if (sense === "imagination") {
-        B.push(b("Bring to mind a place where you feel at ease.", "Real or imagined — a memory, or made up. Somewhere you’d like to be."));
-        B.push(b("Let your eyes be as they want."));
-        B.push(b("Let the place take shape.", "Indoors or out? Day or night? Where are you in it?"));
-        B.push(b("Look around — what do you see?", "Colors, light, what’s near and what’s far."));
-        B.push(b("What do you hear there?", "Or is it quiet?"));
-        B.push(b("What do you feel there?", "The air, the temperature, the ground beneath you."));
-        B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+        B.push(b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you."));
       }
+      /* NO SINGLE ANCHOR OBJECT (Justin, 2026-09-10): "When I lead people through anchoring
+         using sound and sight, I don't ask them to pay attention to one thing. Instead, I ask
+         them to notice what they are hearing or seeing in the present moment and that it
+         changes with each moment." The script agrees — only TOUCH identifies an object.
+         Every anchor now runs like/dislike, and touch keeps its feel-on-the-skin beat. */
       if (sense === "touch") {
-        B.push(b("Focus on your one thing."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
         B.push(b("What does it feel like on your skin?", "Does it feel different on different parts of your hand? Fingertips? Palm? Knuckles? Wrist?"));
-      } else if (sense === "sight") {
-        B.push(b("Notice what your eyes are drawn towards."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("How do your eyes interact with it?", "Let your eyes take your attention where they want."));
-      } else if (sense === "sound") {
-        B.push(b("Choose what to anchor on.", "A group of sounds together, a sound that comes and goes, or a constant sound — whichever is easiest to stay with. Let that be your anchor."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("How does it arrive to you?", "Steady or rhythmic? Close or distant? Does it pulse, or hold?"));
-      } else if (sense === "movement") {
-        B.push(b("Choose one movement to return to.", "Whichever felt best, or most available — let that be your anchor."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("Make it bigger, smaller, or still.", "You’re the one in control of it — notice that."));
-        B.push(b("What does the movement feel like in your body?", "Where do you feel it most? In the joint, the muscle, the whole limb?"));
-      } else if (sense === "imagination") {
-        B.push(b("Let one part of the place hold your attention.", "The detail or spot that feels best — let that be your anchor."));
-        B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-        B.push(b("Notice you can shift it.", "Move closer, change the light, add or remove something — it’s yours."));
       }
+      B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
+      /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`, which every
+         anchor hands into. It follows like/dislike, not the sense beat. */
+      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
       descBeats(P, "object", sense, v).forEach(x => B.push(x));
       B.push(b("As you mindfully experience it, how does it affect your breath?", "Chest or belly? Full or shallow? Tense or relaxed?"));
       B.push(b("As you mindfully experience it, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
       B.push(b("As you mindfully experience it, are you more or less likely to smile?", "Let yourself smile if so."));
       B.push(b("Do you feel more or less connection…?", "…to the present? To your senses? Your breath? Your inner experience? — Check your capacity."));
-      B.push(b("What emotion word best fits your current safety experience?", "Calm? Still? Playful? Joy? Curious? — “Something like…”"));
-      B.push(b("Does it make sense that you feel this right now?", "Given where you are and what you just did. — “I feel _____, which makes sense based on my life context.”"));
+      B.push(b("Validate", "Name the safety experience. Calm? Still? Playful? Joy? Curious? — “Something like…”"));
+      B.push(b("Normalize", "A yes-or-no question, not a case to argue. Does it make sense you feel this, given where you are and what you just did? — “I feel _____, which makes sense based on my life context.”"));
       /* READING ONE OF TWO (Justin, 2026-09-07): "cognitive monitoring and subtle capacity
          gauge, and also a comparison to before and after." The defense half rates intensity
          right after naming and before the body; the safety half now does the same, so the
@@ -3964,11 +3944,11 @@ PRACTICES.cb = (function(){
       B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
       /* OUTSIDE → IN by distance (Justin, 2026-09-07): sight, then sound, then touch —
          the most proximal sense last. This ran hear → touch → see, with touch in the middle. */
-      B.push(b("What do you see?", "Open your eyes if they’re closed, as they are ready to open. You don’t need to do anything special — just look where they want you to look. If your neck wants to move to help your eyes see more, let your neck and eyes work together. Is there one thing that is pulling at your eyes? What’s its shape? Let your eyes trace the edges. Notice how the light from the room touches it. And the shadows it creates."));
+      B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
       B.push(b("What do you hear?", HEAR_NOTE));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
-      B.push(b("What do you touch?", "We’ll start with your entire body. What is it you’re sitting, standing, laying, or leaning on? Can you feel its firmness? Or is it soft? Does it let you sink into it? What can you feel specifically on your skin? The air? The fabric of your clothes? Something you can hold onto nearby?"));
+      B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
       B.push(b("On a scale of 0–10, what is your current level of safety?"));
       if (v.emo) {
@@ -4075,11 +4055,11 @@ PRACTICES.cb = (function(){
       B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
       /* OUTSIDE → IN by distance (Justin, 2026-09-07): sight, then sound, then touch —
          the most proximal sense last. This ran hear → touch → see, with touch in the middle. */
-      B.push(b("What do you see?", "Open your eyes if they’re closed, as they are ready to open. You don’t need to do anything special — just look where they want you to look. If your neck wants to move to help your eyes see more, let your neck and eyes work together. Is there one thing that is pulling at your eyes? What’s its shape? Let your eyes trace the edges. Notice how the light from the room touches it. And the shadows it creates."));
+      B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
       B.push(b("What do you hear?", HEAR_NOTE));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
-      B.push(b("What do you touch?", "We’ll start with your entire body. What is it you’re sitting, standing, laying, or leaning on? Can you feel its firmness? Or is it soft? Does it let you sink into it? What can you feel specifically on your skin? The air? The fabric of your clothes? Something you can hold onto nearby?"));
+      B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
       B.push(b("On a scale of 0–10, what is your current level of safety?"));
       if (st.p1.emo) {
@@ -4236,6 +4216,9 @@ PRACTICES.cb = (function(){
         const j = Math.floor(Math.random() * (i + 1));
         [keys[i], keys[j]] = [keys[j], keys[i]];
       }
+      /* Rolls 2..6 of the six. `keys` is DESC_LABELS, which has always had six entries —
+         `sound` was selectable by chip but missing from the default deck, so the randomiser
+         could already reach all six even while the default was five. Nothing to widen. */
       st[pr].delems = keys.slice(0, 2 + Math.floor(Math.random() * (keys.length - 1)));
       render();
     }
@@ -4251,6 +4234,12 @@ PRACTICES.cb = (function(){
          it is required — you cannot hold non-safety next to safety you have not described. */
       if (deep && v.descOn) h += '<label class="toggle"><input type="checkbox" checked disabled> Describe safety <span class="dr">required</span></label>';
       else h += tog(pr, "descSafety", "Describe safety");
+      /* ONE ELEMENT SELECTOR FOR BOTH PASSES (Justin, 2026-09-10): "one customizer option
+         for description that controls both safety and defense. So, if only two are selected,
+         then only two are asked for both." It used to sit under "Describe defense" and steer
+         defense alone, while safety always ran the full deck. It now appears as soon as any
+         describing is on. SRS and SS do not get it — they always run all six. */
+      if (v.descSafety || v.descOn) h += delemsHTML(pr);
       if (deep) {
         /* DEPTH — cumulative, and in order (app parity, 2026-09-06): the body overall, then
            the one place it lives, then description. A deeper one is not offerable without the
@@ -4259,7 +4248,6 @@ PRACTICES.cb = (function(){
         if (v.bodySpecific) {
           h += tog(pr, "descOn", "Describe defense");
           if (v.descOn) {
-            h += delemsHTML(pr);
             h += tog(pr, "holdwatch", "Hold &amp; watch");
             if (v.holdwatch) h += miniChips(pr, "dur", [15, 30, 45, 60, 90, 120], "Hold", "s");
           }
