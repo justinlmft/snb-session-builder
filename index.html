@@ -3369,6 +3369,19 @@ function cover(h,note,eyebrow,logo){ return {style:"cover",h,note:note||"",eyebr
 function word(h,note,fixed){ return {style:"word",h,note:note||"",eyebrow:"",flow:"",logo:false,fixed:!!fixed}; }
 function checkinBeat(phase){ return {style:"checkin", phase:phase, h:(phase==="before"?"a quick check-in.":"one more check-in."), body:(phase==="before"?BEFORE_BODY:AFTER_BODY), note:(phase==="before"?BEFORE_NOTE:AFTER_NOTE), eyebrow:"", flow:"", logo:true, fixed:true}; }
 
+/* CO-REGULATOR INVITATION (Justin, 2026-09-21) — Mindful Moment is the free door;
+   this slide points the room one step further, into the Academy as a Co-Regulator
+   (Capacity Builder). Sits after "thank you." and before the events table, so the
+   ask is made once and the dates follow it. Copy is Justin's, verbatim. */
+const COREG_URL="https://www.stucknotbroken.com/checkout/co-regulator?utm_source=mindful_moment&utm_medium=live_slide";
+const COREG_LABEL="stucknotbroken.com/checkout/co-regulator";
+function coregBeat(){
+  return {style:"coreg", h:"Want to go further than presence?",
+    body:"Mindful Moment is where you rest. Capacity Builder is where you build.<br><br>Several times a month, Co-Regulator members practice live with me: three guided self-regulation practices, staying anchored in safety. It’s where you build the capacity to stay present with whatever shows up.<br><br><b>Join the Unstucking Academy as a Co-Regulator →</b>",
+    note:"Want to go further than presence? — Mindful Moment is where you rest. Capacity Builder is where you build. — Several times a month, Co-Regulator members practice live with me: three guided self-regulation practices, staying anchored in safety. It’s where you build the capacity to stay present with whatever shows up. — Scan the code or tap the link to join the Unstucking Academy as a Co-Regulator.",
+    url:COREG_URL, label:COREG_LABEL, eyebrow:"THE UNSTUCKING ACADEMY", flow:"", logo:true, fixed:true};
+}
+
 /* Upcoming Events — the closing invitation to the Academy.
    Uses the site-wide [data-snb] system (same as the website): values are pulled
    live from site-data.json at present-time; the baked text is the fallback. */
@@ -3450,6 +3463,7 @@ function buildBeats(){
     "You did it. You practiced mindfulness. You survived. — Good job to you if this was a return to simple mindfulness. Good job to you if this was your first time. Good job to you if this was a continuation of your practices."));
   B.push(cover("thank you.",
     "Thank you for being a part of this Mindful Moment. Thank you for taking the time to join. I hope you got a little bit of what you needed. — If you don’t mind, share in the chat what this was like for you. Maybe just a word if you’ve got one. Share more if you’ve got more. — Tell someone in the chat that you appreciate them sharing, or that you can relate, or just leave a thumbs up on their comment. — I hope we can meet again and continue to practice."));
+  B.push(coregBeat());
   B.push(eventsBeat());
   sec("closing",m);
 
@@ -3514,6 +3528,7 @@ function randomize(){
       if(b.style==="word")    return {kind:"prompt", h:b.h};
       if(b.style==="checkin") return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body};
       if(b.style==="events")  return {kind:"events", eyebrow:"THE UNSTUCKING ACADEMY", h:b.h, rows:eventsRowsHTML()};
+      if(b.style==="coreg")   return {kind:"cta", eyebrow:b.eyebrow, h:b.h, body:b.body, url:b.url, label:b.label, lead:"join as a co-regulator"};
       return {kind:"cover", eyebrow:b.eyebrow||"", h:b.h, flow:b.flow||""};
     },
     agenda:function(){ return st.order.length?st.order.map(cap):["—"]; },
@@ -3713,47 +3728,46 @@ PRACTICES.cb = (function(){
 
     /* ---------- LIVE APP CHECK-IN (Justin, 2026-08-10) ----------
     Same reading as Mindful Moment — the app's full, normal check-in — at the
-    session seams only, never mid-practice. CB gets FOUR: one authored slide
-    before Practice 1, then one folded into each practice's capacity-check
-    slide, so a practice's check-out and the next one's check-in are a single
-    moment rather than two slides in a row (Justin's call, 2026-08-10).
+    session seams only, never mid-practice. CB gets FOUR readings: one before
+    Practice 1, then one after each practice, so a practice's check-out and the
+    next one's check-in are a single moment (Justin's call, 2026-08-10).
+    UNFOLDED 2026-09-21 (Justin: "each practice should get followed up by an SNB
+    app check-in prompt… I did not see it on Friday's CB"). The after-reading
+    used to be one bold line folded under the capacity questions and was easy
+    to miss; it is now its own check-in slide — big join block and all — right
+    after the practice closes and before the capacity check + break.
     Refs are cb1/cb2/cb3 = practice 1/2/3. A beat carrying `ci` is a seam: the
     shell stamps it on the live_sessions row and the app raises its own
-    check-in there. `ciBody`/`eyebrow` are ADDITIVE — h, body and the rest of
-    the beat stay byte-identical to the CB source, which is what parity.mjs
-    normalises against. 🖊 copy */
+    check-in there. The capacity slide is back to byte-identical with source. 🖊 copy */
     const CI_REF = { "Practice 1": "cb1", "Practice 2": "cb2", "Practice 3": "cb3" };
     const CI_OPEN_H = "a quick check-in.";
     const CI_OPEN_BODY = "open the stuck not broken app and check in before we practice.";
     const CI_OPEN_NOTE = "let’s check in before we practice.<br>open the stuck not broken app. if you’re not in yet, scan the code or tap the link on screen.<br>notice where you are right now. there’s no right answer.<br>take your time.";
-    const CI_AFTER_BODY = "Check in again in the app.";
-    const CI_AFTER_NOTE = "check in again in the app — it will open on its own.<br>not better or worse, just what’s true right now.<br>then take the break.";
+    const CI_AFTER_H = "one more check-in.";
+    const CI_AFTER_BODY = "open the stuck not broken app and check in again.";
+    const CI_AFTER_NOTE = "let’s check in again in the app — it will open on its own.<br>not better or worse, just what’s true right now.<br>take your time. then we’ll check capacity and take a break.";
 
-    function checkinBeat(ref) {
+    function checkinBeat(ref, phase) {
+      const after = phase === "after";
       return {
         style: "checkin",
         kind: "",
-        ci: ref + ":before",
-        h: CI_OPEN_H,
-        body: CI_OPEN_BODY,
+        ci: ref + ":" + (after ? "after" : "before"),
+        h: after ? CI_AFTER_H : CI_OPEN_H,
+        body: after ? CI_AFTER_BODY : CI_OPEN_BODY,
         tagline: "",
-        note: CI_OPEN_NOTE,
+        note: after ? CI_AFTER_NOTE : CI_OPEN_NOTE,
         draft: false,
         fixed: true
       };
     }
 
+    /* The capacity check, preceded by that practice's after-reading. */
     function capacityCheck(breakMin, P) {
       const c = info(LADDER.CAPACITY_H, LADDER.CAPACITY_BODY);
       if (breakMin) c.breakMin = breakMin;
       const ref = CI_REF[P];
-      if (ref) {
-        c.ci = ref + ":after";
-        c.eyebrow = "CHECK IN";
-        c.ciBody = CI_AFTER_BODY;
-        c.note = CI_AFTER_NOTE;
-      }
-      return c;
+      return ref ? [checkinBeat(ref, "after"), c] : [c];
     }
 
     const BREATH_NOTE_FULL = "Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don’t change your breathing, just notice it. If it changes by itself because you’ve paid attention to it, that’s fine. — Chest or belly? Full or shallow? Tense or relaxed?";
@@ -3889,7 +3903,7 @@ PRACTICES.cb = (function(){
     /* The closing is now the CANONICAL one (LADDER.CLOSING) — shared with SRS and
        SS per Justin, 2026-08-04. CB still owns its own break minutes. */
     function closingBeats(P, breakMin) {
-      return LADDER.CLOSING(P).concat([capacityCheck(breakMin, P)]);
+      return LADDER.CLOSING(P).concat(capacityCheck(breakMin, P));
     }
 
     /* ---------- PENDULATION SEQUENCE ---------- */
@@ -3978,7 +3992,7 @@ PRACTICES.cb = (function(){
          way out, because the room is sitting with eyes closed and the next thing is a break.
          Replaces a hand-rolled three-beat close that existed nowhere else in the system. */
       LADDER.CLOSING(P, {anchor:false}).forEach(x => B.push(x));
-      B.push(capacityCheck(2, P));
+      capacityCheck(2, P).forEach(x => B.push(x));
       return B;
     }
 
@@ -4067,7 +4081,7 @@ PRACTICES.cb = (function(){
       const b = mkq("Practice 1"),
         B = [];
       B.push(ptitle("Practice 1", "Mindfulness", "", "Brief, simple mindfulness — connect to the present moment.", "safety"));
-      B.push(checkinBeat("cb1"));   /* reading 1 of 4 — before the first practice */
+      B.push(checkinBeat("cb1", "before"));   /* reading 1 of 4 — before the first practice */
       B.push(ARRIVE("Practice 1"));
       B.push(b("On a scale of 0–10, what is your current level of safety?"));
       B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
@@ -4089,7 +4103,7 @@ PRACTICES.cb = (function(){
          way out, because the room is sitting with eyes closed and the next thing is a break.
          Replaces a hand-rolled three-beat close that existed nowhere else in the system. */
       LADDER.CLOSING("Practice 1", {anchor:false}).forEach(x => B.push(x));
-      B.push(capacityCheck(2, "Practice 1"));
+      capacityCheck(2, "Practice 1").forEach(x => B.push(x));
       return B;
     }
 
@@ -4320,10 +4334,8 @@ PRACTICES.cb = (function(){
       if(b.style==="checkin")return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body};
       if(b.style==="ptitle") return {kind:"ptitle",
         eyebrow:[b.kind,b.tagline].filter(Boolean).join("<br>"), h:b.h};
-      /* a capacity slide that carries a reading shows the check-in line under
-         the capacity questions; the slide is otherwise unchanged. */
       return {kind:"info", ask:b.ask, eyebrow:b.eyebrow||"", h:b.h,
-        body:b.body+(b.ciBody?'<br><br><b>'+b.ciBody+'</b>':""), breakMin:b.breakMin};
+        body:b.body, breakMin:b.breakMin};
     },
     agenda:function(){ return ["Mindfulness", skillName(st.p2), skillName(st.p3)]; },
     renderDials:function(){
@@ -4342,8 +4354,8 @@ PRACTICES.cb = (function(){
       /* the open check-in gets the big block (that is where a late joiner
          scans); the capacity slides are dense, so they keep the corner one. */
       if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
-    /* four authored readings (Justin, 2026-08-10): open, then folded into each
-       practice's capacity-check slide. `ci` on a beat IS the seam. */
+    /* four readings (Justin, 2026-08-10): one before Practice 1, then its own
+       check-in slide after each practice (unfolded 2026-09-21). `ci` on a beat IS the seam. */
     seam:function(b){ return (b&&b.ci)?b.ci:null; },
     recipe:function(){ return {sense:st.sense, p2:st.p2.skill, p3:st.p3.skill,
       scene:(SHELL.scene||"(surprise me)")}; },
@@ -5426,6 +5438,7 @@ function senseChips(){
      story   {eyebrow, h, body}           a vignette reading slide
      checkin {eyebrow, h, body}           app check-in, logo
      events  {eyebrow, h, rows}           the closing invitation
+     cta     {eyebrow, h, body, url, label, lead}  an invitation with its own QR panel
    ================================================================== */
 /* The Unstucking Academy mark is FRAME chrome, not slide content (Justin,
    2026-08-31: it must not re-animate in on every slide — leave it there if it
@@ -5519,6 +5532,16 @@ function renderSlide(c){
       return '<div class="s story'+(c.img?' haswell':'')+fit+'">'+eb+'<h1>'+splitH(hdots(c.h))+'</h1>'+
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+
         askHTML(c)+'</div>';
+    }
+    case "cta": {
+      /* the invitation slide (MM → Co-Regulator, 2026-09-21): checkin layout, with
+         the big join panel's geometry carrying a QR to c.url instead of a join code */
+      let qr=""; try{ const q=qrcode(0,"M"); q.addData(c.url); q.make();
+        qr='<img class="qr" src="'+q.createDataURL(6,2)+'" alt="">'; }catch(e){}
+      return '<div class="s checkin cta wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
+        (c.body?'<div class="body">'+c.body+'</div>':"")+
+        '<div class="snbjoin big ctapanel">'+qr+'<div class="jtext"><div class="jlead">'+(c.lead||"")+'</div>'+
+        '<a class="jlink" href="'+c.url+'">'+(c.label||c.url)+'</a></div></div></div>';
     }
     case "events":
       return '<div class="s events wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+(c.rows||"")+'</div>';
