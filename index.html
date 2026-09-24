@@ -468,6 +468,14 @@
 .snbframe .s.holdpre > h1:not(.well){animation:none}
 .snbframe .s.holdpre > h1 .hrest{display:inline-block;
   animation:snbRise .66s cubic-bezier(.19,.72,.31,1) both;animation-delay:.08s}
+/* a practice prompt whose opening words carried over from the last prompt -
+   the shared part stays put; only the new tail fades in (opacity only: the
+   tail wraps mid-sentence, so it must stay a plain inline span) */
+.snbframe .s.holdp > .p{animation:none}
+.snbframe .s.holdp .p .prest{animation:snbPFade .66s ease both;animation-delay:.08s}
+/* the same prompt repeated verbatim (a second reading) holds whole */
+.snbframe .s.holdh1 > .p{animation:none}
+@keyframes snbPFade{from{opacity:0}to{opacity:1}}
 
 /* ---- list block — runs of "—" lines, marked up by the renderer.
    Hanging indent keeps wrapped lines aligned after the dash, each item gets
@@ -3199,7 +3207,7 @@ const LADDER = (function(){
      line there); everything after it is shared. */
   function OBSTACLES_TAIL(P, four){
     const b = mkq(P), B = [];
-    B.push(four || b("4 statements.", "We’ll say four statements. Notice what surfaces — the tightening, the argument, the thought."));
+    B.push(four || b("4 statements.", "I will read four statements and pause between each. Notice how your body responds and try to hang onto it."));
     pickObstacles(4).forEach(s => B.push(b(s, "Notice what surfaces as you say it to yourself.")));
     B.push(b("Validate the Obstacle."));
     B.push(b("Normalize the Obstacle."));
@@ -3237,7 +3245,7 @@ const LADDER = (function(){
   function CLOSING(P, o){
     const b = mkq(P), B = [];
     if (!o || o.anchor !== false) B.push(
-      b("Come back to the one thing you anchored on.",
+      b("Return to your anchor.",
         "Whatever it was — a movement, an image, something you could see, hear, or hold. Give it a bit of appreciation for carrying you into the present moment."));
     B.push(b("Let your awareness begin to widen.", "No rush."));
     B.push(b("Reconnect to the external present moment.",
@@ -3345,8 +3353,8 @@ const COHORT = (function(){
    Edit the source and re-run build.py; do not hand-edit here.
    ================================================================== */
 PRACTICES.mm = (function(){
-const BEFORE_BODY="open the stuck not broken app and check-in before the practice.";
-const AFTER_BODY="open the app and check-in again.";
+const BEFORE_BODY="Open the Stuck Not Broken app and check in before the practice.";
+const AFTER_BODY="Open the app and check in again.";
 const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app. if you're not in yet, scan the code or tap the link on screen.<br>notice where you are right now. there's no right answer.<br>take your time.";
 const AFTER_NOTE="let's check in one more time.<br>open the app again and notice where you are now.<br>not better or worse, just what's true.";
 const SENSES = {
@@ -3383,7 +3391,7 @@ let st = {
    logo = show logo+byline (cover slides) */
 function cover(h,note,eyebrow,logo){ return {style:"cover",h,note:note||"",eyebrow:eyebrow||"",flow:"",logo:logo!==false,fixed:true}; }
 function word(h,note,fixed){ return {style:"word",h,note:note||"",eyebrow:"",flow:"",logo:false,fixed:!!fixed}; }
-function checkinBeat(phase){ return {style:"checkin", phase:phase, h:(phase==="before"?"a quick check-in.":"one more check-in."), body:(phase==="before"?BEFORE_BODY:AFTER_BODY), note:(phase==="before"?BEFORE_NOTE:AFTER_NOTE), eyebrow:"", flow:"", logo:true, fixed:true}; }
+function checkinBeat(phase){ return {style:"checkin", phase:phase, h:(phase==="before"?"A quick check-in.":"One more check-in."), body:(phase==="before"?BEFORE_BODY:AFTER_BODY), note:(phase==="before"?BEFORE_NOTE:AFTER_NOTE), eyebrow:"", flow:"", logo:true, fixed:true}; }
 
 /* CO-REGULATOR INVITATION (Justin, 2026-09-21) — Mindful Moment is the free door;
    this slide points the room one step further, into the Academy as a Co-Regulator
@@ -3395,9 +3403,9 @@ const COREG_LABEL="stucknotbroken.com/checkout/co-regulator";
    absolute so the standalone tool and the builder load the same file */
 const COREG_IMG="https://justinlmft.github.io/snb-session-builder/images/academy-home.webp";
 function coregBeat(){
-  return {style:"coreg", h:"Want to go further than presence?",
-    body:"Mindful Moment is where you rest. Capacity Builder is where you build.<br><br>Several times a month, Co-Regulator members practice live with me: three guided self-regulation practices, staying anchored in safety. It’s where you build the capacity to stay present with whatever shows up.<br><br><b>Join the Unstucking Academy as a Co-Regulator →</b>",
-    note:"Want to go further than presence? — Mindful Moment is where you rest. Capacity Builder is where you build. — Several times a month, Co-Regulator members practice live with me: three guided self-regulation practices, staying anchored in safety. It’s where you build the capacity to stay present with whatever shows up. — Scan the code or tap the link to join the Unstucking Academy as a Co-Regulator.",
+  return {style:"coreg", h:"Want to go further?",
+    body:"Mindful Moments are where you practice connecting to the present. Capacity Builders are where you self-regulate.<br><br>- weekly<br>- small groups with no pressure<br>- practice self-regulation skills within your capacity<br>- grow your capacity over time = more presence, more safety, less defense<br><br><b>Join the Unstucking Academy as a Co-Regulator →</b>",
+    note:"",
     url:COREG_URL, label:COREG_LABEL, img:COREG_IMG, eyebrow:"THE UNSTUCKING ACADEMY", flow:"", logo:true, fixed:true};
 }
 
@@ -3405,7 +3413,7 @@ function coregBeat(){
    Uses the site-wide [data-snb] system (same as the website): values are pulled
    live from site-data.json at present-time; the baked text is the fallback. */
 function eventsBeat(){
-  return {style:"events",h:"join us live",note:
+  return {style:"events",h:"Join us live",note:
     "If this gave you a little of what you needed, there’s more. We practice live every week or two inside the Unstucking Academy — Capacity Builders, more Mindful Moments, and monthly Q&As. — Here’s what’s coming up next. Come join us — I’d love to keep practicing with you. — (Check the Academy calendar for everything, plus the cohorts.)",
     eyebrow:"",flow:"",logo:true,fixed:true};
 }
@@ -3430,15 +3438,15 @@ function buildBeats(){
   const sec=(name,from)=>{for(let i=from;i<B.length;i++)B[i].section=name;};
 
   /* INTRO (fixed arc) */
-  const welcome=cover("welcome.",
+  const welcome=cover("Welcome.",
     "Welcome! The whole idea here is super simple. For the next 20ish minutes, we’re just creating a space to connect with the present moment. — Whether you’re here intentionally or doing something else… let my voice point your thoughts to the present moment. If your mind wanders, that’s okay — come back when prompted. Pause when needed. — Today we’ll move through: "+(st.order.length?st.order.map(cap).join(", "):"a few senses")+".");
   welcome.flow=flowHTML();
   B.push(welcome);
-  B.push(cover("the start of a<br>mindfulness practice.",
+  B.push(cover("The start of a<br>mindfulness practice.",
     "Of course, this is not therapy. This is not coaching or personal life advice. However, these very simple mindfulness prompts are what I use when I work with people to help them develop a connection to the present moment, cultivate a mindfulness practice, and even reduce experiences like anxiety. — These prompts are the beginning of a much deeper mindfulness practice."));
-  B.push(cover("participation?",
+  B.push(cover("Participation.",
     "There’s no pressure to participate. All you need to worry about is the present moment. — If you’d like to be more active and share an experience in the chat, go right ahead. Keep it very present-moment focused, following what we’re doing here."));
-  B.push(cover("no pressure.<br>just presence.",
+  B.push(cover("No pressure.<br>Just presence.",
     "The motto for this is: no pressure, just presence. From here on, I’ll give a simple prompt and a few follow-ups. But mostly, lots of quiet. That’s really it. Sound good? Let’s begin."));
   sec("intro",0);
 
@@ -3478,9 +3486,9 @@ function buildBeats(){
   }
   B.push(word("One intentional breath", "One more on purpose to finish — the pair to the one we started with. In on purpose, and let the exhale leave however it likes."));
   B.push(checkinBeat("after"));
-  B.push(cover("woo-hoo! 🎉",
+  B.push(cover("Woo-hoo! 🎉",
     "You did it. You practiced mindfulness. You survived. — Good job to you if this was a return to simple mindfulness. Good job to you if this was your first time. Good job to you if this was a continuation of your practices."));
-  B.push(cover("thank you.",
+  B.push(cover("Thank you.",
     "Thank you for being a part of this Mindful Moment. Thank you for taking the time to join. I hope you got a little bit of what you needed. — If you don’t mind, share in the chat what this was like for you. Maybe just a word if you’ve got one. Share more if you’ve got more. — Tell someone in the chat that you appreciate them sharing, or that you can relate, or just leave a thumbs up on their comment. — I hope we can meet again and continue to practice."));
   B.push(coregBeat());
   B.push(eventsBeat());
@@ -4479,17 +4487,17 @@ const WEEKS = [
     {h:"Jenny: Normalizing.",
      body:"…and then she adds:<br><br>“I think anyone else would feel alone too, if they had my-”<br><br>Jenny catches the memories as they start to surface, then wisely decides to shift her focus back to her blanket.",
      note:"Keep normalizing a yes-or-no question: Does feeling alone make sense based on your life context or not? Would someone else likely feel this way or not?<br>The answer is yes."},
-    {who:"ARJUN", h:"Arjun: Validating.",
+    {who:"ARJUN", state:"wheel", h:"Arjun: Validating.",
      body:"Arjun sits in the parked car, palms on the wheel. He’s anchored enough to Validate non-safety. He says to himself:<br><br>“I feel angry. Still angry. Not about anything in particular. Just... angry.”",
      note:"Be careful not to evaluate the emotion. Just name it.",
      ask:[{h:"Did Arjun begin to stray from Validating?"}]},
-    {who:"ARJUN", h:"Arjun: Normalizing.",
+    {who:"ARJUN", state:"wheel", h:"Arjun: Normalizing.",
      body:"…and then:<br><br>“Of course I’m angry all the time. Being ready and aggressive is how I…”<br><br>Arjun catches the explanations and memories popping into his brain and wisely focuses on the steering wheel. He grips it a bit tighter this time.",
      note:"Normalizing could easily turn into evaluation or explanation and drift into memories or blame that take us away from the anchor. Try to focus on the present moment and keep normalizing as simple and straightforward as possible. It’s really a yes-or-no question - Does the feeling make sense based on your life context or not? Would someone else likely feel this way or not?",
      ask:[{h:"Where did his Normalizing start to drift?"}]},
-    {who:"SIMONE", h:"Simone: Validating.", body:"Simone is on her morning walk and anchored enough into safety, but it’s fleeting. She says to herself:<br><br>“I feel tense. I’m revved up but can’t do anything at the same time.”", note:"Validating freeze might have two experiences.",
+    {who:"SIMONE", state:"after", h:"Simone: Validating.", body:"Simone is on her morning walk and anchored enough into safety, but it’s fleeting. She says to herself:<br><br>“I feel tense. I’m revved up but can’t do anything at the same time.”", note:"Validating freeze might have two experiences.",
      ask:[{h:"What did Simone Validate?"}]},
-    {who:"SIMONE", h:"Simone: Normalizing.", body:"And then: “Anyone who’s lived with as much tension as I have for this long would, too. Especially if they…”<br><br>Simone notices her mind starting to race and then turns her attention to the force of her legs pushing off the sidewalk.<br><br>“Yes, anyone else would, too.”", note:"Keep Normalizing a yes or no question - Does the feeling make sense based on your life context or not? Your mind will want to argue the case with evidence. Valid or not, it’s drifting from safety."}
+    {who:"SIMONE", state:"after", h:"Simone: Normalizing.", body:"And then: “Anyone who’s lived with as much tension as I have for this long would, too. Especially if they…”<br><br>Simone notices her mind starting to race and then turns her attention to the force of her legs pushing off the sidewalk.<br><br>“Yes, anyone else would, too.”", note:"Keep Normalizing a yes or no question - Does the feeling make sense based on your life context or not? Your mind will want to argue the case with evidence. Valid or not, it’s drifting from safety."}
   ],
   vigQ:{h:"Is your stuck state normal, given your life?", note:"Just yes or no in the chat. We’re not doing the story. — Some of you are going to hesitate on that, and that hesitation is worth noticing. Hold onto it, we’ll use it."},
   tail:"vn",
@@ -4518,14 +4526,14 @@ const WEEKS = [
     {who:"ARJUN", state:"coil", h:"Arjun: Imagery.",
      body:"Arjun is in his parked car after work, engine on, and his palms on the wheel. He’s anchored into the quiet in his hands. He has Validated: “I feel angry. Yes, still angry,” and Normalized it: “Of course I’m angry all the time. Being aggressive and ready is how I dealt with things.”<br><br>He asks: “What does the anger look like?”<br><br>“A red coil in my chest. Wound tight, like a spring. It’s braced and ready to jump.”",
      note:""},
-    {who:"ARJUN", h:"Arjun: Invitation.",
+    {who:"ARJUN", state:"wheel", h:"Arjun: Invitation.",
      body:"Arjun invites the coil:<br><br>“You can stay braced and ready... while I drive us home.”<br><br>He puts the car in gear. The coil rides along. His hands stay on the wheel.",
      note:"The invitation pairs with an activity — he drives, the coil rides. For him, this is the third option: not acting on the anger, not fighting it. Permitting it. — Timing still matters. He does this before he walks in the front door, not after.",
      ask:[{h:"What made his Invitation work?"}]},
     {who:"SIMONE", state:"static", h:"Simone: Imagery.",
      body:"Simone is on her morning walk, feet pushing off the concrete, air on her skin. She’s anchored into the blue, shimmering sphere of “relief” in her torso. She has Validated: “I feel tense. I’m again revved up but also stuck at the same time,” and Normalized it, too.<br><br>Without stopping her walk, she asks: What does “tense” look like?<br><br>“A gray-white static... fizz? It sits around my shoulders and behind my eyes.”",
      note:"She does the imagery from inside the anchor, and she keeps moving. One glance at the static, then back to her feet. For freeze, brief passes beat long looks."},
-    {who:"SIMONE", h:"Simone: Invitation.",
+    {who:"SIMONE", state:"after", h:"Simone: Invitation.",
      body:"She invites it: “The static can walk with me. It doesn’t have to go anywhere.”<br><br>Then she quickly shifts her focus back to the experience of her walk, including the world around her and the feel of her leg muscles.<br><br>She uses the Imagery &amp; Invitation skill a couple more times on the walk, each time quickly shifting focus back to the mindfulness of the walk itself.",
      note:"She did not dwell on the static. She used I&amp;I, then focused on the walk. This is better for freeze.",
      ask:[{h:"Why do you think Simone is quick about reverting focus back to mindfulness?"}]}
@@ -4551,7 +4559,7 @@ const WEEKS = [
     {state:"stone", h:"Jenny: Normalize.", body:"<b>Normalize:</b> “It makes sense that would come up. My body is used to protecting me by keeping me small.”"},
     {state:"stone", h:"Jenny: Imagine &amp; Invite.", body:"<b>Imagine &amp; Invite:</b> a small, dense stone in her stomach. “This stone can be here. It’s allowed to rest there as I keep feeling the blanket and the warmth.”", note:"Same three moves as last week. She just points them at the Obstacle instead of the original feeling. — Rocks in the creek. You don’t fight the rock. You permit it, and it erodes."}
   ,
-    {who:"ARJUN", state:"defense", h:"Arjun: The Obstacle.",
+    {who:"ARJUN", state:"after", h:"Arjun: The Obstacle.",
      body:"Arjun is in his parked car, anchored into the quiet in his hands. The red coil is invited and resting.<br><br>Then a familiar thought arrives:<br><br>“If I let my guard down, people will walk on me.”<br><br>His jaw tightens.",
      note:"Everybody gets these. His is the belief that made the anger necessary in the first place. It is not a sign he’s doing it wrong. It’s a sign he got close.",
      ask:[{h:"What was Arjun’s Obstacle?"}]},
@@ -4559,18 +4567,18 @@ const WEEKS = [
     {who:"ARJUN", state:"gate", h:"Arjun: Normalize.", body:"<b>Normalize:</b> “It makes sense. Being on guard is how I got through.”"},
     {who:"ARJUN", state:"gate", h:"Arjun: Imagine &amp; Invite.", body:"<b>Imagine &amp; Invite:</b> a metal gate across his chest. “The gate can stay closed. It doesn’t have to open. I’m just here, feeling my hands on the wheel.”", note:"Same three moves, pointed at the Obstacle. He is not arguing with the gate. He is not forcing it open. He permits it and returns to the anchor.",
      ask:[{h:"How did Arjun use Imagine & Invite on the gate?"}]},
-    {who:"SIMONE", h:"Simone: The Obstacle.", body:"On her walk, anchored, the static riding along, a thought arrives:<br><br>“I’m probably doing this practice wrong, too.”<br><br>A small clench in her stomach.",
+    {who:"SIMONE", state:"after", h:"Simone: The Obstacle.", body:"On her walk, anchored, the static riding along, a thought arrives:<br><br>“I’m probably doing this practice wrong, too.”<br><br>A small clench in her stomach.",
      ask:[{h:"How is Simone’s Obstacle connected to her freeze?"}]},
-    {who:"SIMONE", h:"Simone: Validate.", body:"<b>Validate:</b> “I feel a clench in my stomach, and I’m thinking I’ll do it wrong.”"},
-    {who:"SIMONE", h:"Simone: Normalize.", body:"<b>Normalize:</b> “Of course that shows up. Not starting is how my body kept me from doing things wrong.”"},
-    {who:"SIMONE", h:"Simone: Imagine &amp; Invite.", body:"<b>Imagine &amp; Invite:</b> a knot of gray string in her stomach. “The knot can ride along. I’ll keep walking.”", note:"Her Obstacle IS the freeze talking — the doing-it-wrong belief is the brake itself. One small pass, all three moves, and she keeps moving. Don’t let her practice stall while she works on the Obstacle.",
+    {who:"SIMONE", state:"after", h:"Simone: Validate.", body:"<b>Validate:</b> “I feel a clench in my stomach, and I’m thinking I’ll do it wrong.”"},
+    {who:"SIMONE", state:"after", h:"Simone: Normalize.", body:"<b>Normalize:</b> “Of course that shows up. Not starting is how my body kept me from doing things wrong.”"},
+    {who:"SIMONE", state:"after", h:"Simone: Imagine &amp; Invite.", body:"<b>Imagine &amp; Invite:</b> a knot of gray string in her stomach. “The knot can ride along. I’ll keep walking.”", note:"Her Obstacle IS the freeze talking — the doing-it-wrong belief is the brake itself. One small pass, all three moves, and she keeps moving. Don’t let her practice stall while she works on the Obstacle.",
      ask:[{h:"Why do you think Simone keeps walking?"}]}
   ],
   vigQ:{h:"What’s your usual Obstacle?", note:"The sentence your head says when you get close. In the chat. — You’ll see the same three or four sentences come up across the whole cohort. That’s worth seeing."},
   tail:"obs",
   teach:[
-    {img:"srs-w4-opportunity", h:"Not really an obstacle.", body:"An opportunity:<br>— to notice the most present-moment experience<br>— to Validate, Normalize, Invite<br>— to Balance, to Pendulate<br>— to build vagal brake strength",
-     note:"Reframe it once, then get to practice. — The Obstacle is not in the way of the work. Most of the time it IS the work."}
+    {img:"srs-w4-opportunity", h:"Obstacles are opportunities.", body:"<i>Obstacles</i> are internal experiences that pop up when you don’t expect them to.<br><br>But they are actually an opportunity:<br>— to notice the most present-moment experience<br>— to Validate, Normalize, Invite<br>— to Balance, to Pendulate<br>— to build vagal brake strength",
+     note:"Obstacles don’t get in the way. They truly are the way."}
   ]
 },
 {
@@ -4587,11 +4595,11 @@ const WEEKS = [
     {h:"Jenny: Permit the smallest defense.", body:"<b>Permit the smallest defense:</b> she turns toward the subtle tightening in her stomach. She permits it, without judgment."},
     {h:"Jenny: Shift back to safety.", body:"<b>Shift back to safety:</b> after a moment, she deliberately returns to the blanket and the tiny yellowish warmth. She notices these gently soften the edge of the defensive sensation.<br><br>One intentionally bigger breath. A longer exhale.", note:"The word doing the work here is SMALLEST. — Catch it small and keep it small. A few seconds is better than none. — You don’t get points for staying in it longer."}
   ,
-    {who:"ARJUN", h:"Arjun: Balancing.", body:"A red light on the drive home. The car ahead is slow off the line, and Arjun feels the first flicker of heat rise in his chest."},
-    {who:"ARJUN", h:"Arjun: Anchor.", body:"<b>Anchor:</b> palms resting on the wheel. The quiet is still there."},
-    {who:"ARJUN", h:"Arjun: Permit the smallest defense.", body:"<b>Permit the smallest defense:</b> he turns toward the flicker while it is still an ember. “You’re allowed to be here.”",
+    {who:"ARJUN", state:"wheel", h:"Arjun: Balancing.", body:"A red light on the drive home. The car ahead is slow off the line, and Arjun feels the first flicker of heat rise in his chest."},
+    {who:"ARJUN", state:"wheel", h:"Arjun: Anchor.", body:"<b>Anchor:</b> palms resting on the wheel. The quiet is still there."},
+    {who:"ARJUN", state:"wheel", h:"Arjun: Permit the smallest defense.", body:"<b>Permit the smallest defense:</b> he turns toward the flicker while it is still an ember. “You’re allowed to be here.”",
      ask:[{h:"How big was Arjun’s defense when he caught it?"}]},
-    {who:"ARJUN", h:"Arjun: Shift back to safety.", body:"<b>Shift back to safety:</b> after a few seconds, he returns to the quiet in his hands. The ember cools on its own.", note:"His whole week is the word SMALLEST. He catches the ember, not the fire. A few seconds is better than none — and for a fight system, catching it early is the entire game.",
+    {who:"ARJUN", state:"wheel", h:"Arjun: Shift back to safety.", body:"<b>Shift back to safety:</b> after a few seconds, he returns to the quiet in his hands. The ember cools on its own.", note:"His whole week is the word SMALLEST. He catches the ember, not the fire. A few seconds is better than none — and for a fight system, catching it early is the entire game.",
      ask:[{h:"What did permitting the ember do?"}]},
     {who:"SIMONE", state:"sphere", h:"Simone: Balancing.", body:"Mid-walk, the static thickens — a work thought passing through."},
     {who:"SIMONE", state:"sphere", h:"Simone: Anchor.", body:"<b>Anchor:</b> her feet on the concrete, still moving."},
@@ -4653,7 +4661,7 @@ const WEEKS = [
     {state:"after", h:"Jenny: At capacity.", body:"An Obstacle arrives: “I don’t think I can handle this.” Then an emotional one — rejection. A fragment: “not enough.”<br><br>“I know there is more here for me, but I’ll come back to it another time.”<br><br>Intentional breath, slow exhale. “Okay, rejection… I won’t reject you.” She chuckles. “I’m at my capacity for now. I see you. And yeah, I know it makes sense you’re there.”<br><br>She imagines rejection as a lost dog. “You don’t have to leave. You can be here with me, right here on the couch.”",
      note:"This is the most important slide in the cohort, honestly. — She got to her edge and she STOPPED. And stopping wasn’t failure, it was skill. — She also laughed. There’s room for that here."}
   ,
-    {who:"ARJUN", h:"Arjun: Describing the heat.",
+    {who:"ARJUN", state:"wheel", h:"Arjun: Describing the heat.",
      body:"The flickers are rarer now, and smaller. Arjun balances one at the wheel — and this time he describes it:<br><br>Orange. Dense. About the size of a fist. Pulsing.<br><br>An impulse arrives with it — the urge to move. He parks, steps out of the car, and stretches. On purpose.",
      note:"Description made room for the impulse to be noticed and CHOSEN. He didn’t suppress the fight energy and he didn’t obey it — he spent it honestly, as movement. That’s the fight-system version of this skill.",
      ask:[{h:"How would you describe Arjun’s heat?"}, {h:"What did Arjun do with the urge to move?"}]},
@@ -4826,7 +4834,7 @@ function tailBeats(kind){
      DESCRIBE  the deepest depth, with the plain (measurement) swap for literal thinkers. */
   const OPENING = () => st.obs
     ? LADDER.OBSTACLES_TAIL("Practice",
-        info("4 statements.","We’ll say four statements. Notice what surfaces — the tightening, the argument, the thought.","")).slice(0,7)
+        info("4 statements.","","I will read four statements and pause between each. Notice how your body responds and try to hang onto it.")).slice(0,7)
     : [RECALL, q("Validate that emotion.","“I do feel _____.” / “I don’t like it, but I feel _____.”"), NORM];
   const PERMIT = () => [
     q("Is it okay for this non-safety experience to be here with you?","You can say yes or no."),
@@ -4857,7 +4865,7 @@ function tailBeats(kind){
 
   if(kind==="obs"){
     return LADDER.OBSTACLES_TAIL("Practice",
-      info("4 statements.","We’ll say four statements. Notice what surfaces — the tightening, the argument, the thought.","We’ll say four statements. Notice what surfaces — the tightening, the argument, the thought."));
+      info("4 statements.","","I will read four statements and pause between each. Notice how your body responds and try to hang onto it."));
   }
 
   if(kind==="bal"){
@@ -6170,7 +6178,23 @@ function pRender(){
     else{ /* the NAME holds — whether the last slide was "Jenny" or "Jenny: X" */
           const nm=x=>{const m=String(x||"").match(/^([^:<]+?):?\s*$|^([^:<]+):/);return m?(m[1]||m[2]).trim():null;};
           const p=hh.match(/^([^:<]+):/);
-          if(p&&nm(_lastH)&&p[1].trim()===nm(_lastH)) holds.push("holdpre"); }
+          if(p&&nm(_lastH)&&p[1].trim()===nm(_lastH)) holds.push("holdpre");
+          /* practice prompts that share their opening with the slide we just
+             left ("As you mindfully experience it, ...", "Notice how safety
+             feels in your body generally/specifically") hold the shared words
+             still and let only the new tail arrive (Justin, 2026-09-24: "only
+             animate in what is new - all of the text is visually
+             disruptive"). Word-boundary split; short overlaps don't count. */
+          else if(c && c.kind==="prompt" && _lastH && hh.indexOf("<")<0){
+            const prev=String(_lastH); let i=0;
+            const n2=Math.min(hh.length,prev.length);
+            while(i<n2 && hh[i]===prev[i]) i++;
+            const cut=hh.lastIndexOf(" ", i-1);
+            if(cut>=12 && cut+1<hh.length){
+              slideHTML=slideHTML.replace('<div class="p">'+hh+'</div>',
+                '<div class="p"><span class="ppre">'+hh.slice(0,cut+1)+'</span><span class="prest">'+hh.slice(cut+1)+'</span></div>');
+              holds.push("holdp");
+            } } }
     if(c && c.body && c.body===_lastBody) holds.push("holdbody");
     if(holds.length) slideHTML=slideHTML.replace('<div class="s ','<div class="s '+holds.join(' ')+' ');
     _lastEb=(c&&c.eyebrow)||null; _lastH=hh||null; _lastBody=(c&&c.body)||null;
