@@ -4729,7 +4729,9 @@ let st = {
      work goes — "general" is the body overall only, the shallowest a Balancing or
      Pendulating practice goes. obs: open with the four Obstacle statements instead of
      choosing an emotion in advance, so Obstacles can come back in front of each skill as
-     that skill unlocks. plain: measurement instead of metaphor in the description block. */
+     that skill unlocks. plain: measurement instead of metaphor in the description block.
+     On W5/W6 depth and obs are BAKED per practice (Justin, 2026-10-01) and these dials
+     only steer the description weeks. */
   depth:"specific", obs:false, plain:false,
   scene:"",             // "" = surprise me (drawn once at Present)
   testMode:false,       // ON = the app popup tells members to ignore this session
@@ -4818,8 +4820,14 @@ function ladder(sense, o){
 function reconnect(){ return LADDER.CLOSING("Practice"); }
 
 /* ---------- THE SKILL TAIL — what makes each week different ---------- */
-function tailBeats(kind){
+function tailBeats(kind, opt){
   const B=[];
+  /* W5/W6 bake their options per practice (Justin, 2026-10-01): Practice 1 is
+     the full general-to-specific run, Practice 2 opens with the four Obstacle
+     statements. `opt` overrides the presenter dials; without it (the
+     description weeks) the dials still decide. */
+  const OBS = (opt && "obs" in opt) ? opt.obs : st.obs;
+  const DEPTH = (opt && opt.depth) ? opt.depth : st.depth;
   const VAL = q("What is one non-safety experience you can Validate?","“I do feel _____.” / “I don’t like it, but I feel _____.” / “Yeah, fine, I feel _____.”");
   const NORM= q("Normalize that experience.","“I feel _____, which makes sense based on my life context.”");
   const RECALL = q("Recall a non-safety emotion you typically have, have now, or will have.","Present moment? Recent past? Something coming up? Something lingering? — Remain open to Obstacles.");
@@ -4832,7 +4840,7 @@ function tailBeats(kind){
      BODY      depth-aware. The shallowest a Balancing or Pendulating practice goes is the
                body OVERALL; finding the one place it lives is the next depth up.
      DESCRIBE  the deepest depth, with the plain (measurement) swap for literal thinkers. */
-  const OPENING = () => st.obs
+  const OPENING = () => OBS
     ? LADDER.OBSTACLES_TAIL("Practice",
         info("4 statements.","","I will read four statements and pause between each. Notice how your body responds and try to hang onto it.")).slice(0,7)
     : [RECALL, q("Validate that emotion.","“I do feel _____.” / “I don’t like it, but I feel _____.”"), NORM];
@@ -4843,7 +4851,7 @@ function tailBeats(kind){
   ];
   const BODY = () => {
     const A=[q("Notice how that feels in your body overall.","Mobile or immobile? Heavy or light?")];
-    if(st.depth!=="general") A.push(q("Notice how that feels in your body specifically.","One place where it’s most obvious. Face, chest, belly, jaw, throat. — If you’re not finding it in your body, that’s okay. Don’t go hunting. Come back to safety for a moment and we’ll go on from there."));
+    if(DEPTH!=="general") A.push(q("Notice how that feels in your body specifically.","One place where it’s most obvious. Face, chest, belly, jaw, throat. — If you’re not finding it in your body, that’s okay. Don’t go hunting. Come back to safety for a moment and we’ll go on from there."));
     return A;
   };
   const DESCRIBE = () => (st.plain
@@ -4876,7 +4884,7 @@ function tailBeats(kind){
   }
 
   if(kind==="pend"){
-    tailBeats("bal").forEach(b=>B.push(b));
+    tailBeats("bal", opt).forEach(b=>B.push(b));
     B.push(q("Bring your focus back to the non-safety experience."));
     B.push(q("Has non-safety changed?"));
     /* The Interest Impulse read once more — it is a dose signal, not only a door. */
@@ -4921,7 +4929,12 @@ function practiceBeats(w, label){
     "", "We will "+w.we));
   B.push(capacityCheck(0));
   ladder(st.sense,o).forEach(b=>B.push(b));
-  tailBeats(w.tail).forEach(b=>B.push(b));
+  /* W5/W6: the two practices are fixed, not chosen — P1 runs the full
+     general-to-specific practice, P2 brings the Obstacles in (Justin,
+     2026-10-01). The description weeks keep the presenter dials. */
+  const baked = (w.tail==="bal"||w.tail==="pend")
+    ? {obs: label==="Practice 2", depth:"specific"} : null;
+  tailBeats(w.tail, baked).forEach(b=>B.push(b));
   reconnect().forEach(b=>B.push(b));
   return B;
 }
@@ -5110,16 +5123,15 @@ function senseChips(){
   const c=document.getElementById("senseCap");
   if(c) c.textContent="set per week: "+WEEKS.map(w=>"W"+w.n+" "+SENSES[w.sense].label.toLowerCase()).join(" · ");
 }
-/* PRACTICE OPTIONS (app parity, 2026-09-06). Shown only on the weeks where they mean
-   something: depth and the Obstacles opening on the Balancing/Pendulating weeks, the plain
-   description swap on the two description weeks. */
+/* PRACTICE OPTIONS (app parity, 2026-09-06). W5/W6 are baked per practice now
+   (Justin, 2026-10-01: P1 full general-to-specific, P2 with Obstacles), so the
+   chooser only shows on the two description weeks. */
 function practiceOpts(){
   const el=document.getElementById("srsOpts"); if(!el) return;
   const dial=document.getElementById("srsOptsDial");
-  const w=W(), deep=["bal","pend","baldesc","penddesc"].indexOf(w.tail)>=0;
-  const desc=w.tail==="baldesc"||w.tail==="penddesc";
-  if(dial) dial.style.display = deep ? "" : "none";
-  if(!deep){ el.innerHTML=""; return; }
+  const w=W(), desc=w.tail==="baldesc"||w.tail==="penddesc";
+  if(dial) dial.style.display = desc ? "" : "none";
+  if(!desc){ el.innerHTML=""; return; }
   let h="";
   h+='<label class="toggle"><input type="checkbox" '+(st.depth==="general"?"checked":"")+' onchange="st.depth=this.checked?&quot;general&quot;:&quot;specific&quot;;render()"> Body overall only <span class="dr">shallower</span></label>';
   h+='<label class="toggle"><input type="checkbox" '+(st.obs?"checked":"")+' onchange="st.obs=this.checked;render()"> Open with the 4 Obstacle statements</label>';
