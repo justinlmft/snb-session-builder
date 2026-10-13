@@ -3325,7 +3325,7 @@ const COHORT = (function(){
   /* ---- canonical presenter notes (from SRS, the cohort that had them) ---- */
   const N = {
     checkinBefore:
-      "Before we do anything, open the app and check in. <br>— If you’re not in yet, scan the code on screen or type the join code. <br>— Notice where you are right now. There’s no right answer. <br>— Two reasons we do this. One, it gives you a starting point, so at the end you can see whether the practice moved anything. Two, over the cohort it becomes a picture of your baseline, which is the thing we’re actually trying to move. <br>— Take your time.",
+      "Before we do anything, open the app and check in. <br>— If you’re not in yet, type the join code on screen. <br>— Notice where you are right now. There’s no right answer. <br>— Two reasons we do this. One, it gives you a starting point, so at the end you can see whether the practice moved anything. Two, over the cohort it becomes a picture of your baseline, which is the thing we’re actually trying to move. <br>— Take your time.",
     checkinAfter:
       "Let’s check in one more time. — Open the app again and notice where you are now. Not better or worse, just what’s true. — Then look at where you started and where you are. Sometimes it moved. Sometimes it didn’t, and sometimes it went the other way. All three are real information, and none of them mean you did it wrong. — That comparison is the point. You’re building evidence about your own system.",
     homeworkReview:
@@ -3391,7 +3391,7 @@ const COHORT = (function(){
 PRACTICES.mm = (function(){
 const BEFORE_BODY="Open the Stuck Not Broken app and check in before the practice.";
 const AFTER_BODY="Open the app and check in again.";
-const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app. if you're not in yet, scan the code or tap the link on screen.<br>notice where you are right now. there's no right answer.<br>take your time.";
+const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app. if you're not in yet, type the join code on screen.<br>notice where you are right now. there's no right answer.<br>take your time.";
 const AFTER_NOTE="let's check in one more time.<br>open the app again and notice where you are now.<br>not better or worse, just what's true.";
 const SENSES = {
   touch:{ word:"Touch", note:
@@ -3805,7 +3805,7 @@ PRACTICES.cb = (function(){
     const CI_REF = { "Practice 1": "cb1", "Practice 2": "cb2", "Practice 3": "cb3" };
     const CI_OPEN_H = "a quick check-in.";
     const CI_OPEN_BODY = "open the stuck not broken app and check in before we practice.";
-    const CI_OPEN_NOTE = "let’s check in before we practice.<br>open the stuck not broken app. if you’re not in yet, scan the code or tap the link on screen.<br>notice where you are right now. there’s no right answer.<br>take your time.";
+    const CI_OPEN_NOTE = "let’s check in before we practice.<br>open the stuck not broken app. if you’re not in yet, type the join code on screen.<br>notice where you are right now. there’s no right answer.<br>take your time.";
     const CI_AFTER_H = "one more check-in.";
     const CI_AFTER_BODY = "open the stuck not broken app and check in again.";
     const CI_AFTER_NOTE = "let’s check in again in the app — it will open on its own.<br>not better or worse, just what’s true right now.<br>take your time. then we’ll check capacity and take a break.";
@@ -5196,7 +5196,7 @@ function randomAnchorScene(){
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
       if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img, ask:b.ask};
-      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body, ask:b.ask};
+      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body, ask:b.ask, phone:(b.phase?(b.phase==="before"?"before":"after"):"")};
       if(b.style==="ptitle") return {kind:"ptitle", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="cover")  return {kind:"cover", eyebrow:b.eyebrow, h:b.h};
       return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, breakMin:b.breakMin, img:b.img, ask:b.ask};
@@ -5211,9 +5211,9 @@ function randomAnchorScene(){
     /* the visualizer belongs to PRACTICE prompts only (Justin, 2026-09-01) —
        reflection and vignette-question prompts set noscene */
     sceneOn:function(b){ return this.map(b).kind==="prompt" && !b.noscene; },
-    joinMode:function(b){ const k=this.map(b).kind;
-      if(k==="prompt") return "off";
-      if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
+    /* no QR (Justin, 2026-10-13) — the check-in slides show the app check-in on a
+       phone, with the join code as one text line under it */
+    joinMode:function(b){ return (this.map(b).kind==="checkin" && b.phase) ? "code" : "off"; },
     /* the middle check-in ("mid") stamps srs2:before — a second practices
        entry for the app — while before/after keep their long-standing names */
     seam:function(b){ if(!(b&&b.style==="app"&&b.phase)) return null;
@@ -5470,7 +5470,7 @@ function senseChips(){
       if(b.style==="vig")    return {kind:"story", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img, ask:b.ask};
       if(b.style==="ptitle") return {kind:"ptitle", eyebrow:b.eyebrow, h:b.h, body:b.body};
       if(b.style==="cover")  return {kind:"cover", eyebrow:b.eyebrow, h:b.h};
-      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body, ask:b.ask};
+      if(b.style==="app")    return {kind:"checkin", eyebrow:b.eyebrow, h:b.h, body:b.body, ask:b.ask, phone:(b.phase?(b.phase==="before"?"before":"after"):"")};
       return {kind:"info", eyebrow:b.eyebrow, h:b.h, body:b.body, img:b.img, ask:b.ask};
     },
     agenda:function(){ const w=W();
@@ -5482,9 +5482,9 @@ function senseChips(){
       st.sense=k[Math.floor(Math.random()*k.length)]; },
     globals:{},
     sceneOn:function(b){ return this.map(b).kind==="prompt"; },
-    joinMode:function(b){ const k=this.map(b).kind;
-      if(k==="prompt") return "off";
-      if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
+    /* no QR (Justin, 2026-10-13) — the check-in slides show the app check-in on a
+       phone, with the join code as one text line under it */
+    joinMode:function(b){ return (this.map(b).kind==="checkin" && b.phase) ? "code" : "off"; },
     seam:function(b){ return b.phase ? ("ss:"+b.phase) : null; },
     recipe:function(){ const w=W(); return {week:w.n, skill:w.short, sense:st.sense,
       scene:(SHELL.scene||"(surprise me)")}; },
