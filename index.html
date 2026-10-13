@@ -5961,11 +5961,35 @@ function renderJoin(el,j){
 const SNB_SRC="https://raw.githubusercontent.com/justinlmft/stucknotbroken/main/site-data.json";
 let SNB_DATA=null;
 function snbGet(o,p){ return p.split('.').reduce((a,k)=>(a&&a[k]!=null)?a[k]:undefined,o); }
+/* Look-ahead, ported from snb-website's page-unstucking-academy.html (2026-10-13).
+   site-data.json is refreshed on a schedule, so a flat next_display goes stale the
+   moment that session starts — Capacity Builder meets twice between refreshes, so the
+   deck showed a past date about half the time. For events.<series>.next_display, take
+   the first upcoming[] entry still in the future; if none and next_utc has passed,
+   say "to be announced" rather than a date that already happened. */
+function snbFuture(list){
+  if(!Array.isArray(list)) return null;
+  const now=Date.now();
+  for(const e of list){
+    if(!e||typeof e.display!=='string') continue;
+    const t=Date.parse(e.utc);
+    if(!isNaN(t)&&t>now) return e.display;
+  }
+  return null;
+}
 function applySNB(root){
   if(!SNB_DATA||!root) return;
   root.querySelectorAll('[data-snb]').forEach(n=>{
-    const v=snbGet(SNB_DATA,n.getAttribute('data-snb'));
+    const path=n.getAttribute('data-snb');
+    const v=snbGet(SNB_DATA,path);
     if(typeof v==='string'||typeof v==='number') n.textContent=v;
+    const m=path.match(/^events\.([^.]+)\.next_display$/);
+    if(m){
+      const pick=snbFuture(snbGet(SNB_DATA,'events.'+m[1]+'.upcoming'));
+      if(pick){ n.textContent=pick; return; }
+      const utc=snbGet(SNB_DATA,'events.'+m[1]+'.next_utc');
+      if(utc&&!isNaN(Date.parse(utc))&&Date.parse(utc)<Date.now()) n.textContent="to be announced";
+    }
   });
 }
 function fetchSNB(){
