@@ -232,6 +232,42 @@
    both flush to the same edge. Justin, 2026-08-10. */
 .frame:has(.breakclock) .snbjoin.corner{bottom:16cqh}
 
+/* the app check-in on a phone (MM + CB check-in slides, 2026-10-13) — it takes the
+   image-well slot the QR panel used, so the slide keeps the same grid. Sized in cqh
+   off the frame so it scales with the projected slide, not the window. */
+.snbframe .snbphone{position:absolute;top:calc(var(--bodyl,29.9cqh) - 9cqh);bottom:calc(100cqh - var(--footl,90.5cqh) + 6.5cqh);
+  left:var(--artl,68cqw);right:var(--mx,6.25cqw);display:flex;justify-content:center;pointer-events:none}
+.snbframe .snbphone .phscr{pointer-events:auto;height:100%;aspect-ratio:9/18.5;box-sizing:border-box;
+  background:#FAF9F5;color:var(--sink,#171c26);border-radius:5.2cqh;
+  border:1.1cqh solid #1d2230;box-shadow:0 2.4cqh 5cqh rgba(26,31,42,.16);
+  padding:5.2cqh 2.6cqh 3cqh;display:flex;flex-direction:column;position:relative;overflow:hidden;text-align:left}
+.snbframe .snbphone .phnotch{position:absolute;top:1.1cqh;left:50%;width:9cqh;height:2.1cqh;margin-left:-4.5cqh;
+  border-radius:2cqh;background:#1d2230}
+.snbframe .snbphone .pheb{font-size:1.45cqh;letter-spacing:.14em;text-transform:uppercase;font-weight:500;color:var(--smuted,#8a877e)}
+.snbframe .snbphone .phh{font-size:2.3cqh;line-height:1.2;font-weight:600;letter-spacing:-.01em;margin:.9cqh 0 2.4cqh}
+.snbframe .snbphone .phscale{display:flex;justify-content:space-between;padding-left:4.4cqh;margin-bottom:.8cqh;
+  font-size:1.4cqh;color:var(--smuted,#8a877e);letter-spacing:.03em}
+.snbframe .snbphone .phrow{display:flex;gap:1.3cqh;align-items:flex-start;margin-bottom:2.1cqh}
+.snbframe .snbphone .phico{width:3.1cqh;height:3.1cqh;flex:none;margin-top:.2cqh}
+.snbframe .snbphone .phmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:.9cqh}
+.snbframe .snbphone .phq{font-size:1.75cqh;line-height:1.25}
+.snbframe .snbphone .phr{-webkit-appearance:none;appearance:none;width:100%;height:3cqh;margin:0;background:transparent;cursor:pointer;touch-action:none}
+.snbframe .snbphone .phr::-webkit-slider-runnable-track{height:.75cqh;border-radius:1cqh;
+  background:linear-gradient(90deg,var(--axc) var(--pct,50%),rgba(23,28,38,.12) var(--pct,50%))}
+.snbframe .snbphone .phr::-moz-range-track{height:.75cqh;border-radius:1cqh;background:rgba(23,28,38,.12)}
+.snbframe .snbphone .phr::-moz-range-progress{height:.75cqh;border-radius:1cqh;background:var(--axc)}
+.snbframe .snbphone .phr::-webkit-slider-thumb{-webkit-appearance:none;width:2.6cqh;height:2.6cqh;margin-top:-.92cqh;border-radius:50%;
+  background:#fff;border:.25cqh solid var(--axc);box-shadow:0 .3cqh .8cqh rgba(26,31,42,.18)}
+.snbframe .snbphone .phr::-moz-range-thumb{width:2.2cqh;height:2.2cqh;border-radius:50%;background:#fff;border:.25cqh solid var(--axc)}
+.snbframe .snbphone .phread{margin-top:auto;font-size:1.95cqh;line-height:1.3;font-weight:600;letter-spacing:-.01em;min-height:5.1cqh}
+/* the join code, when a session is live, rides under the phone — text only, no QR */
+.frame .snbjoin.code{position:absolute;left:var(--artl,68cqw);right:var(--mx,6.25cqw);
+  bottom:calc(100cqh - var(--footl,90.5cqh));height:4.6cqh;box-sizing:border-box;justify-content:center;
+  gap:1cqw;background:transparent;border:0;box-shadow:none}
+.frame .snbjoin.code .jtext{flex-direction:row;align-items:baseline;gap:.9cqw}
+.frame .snbjoin.code .jlead{font-size:clamp(7px,.8cqw,12px)}
+.frame .snbjoin.code .jcode{font-size:clamp(12px,1.6cqw,24px)}
+
 /* ==================================================================
    SNB SLIDE DESIGN LANGUAGE — one system, every practice.
    Adopted 2026-08-04 from the Self-Regulation Simplified decisions:
@@ -3553,7 +3589,7 @@ function randomize(){
     st:st, TABS:TABS, buildBeats:buildBeats, sessionName:sessionName, dialsHTML:DIALS,
     map:function(b){
       if(b.style==="word")    return {kind:"prompt", h:b.h};
-      if(b.style==="checkin") return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body};
+      if(b.style==="checkin") return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body, phone:(b.phase==="after"?"after":"before")};
       if(b.style==="events")  return {kind:"events", eyebrow:"THE UNSTUCKING ACADEMY", h:b.h, rows:eventsRowsHTML()};
       if(b.style==="coreg")   return {kind:"cta", eyebrow:b.eyebrow, h:b.h, body:b.body, url:b.url, label:b.label, img:b.img, lead:"join as a co-regulator"};
       return {kind:"cover", eyebrow:b.eyebrow||"", h:b.h, flow:b.flow||""};
@@ -3569,9 +3605,9 @@ function randomize(){
     roll:function(){ randomize(); },
     globals:{ randomize:randomize, clearSenses:clearSenses, toggleSense:toggleSense },
     sceneOn:function(b){ return this.map(b).kind==="prompt"; },
-    joinMode:function(b){ const k=this.map(b).kind;
-      if(k==="prompt") return "off";
-      if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
+    /* no QR any more (Justin, 2026-10-13: nobody scans it) — the check-in slides show
+       the app check-in on a phone, with the join code as one text line under it */
+    joinMode:function(b){ return this.map(b).kind==="checkin" ? "code" : "off"; },
     seam:function(b){ return (b&&b.style==="checkin")?("mm:"+b.phase):null; },
     recipe:function(){ return {senses:st.order.slice(), scene:(SHELL.scene||"(surprise me)")}; },
     live:{ type:"mindful-moment", ref:"mm", minutes:60, seams:["mm:before","mm:after"],
@@ -4358,7 +4394,7 @@ PRACTICES.cb = (function(){
     map:function(b){
       if(b.style==="q")      return {kind:"prompt", h:b.h};
       if(b.style==="title")  return {kind:"cover", eyebrow:"", h:b.h, flow:b.tagline||""};
-      if(b.style==="checkin")return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body};
+      if(b.style==="checkin")return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body, phone:(/:after$/.test(b.ci||"")?"after":"before")};
       if(b.style==="ptitle") return {kind:"ptitle",
         eyebrow:[b.kind,b.tagline].filter(Boolean).join("<br>"), h:b.h};
       return {kind:"info", ask:b.ask, eyebrow:b.eyebrow||"", h:b.h,
@@ -4376,11 +4412,9 @@ PRACTICES.cb = (function(){
     roll:function(){ randomize(); },
     globals:{ randomize:randomize, toggleDelem:toggleDelem, randomizeDelems:randomizeDelems },
     sceneOn:function(b){ return this.map(b).kind==="prompt"; },
-    joinMode:function(b){ const k=this.map(b).kind;
-      if(k==="prompt") return "off";
-      /* the open check-in gets the big block (that is where a late joiner
-         scans); the capacity slides are dense, so they keep the corner one. */
-      if(k==="checkin"||b===pSlides[0]) return "big"; return "corner"; },
+    /* no QR any more (Justin, 2026-10-13: nobody scans it) — the check-in slides show
+       the app check-in on a phone, with the join code as one text line under it */
+    joinMode:function(b){ return this.map(b).kind==="checkin" ? "code" : "off"; },
     /* four readings (Justin, 2026-08-10): one before Practice 1, then its own
        check-in slide after each practice (unfolded 2026-09-21). `ci` on a beat IS the seam. */
     seam:function(b){ return (b&&b.ci)?b.ci:null; },
@@ -5561,7 +5595,8 @@ function renderSlide(c){
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+'</div>';
     case "checkin":
       return '<div class="s checkin wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
-        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+askHTML(c)+'</div>';
+        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+askHTML(c)+
+        (c.phone?phoneHTML(c):"")+'</div>';
     case "story": {
       /* long vignettes shrink to fit the frame instead of clipping; a portrait
          well counts as extra length since it narrows the text column */
@@ -5835,7 +5870,7 @@ function joinModeFor(b){
      is retired; its CSS stays as a harmless fallback. */
   if(!LIVE) return "off";
   const m = ACTIVE.joinMode ? ACTIVE.joinMode(b) : "off";
-  return m==="big" ? "big" : "off";
+  return (m==="big"||m==="code") ? m : "off";
 }
 function pushJoin(){
   if(sw&&!sw.closed){ const b=pSlides[pIdx];
@@ -5939,16 +5974,85 @@ function showLiveError(err){
   const b=document.getElementById("pJoinDial"); if(b) b.textContent=msg;
   try{ console.warn("[live]",err); }catch(e){}
 }
+/* ---------------- the app check-in, on a phone (MM + CB check-in slides) ----------------
+   Justin, 2026-10-13: nobody scans the QR, so MM and CB show the Stuck Not Broken
+   app's own check-in instead (the three sliders, live, on a phone) as the reminder
+   to check in. Mirrors the app check-in screen (app.js guestCheckin): same question
+   bank, same hard-to-easy scale, same glyphs and axis colours, and the reading named
+   underneath with the app's own margin engine (current.js marginRead). Drag it in the
+   student window or in the presenter preview; the other one follows. Every slide
+   starts at the middle, as the app does. Nothing is saved or sent anywhere. */
+const PH_ICON={heart:["-4.0 36.4 478.2 386.7","M 228.7,415 C 193.1,415 159.7,401.2 134.6,376 L 43,284.4 C 17.8,259.3 4,225.9 4,190.3 C 4,154.8 17.8,121.4 43,96.2 C 68.1,71.1 101.5,57.3 137.1,57.3 C 171.5,57.3 203.8,70.2 228.7,93.8 C 280.7,44.4 363.3,45.2 414.3,96.2 C 466.2,148.1 466.2,232.6 414.3,284.5 L 322.8,376.1 C 297.6,401.2 264.2,415 228.7,415 L 228.7,415 M 137.1,109.9 C 115.6,109.9 95.4,118.2 80.2,133.4 C 48.8,164.8 48.8,215.9 80.2,247.2 L 171.8,338.8 C 187,354 207.2,362.4 228.7,362.4 C 250.2,362.4 270.4,354 285.6,338.8 L 377.2,247.2 C 408.6,215.9 408.6,164.8 377.2,133.4 C 345.8,102 294.8,102 263.4,133.4 L 228.7,168.1 L 194,133.4 C 178.8,118.2 158.6,109.9 137.1,109.9"],bolt:["462.3 -9.4 434.4 459.8","M 674,442.3 C 665.1,442.3 656.1,440.6 647.5,437 C 621.6,426.3 604.8,401.2 604.8,373.2 L 604.8,282.4 L 544.9,282.4 C 516.8,282.4 491.8,265.7 481.1,239.8 C 470.3,213.9 476.2,184.3 496.1,164.5 L 636.2,24.3 C 656.1,4.4 685.6,-1.4 711.6,9.3 C 737.5,20 754.2,45.1 754.2,73.1 L 754.2,163.9 L 814.2,163.9 C 842.2,163.9 867.3,180.6 878,206.5 C 888.7,232.4 882.8,262 863,281.8 L 722.8,422 C 709.6,435.3 692,442.3 674,442.3 L 674,442.3 M 684.7,56.6 C 681.3,56.6 677.2,57.7 673.4,61.5 L 533.2,201.7 C 526.2,208.7 528.4,216.5 529.6,219.6 C 530.9,222.7 534.9,229.8 544.8,229.8 L 657.5,229.8 L 657.5,373.2 C 657.5,383.1 664.6,387.1 667.6,388.4 C 670.7,389.7 678.5,391.8 685.6,384.8 L 825.8,244.6 C 832.8,237.6 830.6,229.7 829.3,226.7 C 828.1,223.6 824.1,216.5 814.1,216.5 L 701.5,216.5 L 701.5,73.1 C 701.5,63.2 694.4,59.2 691.3,57.9 C 689.9,57.3 687.5,56.5 684.7,56.5 L 684.7,56.6"],x:["887.4 11.7 413.6 422.6","M 988.4,417.4 C 963.5,417.4 940.2,407.8 922.6,390.2 C 905.1,372.7 895.4,349.3 895.4,324.5 C 895.4,299.6 905.1,276.3 922.6,258.7 L 958.3,223.1 L 922.6,187.4 C 905.1,169.9 895.4,146.5 895.4,121.7 C 895.4,96.9 905.1,73.5 922.6,56 C 940.2,38.4 963.5,28.8 988.4,28.8 C 1013.2,28.8 1036.5,38.4 1054.1,56 L 1089.7,91.6 L 1125.4,56 C 1161.6,19.7 1220.6,19.7 1256.8,56 C 1293.1,92.2 1293.1,151.2 1256.8,187.4 L 1221.2,223.1 L 1256.8,258.7 C 1293.1,295 1293.1,353.9 1256.8,390.1 C 1220.6,426.4 1161.6,426.4 1125.4,390.1 L 1089.7,354.5 L 1054.1,390.1 C 1036.5,407.7 1013.2,417.3 988.4,417.3 L 988.4,417.4 M 988.4,81.5 C 977.6,81.5 967.5,85.7 959.9,93.3 C 952.2,100.9 948.1,111 948.1,121.8 C 948.1,132.6 952.2,142.7 959.9,150.3 L 1032.7,223.1 L 959.9,296 C 952.2,303.6 948.1,313.7 948.1,324.5 C 948.1,335.3 952.2,345.4 959.9,353 C 967.5,360.6 977.6,364.8 988.4,364.8 C 999.1,364.8 1009.2,360.6 1016.9,353 L 1089.7,280.1 L 1162.5,353 C 1178.3,368.7 1203.8,368.7 1219.5,353 C 1235.3,337.3 1235.3,311.7 1219.5,296 L 1146.7,223.1 L 1219.5,150.3 C 1235.3,134.6 1235.3,109 1219.5,93.3 C 1203.8,77.6 1178.3,77.6 1162.5,93.3 L 1089.7,166.1 L 1016.9,93.3 C 1009.2,85.7 999.1,81.5 988.4,81.5"]};
+const PH_AX=[["v","heart","#F4D58D"],["sym","bolt","#E89B9B"],["dor","x","#A3C0DD"]];
+const PH_BANK={
+  v:["Pick up a call from a friend?","Sit quietly with someone you like?","Laugh at something silly?","Tell someone how you’re really doing?","Make eye contact and mean it?","Enjoy a song you love?","Let someone help you with something?","Be curious about a stranger’s story?","Say yes to a last-minute invitation?","Give someone your full attention for a minute?","Accept a compliment without deflecting?","Feel glad someone’s nearby?"],
+  sym:["Relax your shoulders and keep them relaxed?","Take one slow breath?","Slow your thoughts down?","Unclench your jaw?","Wait in a slow line without getting annoyed?","Set the to-do list aside for ten minutes?","Leave a small worry alone for now?","Be okay with having nothing to do?","Read a full page without skimming?","Let someone finish their sentence without jumping in?","Leave your phone alone for a while?","Do one thing at a time?"],
+  dor:["Get up and cross the room?","Answer a question with your full attention?","Start the next small thing on your list?","Step outside for a minute?","Reply to a text that’s been waiting?","Make a small decision, like what to eat?","Stand up and stretch?","Look around and notice what’s in the room?","Say what you need right now?","Get yourself a glass of water?","Care about how the rest of the day goes?","Look forward to something tomorrow?"]};
+/* one draw per page load, so the before and after readings ask the same three
+   questions (the app compares like with like) */
+const PH_Q={}; ["v","sym","dor"].forEach(k=>{ PH_Q[k]=PH_BANK[k][Math.floor(Math.random()*PH_BANK[k].length)]; });
+/* the app's naming engine, same behaviour as current.js marginRead */
+function phReading(v,s,d){
+  const NAME={safety:"safety",play:"play/motivation",stillness:"stillness",fightflight:"flight/fight",freeze:"freeze",shutdown:"shutdown"};
+  const LO=.33, HI=.75, cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+  const ss=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);};
+  const band=x=>x>=HI*100?"high":x>=LO*100?"moderate":"low";
+  const mn=Math.min(s,d), tax=mn*ss((mn-LO)/(HI-LO))*(1-v);
+  const margin=.7*v-.3*(s+d+tax), level=Math.max(s,d)<1.4*Math.min(s,d);
+  if(margin<0){
+    const sev=-margin/.3*100, key=level?"freeze":(s>d?"fightflight":"shutdown");
+    const under=level?null:(s>d?(d>=LO?"shutdown":null):(s>=LO?"flight/fight":null));
+    return cap(NAME[key])+" — "+band(Math.min(sev,100))+(under?", with some "+under:"");
+  }
+  const qual=margin/.7*100, def=Math.max(s,d)>=LO; let key="safety", under=null;
+  if(def && qual>=LO*100 && !level) key=(s>d)?"play":"stillness";
+  else if(def) under=level?"freeze":(s>d?"flight/fight":"shutdown");
+  return cap(NAME[key])+" — "+band(Math.min(qual,100))+(under?", with some "+under:"");
+}
+function phGlyph(k,col){ const i=PH_ICON[k];
+  return '<svg class="phico" viewBox="'+i[0]+'" aria-hidden="true"><path fill="'+col+'" d="'+i[1]+'"/></svg>'; }
+function phoneHTML(c){
+  const rows=PH_AX.map(([k,ic,col])=>
+    '<div class="phrow" data-ax="'+k+'" style="--axc:'+col+'">'+phGlyph(ic,col)+
+    '<div class="phmain"><div class="phq">'+PH_Q[k]+'</div>'+
+    '<input type="range" class="phr" min="0" max="100" value="50" data-ax="'+k+'" style="--pct:50%" aria-label="How easy would it be to '+PH_Q[k]+'"></div></div>').join("");
+  return '<div class="snbphone"><div class="phscr">'+
+    '<div class="phnotch"></div>'+
+    '<div class="pheb">'+(c.phone==="after"?"After your practice":"Before your practice")+'</div>'+
+    '<div class="phh">Right now, how easy would it be to…</div>'+
+    '<div class="phscale"><span>Harder</span><span>Easier</span></div>'+rows+
+    '<div class="phread">'+phReading(.5,.5,.5)+'</div></div></div>';
+}
+function phPaint(ph,vals){
+  ph.querySelectorAll(".phr").forEach(r=>{ const k=r.dataset.ax;
+    if(vals && vals[k]!=null) r.value=vals[k];
+    r.style.setProperty("--pct", r.value+"%"); });
+  const g=k=>+ph.querySelector('.phr[data-ax="'+k+'"]').value/100;
+  const out=ph.querySelector(".phread"); if(out) out.textContent=phReading(g("v"),1-g("sym"),1-g("dor"));
+}
+function phVals(ph){ const o={}; ph.querySelectorAll(".phr").forEach(r=>o[r.dataset.ax]=+r.value); return o; }
+document.addEventListener("input",e=>{
+  const r=e.target; if(!r.classList||!r.classList.contains("phr")) return;
+  const ph=r.closest(".snbphone"); phPaint(ph); const v=phVals(ph);
+  /* keep the other window's phone in step: student <-> presenter preview */
+  try{ if(IS_STUDENT){ if(window.opener) window.opener.postMessage({snbPhone:v},"*"); }
+       else if(typeof sw!=="undefined" && sw && !sw.closed) sw.postMessage({snbPhone:v},"*"); }catch(err){}
+});
+/* let go of a slider and the arrow keys drive the slides again */
+document.addEventListener("change",e=>{ if(e.target.classList&&e.target.classList.contains("phr")) e.target.blur(); });
+window.addEventListener("message",e=>{ const d=e.data||{};
+  if(d.snbPhone) document.querySelectorAll(".snbphone").forEach(ph=>phPaint(ph,d.snbPhone)); });
 function renderJoin(el,j){
   if(!el) return;
   if(!j||j.mode==="off"||!j.code){ el.style.display="none"; el.innerHTML=""; el.className="joinbox"; return; }
-  el.style.display=""; el.className="joinbox snbjoin "+(j.mode==="big"?"big":"corner");
+  el.style.display=""; el.className="joinbox snbjoin "+(j.mode==="big"?"big":j.mode==="code"?"code":"corner");
   if(j.test){
     el.innerHTML='<div class="jtext"><div class="jlead">🧪 test session</div>'+
       '<div class="jcode">TEST</div>'+
       '<div class="jlead">not published — the app is not notified</div></div>';
     return;
   }
+  if(j.mode==="code"){ el.innerHTML='<div class="jtext"><div class="jlead">join code</div><div class="jcode">'+j.code+'</div></div>'; return; }
   let img="";
   try{ const q=qrcode(0,"M"); q.addData(j.url); q.make();
        img='<img class="qr" src="'+q.createDataURL(j.mode==="big"?6:4,2)+'" alt="join code">'; }catch(e){}
