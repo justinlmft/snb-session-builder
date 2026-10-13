@@ -3088,9 +3088,36 @@ const LADDER = (function(){
       const b = mkq(P);
       if (sense === "touch") return b("What does it feel like on your skin?", "Different parts of the hand — fingertips, palm, knuckles, wrist. Stick with whichever feels best. — Is there a motion your hand wants to make? A squeeze, or something else?");
       if (sense === "sight") return b("Look a little closer.", "Its color — bright, or dull? Does it hold, or fade? — How the light hugs its edges, and how the shadows fall from it. — Any movement at all? If not, the stillness. — Its texture: grooves, dents, the imperfections.");
-      if (sense === "sound") return b("Stay with that sound, or the silence.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
-      if (sense === "movement") return b("What does the movement feel like in your body?", "Where is it strongest — the joint, the muscle, the whole limb? — How does the rest of you answer it? — Play with it on purpose: bigger, smaller, or all the way to still. Keep whichever feels best.");
-      return b("Get closer to it.", "Can you touch it? What does it feel like under your hand? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+      if (sense === "sound") return b("Pick one sound, or the silence, and stay with it.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
+      if (sense === "movement") return b("What does the movement feel like in your body?", "Where do you feel it most: the joints, the muscle, the whole limb? — How does the rest of your body respond?");
+      return b("Get closer to it.", "What does it feel like on your fingertips? Can you touch it? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+    }
+    /* ONE ANCHOR, IN THE APP'S RUNNING ORDER (2026-10-13). */
+    function ANCHOR(P, sense) {
+      const b = mkq(P),
+        like = () => b("Does it give you a sense of like or dislike?", "What about it do you like?");
+      if (sense === "touch") return [
+        b("What do you touch?", "With that one thing you chose, bring your mindful awareness to it."),
+        like(), CLOSER(P, sense),
+        b("Let your hand and that object carry on.", "However they want to carry on.")];
+      if (sense === "sight") return [
+        b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — What are they drawn toward right now? A color? A movement? A texture? Pay attention to it a little longer."),
+        CLOSER(P, sense), like(),
+        b("Let your eyes carry on as they want to.")];
+      if (sense === "sound") return [
+        b("What do you hear?", HEAR_NOTE),
+        CLOSER(P, sense), like(),
+        b("Let the sounds carry on as they want to.")];
+      if (sense === "movement") return [
+        b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Bottom to top: roll your ankles, slow, one direction and then the other (or just your toes). Your wrists, hands soft (or just your fingers). Roll your shoulders. Your neck, small arcs, bigger as it loosens. — Then stretch whatever wants to stretch. — Choose one movement to come back to, whichever felt best, and spend more time with it. Stillness is fine too."),
+        like(),
+        b("Make it bigger, smaller, or still — on purpose.", "Staying with that one movement."),
+        CLOSER(P, sense),
+        b("Let your body move however it wants to, or come to rest.")];
+      return [
+        b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you. — What’s one thing here that brings you a sense of peace or calm? Give it a little more attention."),
+        like(), CLOSER(P, sense),
+        b("Let that place carry on around you.", "However it wants to.")];
     }
     function ladderBeats(P, sense, o, v) { // o = {rate}
       const b = mkq(P),
@@ -3112,41 +3139,40 @@ const LADDER = (function(){
          the anchor. Sight → sound → breath is the outside-in order.
          MM and CB Practice 1 run the full arc as a standalone practice and do not
          call this, so nothing doubles up. */
+      /* MIRRORS THE APP (Justin, 2026-10-13: "Consider the SNB App as the canon
+         self-regulation practice model"). The running order is the app's practice engine,
+         beat for beat: the 0–10 reading straight after the arriving breath (MIND-01); for a
+         defense practice, choosing the emotion and making sure it's tolerable (INTENT-SET,
+         INTENT-TOLERABLE); for touch, picking the object BEFORE the mindfulness opener
+         (ANCHORING-TOUCH-01). */
+      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "A starting point, not a grade."));
+      if (o.intent) {
+        B.push(b("Choose a non-safety emotion.", "Present moment? Recent past? Upcoming? Lingering? — Give it a name. We’ll pay more attention to it after anchoring into safety."));
+        B.push(b("Make sure it’s tolerable.", "Not the easiest thing you can think of, and not the hardest either. Something you can stay with that might challenge you a little."));
+      }
+      if (sense === "touch") B.push(b("Find one thing to hold onto.", "Anything within reach is fine. Pick it up now — we’ll come back to it."));
       B.push(b("Notice what you see.", SEE_NOTE_LIGHT));
       B.push(b("Notice what you hear.", HEAR_NOTE_LIGHT));
       B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
-      if (v.skill !== "imagery") B.push(b("Imagine & Invite anything else you may be feeling right now."));
+      /* MIND-06 / MIND-07, two beats as in the app, in every practice. A cohort that has not
+         taught inviting yet (Safety Simplified, early SRS weeks) passes noInvite. */
+      if (!v.noInvite) {
+        B.push(b("Is there an emotion you’re holding onto right now?"));
+        B.push(b("If so, let it be.", "Acknowledge it, and invite it to be with us as we continue."));
+      }
       /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
          the same amount of work"). The exploring moved into the note, drawn from the
          recording script's takes. Sight and sound in particular do NOT pick one thing to
          hold — the script keeps them in the moment ("what's pulling at your eyes IN THIS
          MOMENT… it might change; it probably will"). Touch is the exception: it has a real
          object, so `ANCHORING-TOUCH-01` identifies one and `-04` asks how it feels. */
-      if (sense === "touch") {
-        B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
-      } else if (sense === "sight") {
-        B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
-      } else if (sense === "sound") {
-        B.push(b("What do you hear?", HEAR_NOTE));
-      } else if (sense === "movement") {
-        B.push(b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Top to bottom: roll your neck slowly, small arcs. Your shoulders, up, back and down. Your wrists, hands soft. Your ankles, both directions. — Then stretch into whatever wants to lengthen, and pause. The sensation doesn’t stop the moment you do."));
-      } else if (sense === "imagination") {
-        B.push(b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you."));
-      }
-      /* NO SINGLE ANCHOR OBJECT (Justin, 2026-09-10): "When I lead people through anchoring
-         using sound and sight, I don't ask them to pay attention to one thing. Instead, I ask
-         them to notice what they are hearing or seeing in the present moment and that it
-         changes with each moment." The script agrees — only TOUCH identifies an object.
-         Every anchor now runs like/dislike, and touch keeps its feel-on-the-skin beat. */
-      /* LIKE/DISLIKE, THEN THE ONE CLOSER LOOK, THEN THE SHARED TAIL. That is the
-         script's order for touch (`-TOUCH-03` → `-04`), movement (`-MOVEMENT-08` →
-         `-09`/`-10`) and imagination (`-IMAGINATION-08` → `-09`); sight and sound run
-         it the other way round, so the majority sets one shape for all five rather
-         than five anchors disagreeing. The touch skin beat used to sit BEFORE
-         like/dislike, which was backwards against its own clip order — it is now the
-         touch closer look and lands in the same slot as every other anchor's. */
-      B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-      B.push(CLOSER(P, sense));
+      /* THE ANCHOR, IN THE APP'S OWN ORDER (2026-10-13). Sight and sound take the closer look
+         BEFORE like/dislike (ANCHORING-SIGHT-03 → -04, -SOUND-06 → -07); touch, movement and
+         imagination ask like/dislike first. Every anchor ends on its let-go line (-TOUCH-05,
+         -SIGHT-05, -SOUND-08, -MOVEMENT-11, -IMAGINATION-10). Movement runs bottom-up, ankles
+         first, as the app does. The exploring still lives in the notes (one slide per anchor,
+         Justin, 2026-09-10). */
+      ANCHOR(P, sense).forEach(x => B.push(x));
       /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`. The
          duplicate "How is your body breathing?" that used to sit here is gone: it is
          MIND-02 and now runs in the opener, where the script puts it. */
@@ -3156,18 +3182,14 @@ const LADDER = (function(){
       B.push(b("Do you feel more or less connection…?", "…to the present? To your senses? Your breath? Your inner experience? — Check your capacity."));
       B.push(b("Validate", "Name the safety experience. Calm? Still? Playful? Joy? Curious? — “Something like…”"));
       B.push(b("Normalize", "A yes-or-no question, not a case to argue. Does it make sense you feel this, given where you are and what you just did? — “I feel _____, which makes sense based on my life context.”"));
-      /* READING ONE OF TWO (Justin, 2026-09-07): "cognitive monitoring and subtle capacity
-         gauge, and also a comparison to before and after." The defense half rates intensity
-         right after naming and before the body; the safety half now does the same, so the
-         two halves mirror — and having a reading here as well as at the end is what makes
-         the before/after comparison possible at all. */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?"));
+      /* READING ONE OF TWO now sits at the opening, straight after the arriving breath, where
+         the app takes it (MIND-01). This is the second, at the gate before curiosity. */
       B.push(b("Notice how safety feels in your body generally.", "Mobile or immobile? Heavy or light?"));
       B.push(b("Notice how safety feels in your body specifically.", "Is there one place in your body where this emotion is even more obvious? Coming from, or going to? Common areas: face, chest, and belly. — If there’s nothing there, that’s fine. Numbness is a real experience too. Just notice the not-feeling."));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
       if (v.descSafety !== false) descBeats(P, "safety", sense, v).forEach(x => B.push(x));
       /* READING TWO — the after half of the pair. */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "Compare it with your reading from before."));
+      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "Compare it with your first reading."));
       return B;
     }
     const CURIOSITY = (P) => mkq(P)("Do you feel interest or curiosity about your non-safety internal experiences?", "You can say yes or no. Both are good answers — noticing which one is true for you is the practice. A yes is what opens the work on the other side.");
@@ -3225,31 +3247,56 @@ const LADDER = (function(){
     "1. Intolerable distress<br>2. Curiosity turns into evaluation<br>3. Losing connection with your breath<br>4. Intrusive cognitions" +
     "<br><br>Ask yourself:<br>– What do I need right now?<br>– Do I genuinely want to continue?<br>– Does my body genuinely want to continue?";
 
-  /* Imagery & Invitation — Validate, Normalize, imagine it, invite it */
+  /* THE DEFENSE BEATS EVERY APP PRACTICE SHARES (2026-10-13): permission and intensity
+     straight after naming (PERMIT-DEFENSE, INTENSITY-DEFENSE), intensity again after the
+     work, and every defense practice finishing on a breath check and the safety reading
+     (BREATH-CHECK, MIND-01) before the close. */
+  const PERMIT = (P) => mkq(P)("Is it okay for this non-safety emotion to be?", "You can say yes or no.");
+  const INTENSITY = (P, note) => mkq(P)("On a 0–10 scale, what is the intensity level of this non-safety emotion?", note || "");
+  const READING = (P, note) => mkq(P)("On a scale of 0–10, what is your current level of safety?", note || "");
+  const FINISH = (P) => [mkq(P)("How is your body breathing?", BREATH_NOTE_SHORT), READING(P, "Compare it with your first reading.")];
+
+  /* Imagery & Invitation — the app's order: Validate, Normalize, permit, intensity, imagine
+     it, invite it, intensity again, then the finish */
   function IMAGERY_TAIL(P){
     const b = mkq(P);
     return [
       b("What is one non-safety experience you can Validate?", "“I do feel _____.” / “I don’t like it, but I feel _____.” / “Yeah, fine, I feel _____.”"),
       b("Normalize that experience.", "“I feel _____, which makes sense based on my life context.”"),
+      PERMIT(P),
+      INTENSITY(P),
       b("What does _____ look like?", "“_____ looks like _____.”"),
       b("Where is _____?"),
       b("What is _____ doing?"),
-      b("Invite _____ to be with you while you reconnect with the external world.")
-    ];
+      b("Invite _____ to be with you while you reconnect with the external world."),
+      INTENSITY(P, "Compare it with the first one.")
+    ].concat(FINISH(P));
   }
 
-  /* Obstacles — four statements, then Validate / Normalize / Imagine / Invite.
-     `four` lets a cohort supply its own "4 statements." slide (SRS shows a body
-     line there); everything after it is shared. */
-  function OBSTACLES_TAIL(P, four){
+  /* Obstacles — in the app a PREFIX, never a practice on its own (Justin, 2026-09-05): four
+     statements, Validate and Normalize the Obstacle, permit, intensity, then the skill it
+     opens. `four` lets a cohort supply its own "4 statements." slide (SRS shows a body line
+     there). OBSTACLES_OPEN is the prefix; OBSTACLES_TAIL is the prefix followed by Imagery
+     on the Obstacle (OBST-04 → -07), which is what a bare Obstacles practice always was. */
+  function OBSTACLES_OPEN(P, four){
     const b = mkq(P), B = [];
     B.push(four || b("4 statements.", "I will read four statements and pause between each. Notice how your body responds and try to hang onto it."));
     pickObstacles(4).forEach(s => B.push(b(s, "Notice what surfaces as you say it to yourself.")));
-    B.push(b("Validate the Obstacle."));
-    B.push(b("Normalize the Obstacle."));
-    B.push(b("Imagine.", "What does it look like? Where is it? What is it doing?"));
-    B.push(b("Invite the Obstacle to be with you while you reconnect with the external world."));
+    B.push(b("Validate the Obstacle.", "Give it a name."));
+    B.push(b("Normalize the Obstacle.", "Lightly — no details. Does it make sense you’d react this way to that statement, given your life context? Yes or no."));
+    B.push(PERMIT(P));
+    B.push(INTENSITY(P));
     return B;
+  }
+  function OBSTACLES_TAIL(P, four){
+    const b = mkq(P);
+    return OBSTACLES_OPEN(P, four).concat([
+      b("What does the Obstacle look like?", "“_____ looks like _____.”"),
+      b("Where is it?", "Outside you or inside you? Near or far?"),
+      b("What is it doing?", "Mobile or immobile? If it’s not moving, is it collapsed or tense?"),
+      b("Invite the Obstacle to be with you while you reconnect with the external world."),
+      INTENSITY(P, "Compare it with the first one.")
+    ]).concat(FINISH(P));
   }
 
   /* THE CANONICAL CLOSING — every practice in every cohort ends this way.
@@ -3296,6 +3343,7 @@ const LADDER = (function(){
   return {ladderBeats:ladderBeats, CURIOSITY:CURIOSITY, ARRIVE:ARRIVE, mkq:mkq, segments:segments, CLOSING:CLOSING,
           OBSTACLE_STATEMENTS:OBSTACLE_STATEMENTS, pickObstacles:pickObstacles,
           CAPACITY_BODY:CAPACITY_BODY, CAPACITY_H:CAPACITY_H, IMAGERY_TAIL:IMAGERY_TAIL, OBSTACLES_TAIL:OBSTACLES_TAIL,
+          OBSTACLES_OPEN:OBSTACLES_OPEN, PERMIT:PERMIT, INTENSITY:INTENSITY, READING:READING, FINISH:FINISH,
           BREATH_NOTE_FULL:BREATH_NOTE_FULL, BREATH_NOTE_SHORT:BREATH_NOTE_SHORT,
           HEAR_NOTE:HEAR_NOTE, DELEMS:DELEMS_ALL, DESC_LABELS:DESC_LABELS};
 })();
@@ -3412,7 +3460,7 @@ const BREATH_NOTE = "Check in with the natural ins and outs of your breath. How 
 let st = {
   order:["sight","sound","touch"],   // spoken order: OUTSIDE → IN by distance (Justin, 2026-09-07)
   breathEach:true,
-  acknowledge:true,
+  acknowledge:false,   // off by default (2026-10-13): the app's Mindfulness practice has no Acknowledge beat
   closeMove:true,
   kindness:true,
   testMode:false,  // ON = the app popup tells members to ignore this session
@@ -3498,6 +3546,9 @@ function buildBeats(){
      is natural and unsteered — "don't change it, just notice it". These two are the only
      steered breaths, and they bracket the practice: one in to arrive, one out to return. */
   B.push(word("One intentional breath", "One breath in on purpose. — Then we stop steering it: from here your body breathes the way it wants, and we just pay attention. One more on purpose at the very end."));
+  /* THE APP'S MINDFULNESS PRACTICE READS SAFETY TWICE (2026-10-13): once after the arriving
+     breath, once after the last breath check (MIND-01). */
+  B.push(word("Safety, 0–10", "On a scale of zero to ten, what’s your level of safety right now? — No right answer. It’s just a starting point."));
 
   st.order.forEach(k=>{
     if(st.breathEach) B.push(word("Breath",BREATH_NOTE));
@@ -3505,6 +3556,7 @@ function buildBeats(){
     if(s) B.push(word(s.word,s.note));
   });
   if(st.breathEach && st.order.length) B.push(word("Breath",BREATH_NOTE));
+  B.push(word("Safety, 0–10", "On a scale of zero to ten, what’s your level of safety right now? — Compare it with your first reading. Up, down, or the same — all three are information."));
   sec("practice",m);
 
   /* OUTRO (fixed arc) */
@@ -3582,7 +3634,7 @@ function randomize(){
   }
 
 
-  const DIALS = '    <div class="dial">\n      <label class="h">Senses — click to add in order</label>\n      <p class="sub">Tap to add (numbered in spoken order) · tap again to remove.</p>\n      <div class="opts" id="senseOpts"></div>\n    </div>\n\n    <div class="dial sep">\n      <label class="h">Shape</label>\n      <label class="toggle"><input type="checkbox" id="tBreath" onchange="st.breathEach=this.checked;render()" checked> Breath reset before each sense</label>\n      <label class="toggle"><input type="checkbox" id="tAck" onchange="st.acknowledge=this.checked;render()" checked> Acknowledge slide (open)</label>\n      <label class="toggle"><input type="checkbox" id="tMove" onchange="st.closeMove=this.checked;render()" checked> Move slide (close)</label>\n      <label class="toggle"><input type="checkbox" id="tKind" onchange="st.kindness=this.checked;render()" checked> Kindness slide (close)</label>\n</div>\n\n    ';
+  const DIALS = '    <div class="dial">\n      <label class="h">Senses — click to add in order</label>\n      <p class="sub">Tap to add (numbered in spoken order) · tap again to remove.</p>\n      <div class="opts" id="senseOpts"></div>\n    </div>\n\n    <div class="dial sep">\n      <label class="h">Shape</label>\n      <label class="toggle"><input type="checkbox" id="tBreath" onchange="st.breathEach=this.checked;render()" checked> Breath reset before each sense</label>\n      <label class="toggle"><input type="checkbox" id="tAck" onchange="st.acknowledge=this.checked;render()"> Acknowledge slide (open)</label>\n      <label class="toggle"><input type="checkbox" id="tMove" onchange="st.closeMove=this.checked;render()" checked> Move slide (close)</label>\n      <label class="toggle"><input type="checkbox" id="tKind" onchange="st.kindness=this.checked;render()" checked> Kindness slide (close)</label>\n</div>\n\n    ';
 
   return {
     id:"mm", label:"Mindful Moment", blurb:"free live ~20-min guided practice, open to anyone",
@@ -3654,10 +3706,8 @@ PRACTICES.cb = (function(){
         label: "Imagery & Invitation",
         expect: "imagine & invite a non-safety emotion"
       },
-      obstacles: {
-        label: "Obstacles",
-        expect: "induce and work with Obstacles"
-      },
+      /* Obstacles is no longer a practice of its own (2026-10-13): it is the "Open with
+         Obstacles" toggle on Imagery, Balancing and Pendulating, as in the app and SRS. */
       balancing: {
         label: "Balancing",
         expect: "balance safety and defense"
@@ -3730,9 +3780,10 @@ PRACTICES.cb = (function(){
         holdwatch: false,
         bodySpecific: true,
         dur: 30,
-        pend: 4,
+        pend: 2,
         pendSec: 10,
         skip: false,
+        obs: false,
         descSafety: true,
         descOn: false,
         delems: DELEMS_ALL.slice()
@@ -3742,9 +3793,10 @@ PRACTICES.cb = (function(){
         holdwatch: true,
         bodySpecific: true,
         dur: 15,
-        pend: 4,
+        pend: 2,
         pendSec: 10,
         skip: false,
+        obs: false,
         descSafety: true,
         descOn: true,
         delems: DELEMS_ALL.slice()
@@ -3847,9 +3899,36 @@ PRACTICES.cb = (function(){
       const b = mkq(P);
       if (sense === "touch") return b("What does it feel like on your skin?", "Different parts of the hand — fingertips, palm, knuckles, wrist. Stick with whichever feels best. — Is there a motion your hand wants to make? A squeeze, or something else?");
       if (sense === "sight") return b("Look a little closer.", "Its color — bright, or dull? Does it hold, or fade? — How the light hugs its edges, and how the shadows fall from it. — Any movement at all? If not, the stillness. — Its texture: grooves, dents, the imperfections.");
-      if (sense === "sound") return b("Stay with that sound, or the silence.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
-      if (sense === "movement") return b("What does the movement feel like in your body?", "Where is it strongest — the joint, the muscle, the whole limb? — How does the rest of you answer it? — Play with it on purpose: bigger, smaller, or all the way to still. Keep whichever feels best.");
-      return b("Get closer to it.", "Can you touch it? What does it feel like under your hand? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+      if (sense === "sound") return b("Pick one sound, or the silence, and stay with it.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
+      if (sense === "movement") return b("What does the movement feel like in your body?", "Where do you feel it most: the joints, the muscle, the whole limb? — How does the rest of your body respond?");
+      return b("Get closer to it.", "What does it feel like on your fingertips? Can you touch it? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+    }
+    /* ONE ANCHOR, IN THE APP'S RUNNING ORDER (2026-10-13). */
+    function ANCHOR(P, sense) {
+      const b = mkq(P),
+        like = () => b("Does it give you a sense of like or dislike?", "What about it do you like?");
+      if (sense === "touch") return [
+        b("What do you touch?", "With that one thing you chose, bring your mindful awareness to it."),
+        like(), CLOSER(P, sense),
+        b("Let your hand and that object carry on.", "However they want to carry on.")];
+      if (sense === "sight") return [
+        b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — What are they drawn toward right now? A color? A movement? A texture? Pay attention to it a little longer."),
+        CLOSER(P, sense), like(),
+        b("Let your eyes carry on as they want to.")];
+      if (sense === "sound") return [
+        b("What do you hear?", HEAR_NOTE),
+        CLOSER(P, sense), like(),
+        b("Let the sounds carry on as they want to.")];
+      if (sense === "movement") return [
+        b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Bottom to top: roll your ankles, slow, one direction and then the other (or just your toes). Your wrists, hands soft (or just your fingers). Roll your shoulders. Your neck, small arcs, bigger as it loosens. — Then stretch whatever wants to stretch. — Choose one movement to come back to, whichever felt best, and spend more time with it. Stillness is fine too."),
+        like(),
+        b("Make it bigger, smaller, or still — on purpose.", "Staying with that one movement."),
+        CLOSER(P, sense),
+        b("Let your body move however it wants to, or come to rest.")];
+      return [
+        b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you. — What’s one thing here that brings you a sense of peace or calm? Give it a little more attention."),
+        like(), CLOSER(P, sense),
+        b("Let that place carry on around you.", "However it wants to.")];
     }
 
     /* ---------- THE ANCHORING LADDER (opens P2 and P3, per the decks) ---------- */
@@ -3873,41 +3952,40 @@ PRACTICES.cb = (function(){
          the anchor. Sight → sound → breath is the outside-in order.
          MM and CB Practice 1 run the full arc as a standalone practice and do not
          call this, so nothing doubles up. */
+      /* MIRRORS THE APP (Justin, 2026-10-13: "Consider the SNB App as the canon
+         self-regulation practice model"). The running order is the app's practice engine,
+         beat for beat: the 0–10 reading straight after the arriving breath (MIND-01); for a
+         defense practice, choosing the emotion and making sure it's tolerable (INTENT-SET,
+         INTENT-TOLERABLE); for touch, picking the object BEFORE the mindfulness opener
+         (ANCHORING-TOUCH-01). */
+      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "A starting point, not a grade."));
+      if (o.intent) {
+        B.push(b("Choose a non-safety emotion.", "Present moment? Recent past? Upcoming? Lingering? — Give it a name. We’ll pay more attention to it after anchoring into safety."));
+        B.push(b("Make sure it’s tolerable.", "Not the easiest thing you can think of, and not the hardest either. Something you can stay with that might challenge you a little."));
+      }
+      if (sense === "touch") B.push(b("Find one thing to hold onto.", "Anything within reach is fine. Pick it up now — we’ll come back to it."));
       B.push(b("Notice what you see.", SEE_NOTE_LIGHT));
       B.push(b("Notice what you hear.", HEAR_NOTE_LIGHT));
       B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
-      if (v.skill !== "imagery") B.push(b("Imagine & Invite anything else you may be feeling right now."));
+      /* MIND-06 / MIND-07, two beats as in the app, in every practice. A cohort that has not
+         taught inviting yet (Safety Simplified, early SRS weeks) passes noInvite. */
+      if (!v.noInvite) {
+        B.push(b("Is there an emotion you’re holding onto right now?"));
+        B.push(b("If so, let it be.", "Acknowledge it, and invite it to be with us as we continue."));
+      }
       /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
          the same amount of work"). The exploring moved into the note, drawn from the
          recording script's takes. Sight and sound in particular do NOT pick one thing to
          hold — the script keeps them in the moment ("what's pulling at your eyes IN THIS
          MOMENT… it might change; it probably will"). Touch is the exception: it has a real
          object, so `ANCHORING-TOUCH-01` identifies one and `-04` asks how it feels. */
-      if (sense === "touch") {
-        B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
-      } else if (sense === "sight") {
-        B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
-      } else if (sense === "sound") {
-        B.push(b("What do you hear?", HEAR_NOTE));
-      } else if (sense === "movement") {
-        B.push(b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Top to bottom: roll your neck slowly, small arcs. Your shoulders, up, back and down. Your wrists, hands soft. Your ankles, both directions. — Then stretch into whatever wants to lengthen, and pause. The sensation doesn’t stop the moment you do."));
-      } else if (sense === "imagination") {
-        B.push(b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you."));
-      }
-      /* NO SINGLE ANCHOR OBJECT (Justin, 2026-09-10): "When I lead people through anchoring
-         using sound and sight, I don't ask them to pay attention to one thing. Instead, I ask
-         them to notice what they are hearing or seeing in the present moment and that it
-         changes with each moment." The script agrees — only TOUCH identifies an object.
-         Every anchor now runs like/dislike, and touch keeps its feel-on-the-skin beat. */
-      /* LIKE/DISLIKE, THEN THE ONE CLOSER LOOK, THEN THE SHARED TAIL. That is the
-         script's order for touch (`-TOUCH-03` → `-04`), movement (`-MOVEMENT-08` →
-         `-09`/`-10`) and imagination (`-IMAGINATION-08` → `-09`); sight and sound run
-         it the other way round, so the majority sets one shape for all five rather
-         than five anchors disagreeing. The touch skin beat used to sit BEFORE
-         like/dislike, which was backwards against its own clip order — it is now the
-         touch closer look and lands in the same slot as every other anchor's. */
-      B.push(b("Does it give you a sense of like or dislike?", "What about it do you like?"));
-      B.push(CLOSER(P, sense));
+      /* THE ANCHOR, IN THE APP'S OWN ORDER (2026-10-13). Sight and sound take the closer look
+         BEFORE like/dislike (ANCHORING-SIGHT-03 → -04, -SOUND-06 → -07); touch, movement and
+         imagination ask like/dislike first. Every anchor ends on its let-go line (-TOUCH-05,
+         -SIGHT-05, -SOUND-08, -MOVEMENT-11, -IMAGINATION-10). Movement runs bottom-up, ankles
+         first, as the app does. The exploring still lives in the notes (one slide per anchor,
+         Justin, 2026-09-10). */
+      ANCHOR(P, sense).forEach(x => B.push(x));
       /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`. The
          duplicate "How is your body breathing?" that used to sit here is gone: it is
          MIND-02 and now runs in the opener, where the script puts it. */
@@ -3917,18 +3995,14 @@ PRACTICES.cb = (function(){
       B.push(b("Do you feel more or less connection…?", "…to the present? To your senses? Your breath? Your inner experience? — Check your capacity."));
       B.push(b("Validate", "Name the safety experience. Calm? Still? Playful? Joy? Curious? — “Something like…”"));
       B.push(b("Normalize", "A yes-or-no question, not a case to argue. Does it make sense you feel this, given where you are and what you just did? — “I feel _____, which makes sense based on my life context.”"));
-      /* READING ONE OF TWO (Justin, 2026-09-07): "cognitive monitoring and subtle capacity
-         gauge, and also a comparison to before and after." The defense half rates intensity
-         right after naming and before the body; the safety half now does the same, so the
-         two halves mirror — and having a reading here as well as at the end is what makes
-         the before/after comparison possible at all. */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?"));
+      /* READING ONE OF TWO now sits at the opening, straight after the arriving breath, where
+         the app takes it (MIND-01). This is the second, at the gate before curiosity. */
       B.push(b("Notice how safety feels in your body generally.", "Mobile or immobile? Heavy or light?"));
       B.push(b("Notice how safety feels in your body specifically.", "Is there one place in your body where this emotion is even more obvious? Coming from, or going to? Common areas: face, chest, and belly. — If there’s nothing there, that’s fine. Numbness is a real experience too. Just notice the not-feeling."));
       B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
       if (v.descSafety !== false) descBeats(P, "safety", sense, v).forEach(x => B.push(x));
       /* READING TWO — the after half of the pair. */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "Compare it with your reading from before."));
+      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "Compare it with your first reading."));
       return B;
     }
 
@@ -3939,25 +4013,25 @@ PRACTICES.cb = (function(){
     const ARRIVE = (P) => mkq(P)("Take one intentional breath to begin.", "One breath in on purpose — and let it out however it wants to come out. — After this, we let your body breathe the way it wants. This one is on purpose; the rest are not.");
 
     /* ---------- INVITING THE NON-SAFETY EMOTION ---------- */
+    /* The app's defense half (2026-10-13): name it, make sense of it, permit, intensity — or,
+       with "Open with Obstacles", the four statements bring it and name it — then the body to
+       the chosen depth, the numbness permission, the description, and a breath check. The
+       capacity check now sits inside the pendulation, where the app asks it (CAP-CHECK). */
     function inviteBeats(P, v) {
-      const b = mkq(P),
-        B = [];
-      B.push(b("What is the non-safety emotion you would like to invite?", "“I feel _____.”"));
-      B.push(b("Does it make sense you have this non-safety emotion based on your life context?"));
-      B.push(b("Is it okay for this non-safety emotion to be?", "You can say yes or no."));
-      B.push(b("On a 0–10 scale, what is the intensity level of this non-safety emotion?"));
-      /* THE CAPACITY GATE, WHERE THE PRACTICE ACTUALLY ESCALATES (app parity, 2026-09-06).
-         A re-check has to sit where there is something new to have capacity FOR — the moment
-         before the room is asked into the body — not at the moment it crosses the axis, two
-         beats after the interest question. */
-      B.push(b("Do you have the capacity to turn toward the non-safety?", "Be honest with yourself — capacity and genuine willingness, not just permission. If yes, we go gently. If not, staying with safety is a complete practice on its own. — Intolerable distress? Curiosity turning into evaluation? Losing the breath? Intrusive thoughts?"));
-      B.push(b("How does this non-safety emotion feel in your body generally?", "Mobile or immobile? Heavy or light?"));
-      /* THE SPECIFIC DEPTH (app parity, 2026-09-06). The shallowest a Balancing or Pendulating
-         practice goes is the body OVERALL. Finding the one place it lives is the next depth,
-         and describing it is the one after that — cumulative, and gated on mastery. */
-      if (!v || v.bodySpecific !== false) {
-        B.push(b("How does this non-safety emotion feel in your body specifically?", "Is there one place in your body where this emotion is even more obvious? Coming from, or going to? Common areas: face, chest, and belly. — If you’re not finding it in your body, that’s okay. Don’t go hunting. Come back to safety for a moment and we’ll go on from there."));
+      const b = mkq(P);
+      let B = [];
+      if (v.obs) B = LADDER.OBSTACLES_OPEN(P);
+      else {
+        B.push(b("What is the non-safety emotion you would like to invite?", "“I feel _____.”"));
+        B.push(b("Does it make sense you have this non-safety emotion based on your life context?"));
+        B.push(LADDER.PERMIT(P));
+        B.push(LADDER.INTENSITY(P));
       }
+      const NUMB = "If there’s nothing there, that’s fine. We don’t have to find it. Come back to safety for a moment, and we’ll carry on from there.";
+      const specific = !v || v.bodySpecific !== false;
+      B.push(b("How does this non-safety emotion feel in your body generally?", "Mobile or immobile? Heavy or light?" + (specific ? "" : " — " + NUMB)));
+      if (specific) B.push(b("How does this non-safety emotion feel in your body specifically?", "Is there one place in your body where this emotion is even more obvious? Coming from, or going to? Common areas: face, chest, and belly. — " + NUMB));
+      if (v.descOn) descBeats(P, "defense", st.sense, v).forEach(x => B.push(x));
       B.push(b("How is your body breathing?", "Check your capacity."));
       return B;
     }
@@ -3970,48 +4044,38 @@ PRACTICES.cb = (function(){
     }
 
     /* ---------- PENDULATION SEQUENCE ---------- */
+    /* The app's pendulation (2026-10-13): one full swing — safety, the reminder, non-safety,
+       a capacity check — then brief swings, intensity again, back to safety, a breath check,
+       hold & watch at the deepest depth, and the safety reading. "Pendulations" counts the
+       trips to non-safety; 2 is exactly the app's run. */
     function pendBeats(P, v) {
       const b = mkq(P),
         B = [];
       if (v.skip) {
         B.push(b("Skip stones across the defense.", "So light, so quick, it never pulls you under. Safety… touch… safety… touch.", true));
         B.push(b("Bring your attention back to the safety experience.", null, true));
-        B.push(b("Has safety changed?", null, true));
+        LADDER.FINISH(P).forEach(x => B.push(x));
         return B;
       }
       const flat = !v.holdwatch;
       const t = (sec) => "~" + (flat ? v.pendSec : sec) + " seconds";
-      B.push(b("Bring your attention back to the safety experience."));
-      B.push(b("Has safety changed?", t(10)));
-      B.push(b("Bring your attention back to the non-safety emotion."));
-      B.push(b("On a 0–10 scale, what is the intensity level of this non-safety emotion?"));
-      if (v.descOn) descBeats(P, "defense", st.sense, v).forEach(x => B.push(x));
-      B.push(b("How is your body breathing?", "Check your capacity."));
-      B.push(b("Bring your attention back to the safety experience.", t(6)));
-      B.push(b("Has safety changed?"));
+      B.push(b("Bring your attention back to the safety experience.", "Notice if anything is different — or not. If it is, that’s very normal: it might be smaller, less intense, or less obvious than before. — " + t(10)));
       B.push(b("Remind yourself that you’re literally safe."));
-      /* THE INTEREST IMPULSE, READ ONCE MORE (app parity, 2026-09-06). It is a dose signal,
-         not only a door: as long as the interest is there it is okay to keep pendulating,
-         and when it thins, that is the sign to stop. Once — it is not a refrain. */
-      B.push(b("Are you still curious about the non-safety?", "As long as the interest is still there, it’s okay to keep going. If curiosity has thinned, or hesitation has shown up, that’s the sign to stop — and stopping inside your capacity is the win, not the failure."));
-      B.push(b("Bring your attention back to the non-safety experience."));
-      B.push(b("Has non-safety changed?", t(6)));
-      B.push(b("Bring your attention back to the safety experience.", t(4)));
-      for (let i = 4; i <= v.pend; i++) {
-        if (flat) {
-          B.push(b("And back to the non-safety experience.", "~" + v.pendSec + " seconds"));
-          B.push(b("And back to safety.", "~" + v.pendSec + " seconds"));
-        } else {
-          B.push(b("And back to defense, briefly.", "~2 seconds"));
-          B.push(b("And back to safety, briefly.", "~2 seconds"));
-        }
+      B.push(b("Bring your attention back to the non-safety.", "Has it changed at all? Common, and okay if it has. — " + t(6)));
+      B.push(b("Check your capacity.", "Are you still curious, and present enough to continue? As long as the interest is still there, it’s okay to keep going. If curiosity has thinned, or hesitation has shown up, that’s the sign to stop — and stopping inside your capacity is the win, not the failure."));
+      for (let i = 2; i <= v.pend; i++) {
+        B.push(b("And back to safety.", flat ? t() : (i === 2 ? "~4 seconds" : "~2 seconds")));
+        B.push(b("And back to the non-safety.", flat ? t() : "~2 seconds"));
       }
+      B.push(LADDER.INTENSITY(P, "Compare it with the first one."));
+      B.push(b("And back to safety.", flat ? t() : "~2 seconds"));
+      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
       if (v.holdwatch) {
-        /* Permission for impulse AND for stillness, immediately before the hold — this is
-           where spontaneous expression shows up, and it needs saying before it does. */
+        /* Permission for impulse AND for stillness, immediately before the hold (IMPULSE-CHECK). */
         B.push(b("Nothing has to happen here.", "You don’t have to make anything move or shift — being with it is enough. And if an impulse to move shows up — a stir, a shake, a stretch, a push — let it. Stillness is fine too."));
-        B.push(b("Hold the two. Remain open to potential shifts.", "~" + v.dur + " seconds — Do they want to interact?"));
+        B.push(b("Hold the two. Remain open to potential shifts.", "~" + v.dur + " seconds — Do they want to interact? Get closer, further away, or stay put?"));
       }
+      B.push(LADDER.READING(P, "Compare it with your first reading."));
       return B;
     }
 
@@ -4074,7 +4138,9 @@ PRACTICES.cb = (function(){
       if (!v.descOn) v.holdwatch = false;
       let B = [];
       const tagLines = [];
-      if (key === "obstacles") tagLines.push("4 STATEMENTS");
+      /* Obstacles is a toggle on the defense practices now (2026-10-13), as in the app. */
+      if (key === "anchoring") v.obs = false;
+      if (v.obs) tagLines.push("4 STATEMENTS");
       if (v.descSafety) tagLines.push("DESCRIBING SAFETY");
       if ((key === "balancing" || key === "pendulating") && v.descOn) tagLines.push("DESCRIBING DEFENSE");
       if (key === "pendulating" && v.skip) tagLines.push("SKIPPING STONES");
@@ -4082,55 +4148,44 @@ PRACTICES.cb = (function(){
       if (key === "pendulating" && !v.skip) tagLines.push(v.pend + " PENDULATIONS" + (v.holdwatch ? "" : " · ~" + v.pendSec + "S"));
       const TAG = tagLines.join("<br>");
       const TRACK = key === "anchoring" ? "safety" : "defense";
+      const OBS = v.obs ? " — open with four Obstacle statements" : "";
+      /* every practice: the opening reading and the gate reading come from the ladder; a
+         defense practice chooses its emotion there unless the Obstacles bring it */
+      const ladder = () => ladderBeats(P, sense, { rate: true, intent: key !== "anchoring" && !v.obs }, v);
       if (key === "anchoring") {
         B.push(ptitle(P, "Anchoring", TAG, "We will: anchor into safety.", TRACK));
-        B = B.concat(ladderBeats(P, sense, {
-          rate: true
-        }, v));
+        B = B.concat(ladder());
         B.push(CURIOSITY(P));
       } else if (key === "balancing") {
-        let we = "We will: anchor into safety — balance safety and defense" + (v.descOn ? " — describe defense" : "") + (v.holdwatch ? " — hold and watch for ~" + v.dur + " seconds" : "") + ".";
+        let we = "We will: anchor into safety" + OBS + " — balance safety and defense" + (v.descOn ? " — describe defense" : "") + (v.holdwatch ? " — hold and watch for ~" + v.dur + " seconds" : "") + ".";
         B.push(ptitle(P, "Balancing", TAG, we, TRACK));
-        B.push(b("Choose a non-safety emotion.", "Present moment? Recent past? Upcoming? Lingering? — Remain open to Obstacles."));
-        B = B.concat(ladderBeats(P, sense, {
-          rate: true
-        }, v));
+        B = B.concat(ladder());
         B.push(CURIOSITY(P));
         B = B.concat(inviteBeats(P, v));
-        if (v.descOn) descBeats(P, "defense", st.sense, v).forEach(x => B.push(x));
-        B.push(b("Bring your attention back to the safety experience."));
-        B.push(b("Has safety changed?"));
+        B.push(b("Bring your attention back to the safety experience.", "Notice if anything is different — or not. If it is, that’s very normal: it might be smaller, less intense, or less obvious than before."));
+        B.push(b("Bring your attention back to the non-safety.", "Has it changed at all? Common, and okay if it has."));
+        B.push(LADDER.INTENSITY(P, "Compare it with the first one."));
+        B.push(b("And back to safety."));
+        B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
         if (v.holdwatch) {
-          /* Permission for impulse AND for stillness, immediately before the hold — this is
-               where spontaneous expression shows up, and it needs saying before it does. */
           B.push(b("Nothing has to happen here.", "You don’t have to make anything move or shift — being with it is enough. And if an impulse to move shows up — a stir, a shake, a stretch, a push — let it. Stillness is fine too."));
-          B.push(b("Hold the two.", "~" + v.dur + " seconds — Do they want to interact?"));
+          B.push(b("Hold the two.", "~" + v.dur + " seconds — Do they want to interact? Get closer, further away, or stay put?"));
         }
+        B.push(LADDER.READING(P, "Compare it with your first reading."));
       } else if (key === "pendulating") {
-        let we = "We will: pendulate " + v.pend + " times" + (v.holdwatch ? ", decreasing in time spent on each" : ", ~" + v.pendSec + " seconds each") + (v.descOn ? " — describe defense" : "") + (v.holdwatch ? " — hold and watch safety and defense for ~" + v.dur + " seconds, open to the two interacting (or not)" : "") + ".";
+        let we = "We will: anchor into safety" + OBS + " — pendulate " + v.pend + " times" + (v.holdwatch ? ", decreasing in time spent on each" : ", ~" + v.pendSec + " seconds each") + (v.descOn ? " — describe defense" : "") + (v.holdwatch ? " — hold and watch safety and defense for ~" + v.dur + " seconds, open to the two interacting (or not)" : "") + ".";
         B.push(ptitle(P, "Pendulating", TAG, we, TRACK));
-        B.push(b("Choose a non-safety emotion.", "Present moment? Recent past? Upcoming? Lingering? — Remain open to Obstacles."));
-        B = B.concat(ladderBeats(P, sense, {
-          rate: false
-        }, v));
+        B = B.concat(ladder());
         B.push(CURIOSITY(P));
         B = B.concat(inviteBeats(P, v));
         B = B.concat(pendBeats(P, v));
       } else if (key === "imagery") { // from Self-Regulation Simplified, Imagery & Invitation Practices 1–2
-        B.push(ptitle(P, "Imagery & Invitation", TAG, "We will: anchor into safety — imagine & invite a non-safety emotion.", TRACK));
-        B.push(b("Choose a non-safety emotion.", "Present moment? Recent past? Upcoming? Lingering? — Remain open to Obstacles."));
-        B = B.concat(ladderBeats(P, sense, {
-          rate: true
-        }, v));
+        B.push(ptitle(P, "Imagery & Invitation", TAG, v.obs
+          ? "We will: anchor into safety — induce Obstacles through four statements — imagine & invite the Obstacle."
+          : "We will: anchor into safety — imagine & invite a non-safety emotion.", TRACK));
+        B = B.concat(ladder());
         B.push(CURIOSITY(P));
-        B = B.concat(LADDER.IMAGERY_TAIL(P));
-      } else if (key === "obstacles") { // from Self-Regulation Simplified, Obstacles Practices 1–2
-        B.push(ptitle(P, "Obstacles", TAG,
-          "We will: anchor into safety — induce Obstacles through four statements — Validate, Normalize, Imagine & Invite the Obstacle.", TRACK));
-        B = B.concat(ladderBeats(P, sense, {
-          rate: true
-        }, v));
-        B = B.concat(LADDER.OBSTACLES_TAIL(P));
+        B = B.concat(v.obs ? LADDER.OBSTACLES_TAIL(P) : LADDER.IMAGERY_TAIL(P));
       }
       /* ARRIVE-BREATH IS BEAT ONE — after the title slide, before everything else,
          including the "Choose a non-safety emotion." that three of these skills push. */
@@ -4193,6 +4248,7 @@ PRACTICES.cb = (function(){
     };
 
     function buildBeats() {
+      ["p2", "p3"].forEach(pr => { if (st[pr].skill === "obstacles") { st[pr].skill = "imagery"; st[pr].obs = true; } });
       let B = [];
       const sec = (name, from) => {
         for (let i = from; i < B.length; i++) B[i].section = name;
@@ -4323,6 +4379,9 @@ PRACTICES.cb = (function(){
         s = v.skill;
       let h = "";
       if (s === "mindfulness") return tog(pr, "emo", "Emotion check-in");
+      /* OBSTACLES AS A TOGGLE (Justin, 2026-10-13) — the four statements open a defense
+         practice instead of choosing the emotion in advance, as in the app and SRS. */
+      if (s !== "anchoring") h += tog(pr, "obs", "Open with Obstacles", "4 statements");
       const deep = (s === "balancing" || s === "pendulating");
       if (v.bodySpecific === undefined) v.bodySpecific = true;
       /* Describing safety is a free choice UNTIL defense description is on, at which point
@@ -4349,7 +4408,7 @@ PRACTICES.cb = (function(){
         }
       }
       if (s === "pendulating") {
-        h += miniChips(pr, "pend", [3, 4, 5, 6], "Pendulations", "");
+        h += miniChips(pr, "pend", [2, 3, 4, 5, 6], "Pendulations", "");
         if (!v.holdwatch) h += miniChips(pr, "pendSec", [5, 10, 15, 20, 30], "Seconds", "s");
         h += tog(pr, "skip", "Skipping stones", "draft");
       }
@@ -4369,7 +4428,8 @@ PRACTICES.cb = (function(){
         const v = st[pr];
         v.holdwatch = coin();
         v.dur = pick([15, 30, 45, 60, 90, 120]);
-        v.pend = pick([3, 4, 5, 6]);
+        v.pend = pick([2, 3, 4, 5, 6]);
+        v.obs = coin();
         v.pendSec = pick([5, 10, 15, 20, 30]);
         v.skip = false;
         v.bodySpecific = coin();
@@ -4841,7 +4901,7 @@ function ladder(sense, o){
      it moved out so CB could put it ahead of its "Choose a non-safety emotion." setup. */
   const B = [LADDER.ARRIVE("Practice")].concat(LADDER.ladderBeats("Practice", sense,
     {rate: !!SKILL_RATE[skill]},
-    {skill: (o.iiSweep ? skill : "imagery"), descSafety:true, descOn:false, delems:LADDER.DELEMS}));
+    {skill: (o.iiSweep ? skill : "imagery"), noInvite: !(o.iiSweep && skill !== "imagery"), descSafety:true, descOn:false, delems:LADDER.DELEMS}));
   if(o.interest) B.push(LADDER.CURIOSITY("Practice"));
   return B;
 }
@@ -5355,7 +5415,7 @@ function practiceBeats(pr){
      which is a DEFENSE-side skill this cohort has not taught. Do not change it without
      replacing the suppression. */
   const seg = LADDER.segments(st.sense,
-    {skill:"imagery", descSafety:true, descOn:false, delems:LADDER.DELEMS});
+    {skill:"imagery", noInvite:true, descSafety:true, descOn:false, delems:LADDER.DELEMS});
   /* ARRIVE-BREATH IS BEAT ONE (2026-09-07) — it left the ladder so CB could order it
      ahead of its own setup beat, so every caller now pushes it explicitly. */
   B.push(LADDER.ARRIVE("Practice"));
