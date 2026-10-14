@@ -3053,12 +3053,12 @@ const LADDER = (function(){
       let first = true;
       keys.forEach(k => {
         const name = (s, it) => { const t = first ? s : it; first = false; return t; };
-        if (k === "color") B.push(b(name("What color is " + named + "?", "What color is it?")));
-        if (k === "shape") B.push(b(name("What shape is " + named + "?", "What shape is it?")));
-        if (k === "temp") B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
-        if (k === "texture") B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
-        if (k === "sound") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
-        if (k === "doing") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
+        if (k === "color") B.push(b(name("What color is " + named + "?", "What color is it?"), ctx === "safety" ? "Does it have one or more? Does it fade, or is it solid?" : "Does it have one? Is the color constant, or does it change at all?"));
+        if (k === "shape") B.push(b(name("What shape is " + named + "?", "What shape is it?"), ctx === "safety" ? "Let its contours come to mind: the depth, the width, the height of it in that one place in your body." : "How big or small is it? What are the edges of this emotion?"));
+        if (k === "temp") B.push(b(name("What temperature is " + named + "?", "What temperature is it?"), ctx === "safety" ? "Is it more warm, or more cool, or neither?" : ""));
+        if (k === "texture") B.push(b(name("What texture is " + named + "?", "What texture is it?"), ctx === "safety" ? "If you could touch it with your palm, what would it feel like?" : "If you could touch it with your hand, what texture is it?"));
+        if (k === "sound") B.push(b(name("Does " + named + " have a sound, or is it silent?", "Does it have a sound, or is it silent?")));
+        if (k === "doing") B.push(b(name("What’s " + named + " doing, if anything?", "What’s it doing, if anything?"), "Is there a movement to it or not?"));
       });
       return B;
     }
@@ -3074,50 +3074,56 @@ const LADDER = (function(){
         fixed: false
       });
     }
-    const BREATH_NOTE_FULL = "Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don’t change your breathing, just notice it. If it changes by itself because you’ve paid attention to it, that’s fine. — Chest or belly? Full or shallow? Tense or relaxed?";
-    const BREATH_NOTE_SHORT = "Not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
-    const HEAR_NOTE = "Anything? Or silence? — Outside your space first: what reaches you from further away. Then inside your space: what is close by. — What comes and goes, appearing and disappearing. What stays constant underneath. And the silence between. — Nothing to hold onto; sound is always passing through.";
+    const BREATH_NOTE_FULL = "How’s your body breathing right now, naturally? We don’t change it, don’t control it — just notice it. If it changes on its own because you’ve paid attention, that’s totally fine. — Does the inhale go more into your chest or your belly? More full or more shallow? More tense or more relaxed?";
+    const BREATH_NOTE_SHORT = "Still not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
+    const HEAR_NOTE = "For now, just notice what sounds are there already, or is it silent? — Focus more on the sounds outside of your immediate space. What do you hear from further away? — Now the sounds inside your space, right around you. Can you hear the hum of something? Your own breathing? If you shuffle your position a little, does that make a sound? — What sounds come and go, pop into being and then leave? — What sounds stay constant, stay and linger?";
     /* The MINDFULNESS OPENER's two sense notes. Deliberately thinner than the anchor
        notes above — this is a pass, not a dwell. */
-    const SEE_NOTE_LIGHT = "A pass, not a dwell. — Let your eyes go where they want. What is pulling at them right now: a color, a movement, a texture? — Name it and move on.";
-    const HEAR_NOTE_LIGHT = "A pass, not a dwell. — Anything, or silence? Close by, and further away. — Don’t settle into any of it yet.";
-    /* ONE closer-look beat per anchor, straight off the script's single clip. The
-       dimensions live in the note because the script spreads them across takes — the
-       presenter picks one, they are not all asked. */
+    const SEE_NOTE_LIGHT = "Open your eyes if they’re closed, if you like, or just use your imagination. You don’t need to do anything special with your eyes. Just look where they want you to look. If your neck wants to help, let your neck and your eyes work together. — Is there one thing pulling at your eyes? What’s the shape of that thing? Let your eyes trace the edges, and notice how the light from the room touches it and the shadows it makes.";
+    const HEAR_NOTE_LIGHT = "Do you hear anything, or is it just silent? If it’s silent, are you okay with that? — Outside of your immediate space, what do you hear? What sounds catch your attention from further away? Which come and go, and which stay? — Inside your space, closer to you: what sounds catch your attention? Which come and go, if any? Which stay, if any?";
+    /* ONE closer-look beat per anchor, in the app's words: take a of its one clip
+       (-TOUCH-04, -SIGHT-03, -SOUND-06, -MOVEMENT-10, -IMAGINATION-09). Justin, 2026-10-14:
+       "make everything mirror" the app's anchoring scripts. */
     function CLOSER(P, sense) {
       const b = mkq(P);
-      if (sense === "touch") return b("What does it feel like on your skin?", "Different parts of the hand — fingertips, palm, knuckles, wrist. Stick with whichever feels best. — Is there a motion your hand wants to make? A squeeze, or something else?");
-      if (sense === "sight") return b("Look a little closer.", "Its color — bright, or dull? Does it hold, or fade? — How the light hugs its edges, and how the shadows fall from it. — Any movement at all? If not, the stillness. — Its texture: grooves, dents, the imperfections.");
-      if (sense === "sound") return b("Pick one sound, or the silence, and stay with it.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
-      if (sense === "movement") return b("What does the movement feel like in your body?", "Where do you feel it most: the joints, the muscle, the whole limb? — How does the rest of your body respond?");
-      return b("Get closer to it.", "What does it feel like on your fingertips? Can you touch it? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+      if (sense === "touch") return b("What does this thing feel like on your skin?", "Does it feel different on different parts of your hand, like your fingertips and your palm? How about your knuckles and your wrist?");
+      if (sense === "sight") return b("Notice how the light touches it.", "The light from your space, or the sunlight, on that thing you’re looking at. How does the light hug the edges of whatever your eyes are showing you? And how do the shadows fall from it?");
+      if (sense === "sound") return b("Pick one of those sounds, or the silence, and stay with it a little longer.", "How loud is that sound, or how quiet? Is it constant, or does the volume rise and fall?");
+      if (sense === "movement") return b("What does the movement feel like in your body?", "Where do you feel it the most: in the joints, the muscle, or your whole limb? How does the rest of your body respond to this movement?");
+      return b("What does it feel like on your fingertips?");
     }
-    /* ONE ANCHOR, IN THE APP'S RUNNING ORDER (2026-10-13). */
+    /* ONE ANCHOR, IN THE APP'S RUNNING ORDER (2026-10-13) AND WORDS (2026-10-14). Every slide is
+       the app clip's take a. Where one slide stands for several clips (sound 01–05, movement
+       01–07, imagination 01–07: one slide per anchor, Justin, 2026-09-10) the note runs them in
+       the app's order. Each anchor ends on its carry-on clip, as the app does. */
     function ANCHOR(P, sense) {
-      const b = mkq(P),
-        like = () => b("Does it give you a sense of like or dislike?", "What about it do you like?");
+      const b = mkq(P);
       if (sense === "touch") return [
-        b("What do you touch?", "With that one thing you chose, bring your mindful awareness to it."),
-        like(), CLOSER(P, sense),
-        b("Let your hand and that object carry on.", "However they want to carry on.")];
+        b("Bring your mindful awareness to that one thing you chose."),
+        b("Does it give you a sense of like or dislike?", "And if you like it, what about it do you like?"),
+        CLOSER(P, sense),
+        b("Let your hand and that object carry on however they want to carry on.")];
       if (sense === "sight") return [
-        b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — What are they drawn toward right now? A color? A movement? A texture? Pay attention to it a little longer."),
-        CLOSER(P, sense), like(),
+        b("Pay more attention to what you see now.", "Let your eyes gaze however they like, not controlling them. Let them do what they want. If they want to rest on something, let them rest. If they want to dance around, let them dance. — Now notice what your eyes are drawn toward. What’s grabbing their attention right now? A color, a movement, a texture? What’s pulling at your eyes in this moment? Pay attention to it a little bit longer."),
+        CLOSER(P, sense),
+        b("Does what you’re looking at give you a sense of like or dislike?", "What about it do you like?"),
         b("Let your eyes carry on as they want to.")];
       if (sense === "sound") return [
-        b("What do you hear?", HEAR_NOTE),
-        CLOSER(P, sense), like(),
+        b("Let’s pay attention to what you hear.", HEAR_NOTE),
+        CLOSER(P, sense),
+        b("Of the sounds you’re hearing, does one give you a sense of like or dislike?", "And what about it do you like?"),
         b("Let the sounds carry on as they want to.")];
       if (sense === "movement") return [
-        b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Bottom to top: roll your ankles, slow, one direction and then the other (or just your toes). Your wrists, hands soft (or just your fingers). Roll your shoulders. Your neck, small arcs, bigger as it loosens. — Then stretch whatever wants to stretch. — Choose one movement to come back to, whichever felt best, and spend more time with it. Stillness is fine too."),
-        like(),
-        b("Make it bigger, smaller, or still — on purpose.", "Staying with that one movement."),
+        b("Move: gentle, small, and easy.", "Let your body guide the size and the speed. Start simple, small, and stable. — Roll your ankles. Keep it pretty slow: one direction first, then swap. A windshield-wiper motion works just as well, or just move your toes. — Now your wrists. Let your hands soften if it feels right, or clench them, that’s fine too. Or just move your fingers. — Roll your shoulders, forward or back, and pay attention to what it feels like. — Roll your neck, small arcs, then bigger as it loosens or as it feels right. Side to side if that feels better. — Stretch whatever wants to stretch: a reach upward, a slight bend to the side. — Now choose one movement to come back to, whichever felt best or most available, or something new, and spend some more time with it. Stillness is completely fine as well."),
+        b("Does that movement give you a sense of like or dislike?", "And what about it do you like?"),
+        b("Staying with that one movement, make it bigger, smaller, or still — on purpose."),
         CLOSER(P, sense),
-        b("Let your body move however it wants to, or come to rest.")];
+        b("Let your body move however it wants to, or let it come to rest.")];
       return [
-        b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you. — What’s one thing here that brings you a sense of peace or calm? Give it a little more attention."),
-        like(), CLOSER(P, sense),
-        b("Let that place carry on around you.", "However it wants to.")];
+        b("Bring to mind a place where you feel at ease.", "It can be real or imagined, a memory or made up. Just somewhere you’d like to be. — In this imaginary place, let your eyes be however they want to be. — What do you see? Indoors or outdoors? Day or night? What’s in front of you? What are you doing: sitting, standing, lying down? — What colors are there? Where is the light coming from? What’s moving? What are you resting on? — What do you hear here? Or is it quiet? — What do you feel here, on your skin? The air, its movement, its temperature? The ground beneath you? — What’s one thing in this place that brings you a sense of peace or calm? Give that one thing a little more focused attention."),
+        b("Does that one thing give you a sense of like or dislike?", "And what about it do you like?"),
+        CLOSER(P, sense),
+        b("Let that place carry on around you however it wants to.")];
     }
     function ladderBeats(P, sense, o, v) { // o = {rate}
       const b = mkq(P),
@@ -3145,19 +3151,19 @@ const LADDER = (function(){
          defense practice, choosing the emotion and making sure it's tolerable (INTENT-SET,
          INTENT-TOLERABLE); for touch, picking the object BEFORE the mindfulness opener
          (ANCHORING-TOUCH-01). */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "A starting point, not a grade."));
+      if (o.rate) B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
       if (o.intent) {
-        B.push(b("Choose a non-safety emotion.", "Present moment? Recent past? Upcoming? Lingering? — Give it a name. We’ll pay more attention to it after anchoring into safety."));
-        B.push(b("Make sure it’s tolerable.", "Not the easiest thing you can think of, and not the hardest either. Something you can stay with that might challenge you a little."));
+        B.push(b("Choose a non-safety emotion to invite and pay attention to now.", "Give it a name. We’ll pay more attention to it later. — It can be a feeling from this very moment or the recent past, something coming up within you now, or something that’s lingered a long, long time. — Stay open to whatever else surfaces, or stick with this one. Either way, pick one emotion now to start with."));
+        B.push(b("Make sure it’s something you can tolerate.", "Not the easiest thing you can think of, and not the hardest either. Something you can stay with that maybe challenges you a little. — Over time, what you can tolerate grows."));
       }
-      if (sense === "touch") B.push(b("Find one thing to hold onto.", "Anything within reach is fine. Pick it up now — we’ll come back to it."));
-      B.push(b("Notice what you see.", SEE_NOTE_LIGHT));
-      B.push(b("Notice what you hear.", HEAR_NOTE_LIGHT));
-      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+      if (sense === "touch") B.push(b("Find one thing in your space to hold onto and to pay more attention to."));
+      B.push(b("Now, what do you see?", SEE_NOTE_LIGHT));
+      B.push(b("Now pay attention to what you hear.", HEAR_NOTE_LIGHT));
+      B.push(b("Notice the natural ins and outs of your breathing.", BREATH_NOTE_FULL));
       /* MIND-06 / MIND-07, two beats as in the app, in every practice. A cohort that has not
          taught inviting yet (Safety Simplified, early SRS weeks) passes noInvite. */
       if (!v.noInvite) {
-        B.push(b("Is there an emotion you’re holding onto right now?"));
+        B.push(b("Now just notice: is there emotion you’re holding onto right now?"));
         B.push(b("If so, let it be.", "Acknowledge it, and invite it to be with us as we continue."));
       }
       /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
@@ -3176,27 +3182,27 @@ const LADDER = (function(){
       /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`. The
          duplicate "How is your body breathing?" that used to sit here is gone: it is
          MIND-02 and now runs in the opener, where the script puts it. */
-      B.push(b("As you mindfully experience it, how does it affect your breath?", "Chest or belly? Full or shallow? Tense or relaxed?"));
-      B.push(b("As you mindfully experience it, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
-      B.push(b("As you mindfully experience it, are you more or less likely to smile?", "Let yourself smile if so."));
-      B.push(b("Do you feel more or less connection…?", "…to the present? To your senses? Your breath? Your inner experience? — Check your capacity."));
-      B.push(b("Validate", "Name the safety experience. Calm? Still? Playful? Joy? Curious? — “Something like…”"));
-      B.push(b("Normalize", "A yes-or-no question, not a case to argue. Does it make sense you feel this, given where you are and what you just did? — “I feel _____, which makes sense based on my life context.”"));
+      B.push(b("As you mindfully pay attention, how does it affect your breath?", "Are you breathing into your chest or belly? Is it more full or shallow? More tense or relaxed? — Just notice and be with it, not controlling it. Your body knows how to breathe. You are just paying attention to it."));
+      B.push(b("As you mindfully pay attention, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
+      B.push(b("As you mindfully pay attention, are you more or less likely to smile?", "If you’re more likely, let yourself smile."));
+      B.push(b("Do you feel more or less connected to the present moment?", "To your senses, your breath, your inner world?"));
+      B.push(b("What emotion word best fits your safety experience right now?", "Your experience of connection to the present moment. Is it calm, still, playful, joyful, curious, or something else?"));
+      B.push(b("Does it make sense that you would have this emotion right now?", "Yeah, I think so too."));
       /* READING ONE OF TWO now sits at the opening, straight after the arriving breath, where
          the app takes it (MIND-01). This is the second, at the gate before curiosity. */
-      B.push(b("Notice how safety feels in your body generally.", "Mobile or immobile? Heavy or light?"));
-      B.push(b("Notice how safety feels in your body specifically.", "Is there one place in your body where this emotion is even more obvious? Coming from, or going to? Common areas: face, chest, and belly. — If there’s nothing there, that’s fine. Numbness is a real experience too. Just notice the not-feeling."));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+      B.push(b("Notice how that safety emotion feels in your body overall.", "Is it more mobile or immobile? More heavy or light? What’s the general head-to-toe feel of it?"));
+      B.push(b("What does this safety experience feel like more specifically?", "Is there one place in your body where it’s even more obvious, like where it’s coming from or going to? Check your face, chest, and belly if you’re struggling. — If you’re not feeling much or anything at all, that’s okay. Numbness is a real experience too. You’re not doing it wrong. Just notice the not-feeling with as little judgment as you can."));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       if (v.descSafety !== false) descBeats(P, "safety", sense, v).forEach(x => B.push(x));
       /* READING TWO — the after half of the pair. */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "Compare it with your first reading."));
+      if (o.rate) B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
       return B;
     }
-    const CURIOSITY = (P) => mkq(P)("Do you feel interest or curiosity about your non-safety internal experiences?", "You can say yes or no. Both are good answers — noticing which one is true for you is the practice. A yes is what opens the work on the other side.");
+    const CURIOSITY = (P) => mkq(P)("Do you feel interest or curiosity about your non-safety experiences?", "We’re going to turn our attention to non-safety now. Ask yourself, and be honest. — You can say yes or no.");
     /* ARRIVE-BREATH — the first beat of every practice, the pair to the intentional breath
        that closes it. Pushed by each practice rather than by the ladder, because three of
        CB's five skills push a setup beat before the ladder runs. */
-    const ARRIVE = (P) => mkq(P)("Take one intentional breath to begin.", "One breath in on purpose — and let it out however it wants to come out. — After this, we let your body breathe the way it wants. This one is on purpose; the rest are not.");
+    const ARRIVE = (P) => mkq(P)("Begin with one big intentional breath.", "Breathe in deeply, and let it out the way it wants to come out.");
   /* Segment the canonical ladder so a cohort can run it to a chosen depth.
      Safety Simplified teaches exactly this ladder one stage deeper each week:
      anchor (wk2) → witness (wk3) → experience (wk4). Boundaries are located by
@@ -3210,8 +3216,8 @@ const LADDER = (function(){
        the witness stage heard its own "Validate that experience." and then the ladder's
        "What emotion word best fits…" — the same move twice, back to back, in different words.
        So the ladder now yields FOUR stages and the naming pair is its own. */
-    const nStart = at("Validate");
-    const wStart = at("Notice how safety feels in your body generally");
+    const nStart = at("What emotion word best fits");
+    const wStart = at("Notice how that safety emotion feels");
     const eStart = at("What color is your safety");
     const end = i => i >= 0 ? i : all.length;
     return {
@@ -3253,8 +3259,8 @@ const LADDER = (function(){
      (BREATH-CHECK, MIND-01) before the close. */
   const PERMIT = (P) => mkq(P)("Is it okay for this non-safety emotion to be?", "You can say yes or no.");
   const INTENSITY = (P, note) => mkq(P)("On a 0–10 scale, what is the intensity level of this non-safety emotion?", note || "");
-  const READING = (P, note) => mkq(P)("On a scale of 0–10, what is your current level of safety?", note || "");
-  const FINISH = (P) => [mkq(P)("How is your body breathing?", BREATH_NOTE_SHORT), READING(P, "Compare it with your first reading.")];
+  const READING = (P, note) => mkq(P)("On a scale of 0–10, what’s your level of safety right now?", note || "");
+  const FINISH = (P) => [mkq(P)("Check on your breath again.", BREATH_NOTE_SHORT), READING(P, "Compare it with your first reading.")];
 
   /* Imagery & Invitation — the app's order: Validate, Normalize, permit, intensity, imagine
      it, invite it, intensity again, then the finish */
@@ -3756,12 +3762,12 @@ PRACTICES.cb = (function(){
       let first = true;
       keys.forEach(k => {
         const name = (s, it) => { const t = first ? s : it; first = false; return t; };
-        if (k === "color") B.push(b(name("What color is " + named + "?", "What color is it?")));
-        if (k === "shape") B.push(b(name("What shape is " + named + "?", "What shape is it?")));
-        if (k === "temp") B.push(b(name("What temperature is " + named + "?", "What temperature is it?")));
-        if (k === "texture") B.push(b(name("What texture does " + named + " have?", "What texture is it?")));
-        if (k === "sound") B.push(b(name("Does " + named + " have a sound?", "Does it have a sound?")));
-        if (k === "doing") B.push(b(name("What movement does " + named + " have?", "What movement does it have?"), "Is there movement to it or not?"));
+        if (k === "color") B.push(b(name("What color is " + named + "?", "What color is it?"), ctx === "safety" ? "Does it have one or more? Does it fade, or is it solid?" : "Does it have one? Is the color constant, or does it change at all?"));
+        if (k === "shape") B.push(b(name("What shape is " + named + "?", "What shape is it?"), ctx === "safety" ? "Let its contours come to mind: the depth, the width, the height of it in that one place in your body." : "How big or small is it? What are the edges of this emotion?"));
+        if (k === "temp") B.push(b(name("What temperature is " + named + "?", "What temperature is it?"), ctx === "safety" ? "Is it more warm, or more cool, or neither?" : ""));
+        if (k === "texture") B.push(b(name("What texture is " + named + "?", "What texture is it?"), ctx === "safety" ? "If you could touch it with your palm, what would it feel like?" : "If you could touch it with your hand, what texture is it?"));
+        if (k === "sound") B.push(b(name("Does " + named + " have a sound, or is it silent?", "Does it have a sound, or is it silent?")));
+        if (k === "doing") B.push(b(name("What’s " + named + " doing, if anything?", "What’s it doing, if anything?"), "Is there a movement to it or not?"));
       });
       return B;
     }
@@ -3885,50 +3891,56 @@ PRACTICES.cb = (function(){
       return ref ? [checkinBeat(ref, "after"), c] : [c];
     }
 
-    const BREATH_NOTE_FULL = "Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don’t change your breathing, just notice it. If it changes by itself because you’ve paid attention to it, that’s fine. — Chest or belly? Full or shallow? Tense or relaxed?";
-    const BREATH_NOTE_SHORT = "Not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
-    const HEAR_NOTE = "Anything? Or silence? — Outside your space first: what reaches you from further away. Then inside your space: what is close by. — What comes and goes, appearing and disappearing. What stays constant underneath. And the silence between. — Nothing to hold onto; sound is always passing through.";
+    const BREATH_NOTE_FULL = "How’s your body breathing right now, naturally? We don’t change it, don’t control it — just notice it. If it changes on its own because you’ve paid attention, that’s totally fine. — Does the inhale go more into your chest or your belly? More full or more shallow? More tense or more relaxed?";
+    const BREATH_NOTE_SHORT = "Still not controlling. — Chest or belly? Full or shallow? Tense or relaxed?";
+    const HEAR_NOTE = "For now, just notice what sounds are there already, or is it silent? — Focus more on the sounds outside of your immediate space. What do you hear from further away? — Now the sounds inside your space, right around you. Can you hear the hum of something? Your own breathing? If you shuffle your position a little, does that make a sound? — What sounds come and go, pop into being and then leave? — What sounds stay constant, stay and linger?";
     /* The MINDFULNESS OPENER's two sense notes. Deliberately thinner than the anchor
        notes above — this is a pass, not a dwell. */
-    const SEE_NOTE_LIGHT = "A pass, not a dwell. — Let your eyes go where they want. What is pulling at them right now: a color, a movement, a texture? — Name it and move on.";
-    const HEAR_NOTE_LIGHT = "A pass, not a dwell. — Anything, or silence? Close by, and further away. — Don’t settle into any of it yet.";
-    /* ONE closer-look beat per anchor, straight off the script's single clip. The
-       dimensions live in the note because the script spreads them across takes — the
-       presenter picks one, they are not all asked. */
+    const SEE_NOTE_LIGHT = "Open your eyes if they’re closed, if you like, or just use your imagination. You don’t need to do anything special with your eyes. Just look where they want you to look. If your neck wants to help, let your neck and your eyes work together. — Is there one thing pulling at your eyes? What’s the shape of that thing? Let your eyes trace the edges, and notice how the light from the room touches it and the shadows it makes.";
+    const HEAR_NOTE_LIGHT = "Do you hear anything, or is it just silent? If it’s silent, are you okay with that? — Outside of your immediate space, what do you hear? What sounds catch your attention from further away? Which come and go, and which stay? — Inside your space, closer to you: what sounds catch your attention? Which come and go, if any? Which stay, if any?";
+    /* ONE closer-look beat per anchor, in the app's words: take a of its one clip
+       (-TOUCH-04, -SIGHT-03, -SOUND-06, -MOVEMENT-10, -IMAGINATION-09). Justin, 2026-10-14:
+       "make everything mirror" the app's anchoring scripts. */
     function CLOSER(P, sense) {
       const b = mkq(P);
-      if (sense === "touch") return b("What does it feel like on your skin?", "Different parts of the hand — fingertips, palm, knuckles, wrist. Stick with whichever feels best. — Is there a motion your hand wants to make? A squeeze, or something else?");
-      if (sense === "sight") return b("Look a little closer.", "Its color — bright, or dull? Does it hold, or fade? — How the light hugs its edges, and how the shadows fall from it. — Any movement at all? If not, the stillness. — Its texture: grooves, dents, the imperfections.");
-      if (sense === "sound") return b("Pick one sound, or the silence, and stay with it.", "How loud is it? Does it hold steady, or rise and fall? — Its pitch: high or low? One note, or moving around? — Its texture: smooth or rough, sharp or soft at the edges? — Its rhythm: a pattern, or irregular? And where is it coming from — near, far, above, behind?");
-      if (sense === "movement") return b("What does the movement feel like in your body?", "Where do you feel it most: the joints, the muscle, the whole limb? — How does the rest of your body respond?");
-      return b("Get closer to it.", "What does it feel like on your fingertips? Can you touch it? — Its colors, and how the light falls on it. — Does it make a sound? If it’s silent, notice that instead. — Still, or moving? Warm, or cool?");
+      if (sense === "touch") return b("What does this thing feel like on your skin?", "Does it feel different on different parts of your hand, like your fingertips and your palm? How about your knuckles and your wrist?");
+      if (sense === "sight") return b("Notice how the light touches it.", "The light from your space, or the sunlight, on that thing you’re looking at. How does the light hug the edges of whatever your eyes are showing you? And how do the shadows fall from it?");
+      if (sense === "sound") return b("Pick one of those sounds, or the silence, and stay with it a little longer.", "How loud is that sound, or how quiet? Is it constant, or does the volume rise and fall?");
+      if (sense === "movement") return b("What does the movement feel like in your body?", "Where do you feel it the most: in the joints, the muscle, or your whole limb? How does the rest of your body respond to this movement?");
+      return b("What does it feel like on your fingertips?");
     }
-    /* ONE ANCHOR, IN THE APP'S RUNNING ORDER (2026-10-13). */
+    /* ONE ANCHOR, IN THE APP'S RUNNING ORDER (2026-10-13) AND WORDS (2026-10-14). Every slide is
+       the app clip's take a. Where one slide stands for several clips (sound 01–05, movement
+       01–07, imagination 01–07: one slide per anchor, Justin, 2026-09-10) the note runs them in
+       the app's order. Each anchor ends on its carry-on clip, as the app does. */
     function ANCHOR(P, sense) {
-      const b = mkq(P),
-        like = () => b("Does it give you a sense of like or dislike?", "What about it do you like?");
+      const b = mkq(P);
       if (sense === "touch") return [
-        b("What do you touch?", "With that one thing you chose, bring your mindful awareness to it."),
-        like(), CLOSER(P, sense),
-        b("Let your hand and that object carry on.", "However they want to carry on.")];
+        b("Bring your mindful awareness to that one thing you chose."),
+        b("Does it give you a sense of like or dislike?", "And if you like it, what about it do you like?"),
+        CLOSER(P, sense),
+        b("Let your hand and that object carry on however they want to carry on.")];
       if (sense === "sight") return [
-        b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — What are they drawn toward right now? A color? A movement? A texture? Pay attention to it a little longer."),
-        CLOSER(P, sense), like(),
+        b("Pay more attention to what you see now.", "Let your eyes gaze however they like, not controlling them. Let them do what they want. If they want to rest on something, let them rest. If they want to dance around, let them dance. — Now notice what your eyes are drawn toward. What’s grabbing their attention right now? A color, a movement, a texture? What’s pulling at your eyes in this moment? Pay attention to it a little bit longer."),
+        CLOSER(P, sense),
+        b("Does what you’re looking at give you a sense of like or dislike?", "What about it do you like?"),
         b("Let your eyes carry on as they want to.")];
       if (sense === "sound") return [
-        b("What do you hear?", HEAR_NOTE),
-        CLOSER(P, sense), like(),
+        b("Let’s pay attention to what you hear.", HEAR_NOTE),
+        CLOSER(P, sense),
+        b("Of the sounds you’re hearing, does one give you a sense of like or dislike?", "And what about it do you like?"),
         b("Let the sounds carry on as they want to.")];
       if (sense === "movement") return [
-        b("Move", "Gentle, small, on purpose — your body sets the size and the speed. — Bottom to top: roll your ankles, slow, one direction and then the other (or just your toes). Your wrists, hands soft (or just your fingers). Roll your shoulders. Your neck, small arcs, bigger as it loosens. — Then stretch whatever wants to stretch. — Choose one movement to come back to, whichever felt best, and spend more time with it. Stillness is fine too."),
-        like(),
-        b("Make it bigger, smaller, or still — on purpose.", "Staying with that one movement."),
+        b("Move: gentle, small, and easy.", "Let your body guide the size and the speed. Start simple, small, and stable. — Roll your ankles. Keep it pretty slow: one direction first, then swap. A windshield-wiper motion works just as well, or just move your toes. — Now your wrists. Let your hands soften if it feels right, or clench them, that’s fine too. Or just move your fingers. — Roll your shoulders, forward or back, and pay attention to what it feels like. — Roll your neck, small arcs, then bigger as it loosens or as it feels right. Side to side if that feels better. — Stretch whatever wants to stretch: a reach upward, a slight bend to the side. — Now choose one movement to come back to, whichever felt best or most available, or something new, and spend some more time with it. Stillness is completely fine as well."),
+        b("Does that movement give you a sense of like or dislike?", "And what about it do you like?"),
+        b("Staying with that one movement, make it bigger, smaller, or still — on purpose."),
         CLOSER(P, sense),
-        b("Let your body move however it wants to, or come to rest.")];
+        b("Let your body move however it wants to, or let it come to rest.")];
       return [
-        b("Imagination", "A place where you feel at ease — real or made up. Let your eyes be as they want. — Let it take shape: indoors or out, day or night, where you are in it. — Look around. The colors, the light, what’s moving, what’s above and below. What you hear there, or the quiet. What you feel there — the air, the temperature, the ground under you. — What’s one thing here that brings you a sense of peace or calm? Give it a little more attention."),
-        like(), CLOSER(P, sense),
-        b("Let that place carry on around you.", "However it wants to.")];
+        b("Bring to mind a place where you feel at ease.", "It can be real or imagined, a memory or made up. Just somewhere you’d like to be. — In this imaginary place, let your eyes be however they want to be. — What do you see? Indoors or outdoors? Day or night? What’s in front of you? What are you doing: sitting, standing, lying down? — What colors are there? Where is the light coming from? What’s moving? What are you resting on? — What do you hear here? Or is it quiet? — What do you feel here, on your skin? The air, its movement, its temperature? The ground beneath you? — What’s one thing in this place that brings you a sense of peace or calm? Give that one thing a little more focused attention."),
+        b("Does that one thing give you a sense of like or dislike?", "And what about it do you like?"),
+        CLOSER(P, sense),
+        b("Let that place carry on around you however it wants to.")];
     }
 
     /* ---------- THE ANCHORING LADDER (opens P2 and P3, per the decks) ---------- */
@@ -3958,19 +3970,19 @@ PRACTICES.cb = (function(){
          defense practice, choosing the emotion and making sure it's tolerable (INTENT-SET,
          INTENT-TOLERABLE); for touch, picking the object BEFORE the mindfulness opener
          (ANCHORING-TOUCH-01). */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "A starting point, not a grade."));
+      if (o.rate) B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
       if (o.intent) {
-        B.push(b("Choose a non-safety emotion.", "Present moment? Recent past? Upcoming? Lingering? — Give it a name. We’ll pay more attention to it after anchoring into safety."));
-        B.push(b("Make sure it’s tolerable.", "Not the easiest thing you can think of, and not the hardest either. Something you can stay with that might challenge you a little."));
+        B.push(b("Choose a non-safety emotion to invite and pay attention to now.", "Give it a name. We’ll pay more attention to it later. — It can be a feeling from this very moment or the recent past, something coming up within you now, or something that’s lingered a long, long time. — Stay open to whatever else surfaces, or stick with this one. Either way, pick one emotion now to start with."));
+        B.push(b("Make sure it’s something you can tolerate.", "Not the easiest thing you can think of, and not the hardest either. Something you can stay with that maybe challenges you a little. — Over time, what you can tolerate grows."));
       }
-      if (sense === "touch") B.push(b("Find one thing to hold onto.", "Anything within reach is fine. Pick it up now — we’ll come back to it."));
-      B.push(b("Notice what you see.", SEE_NOTE_LIGHT));
-      B.push(b("Notice what you hear.", HEAR_NOTE_LIGHT));
-      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+      if (sense === "touch") B.push(b("Find one thing in your space to hold onto and to pay more attention to."));
+      B.push(b("Now, what do you see?", SEE_NOTE_LIGHT));
+      B.push(b("Now pay attention to what you hear.", HEAR_NOTE_LIGHT));
+      B.push(b("Notice the natural ins and outs of your breathing.", BREATH_NOTE_FULL));
       /* MIND-06 / MIND-07, two beats as in the app, in every practice. A cohort that has not
          taught inviting yet (Safety Simplified, early SRS weeks) passes noInvite. */
       if (!v.noInvite) {
-        B.push(b("Is there an emotion you’re holding onto right now?"));
+        B.push(b("Now just notice: is there emotion you’re holding onto right now?"));
         B.push(b("If so, let it be.", "Acknowledge it, and invite it to be with us as we continue."));
       }
       /* ONE SLIDE PER ANCHOR (Justin, 2026-09-10: "MM uses less words and less slides to do
@@ -3989,28 +4001,28 @@ PRACTICES.cb = (function(){
       /* The shared tail opens on the breath — `ANCHORING-SHARED-01-BREATH`. The
          duplicate "How is your body breathing?" that used to sit here is gone: it is
          MIND-02 and now runs in the opener, where the script puts it. */
-      B.push(b("As you mindfully experience it, how does it affect your breath?", "Chest or belly? Full or shallow? Tense or relaxed?"));
-      B.push(b("As you mindfully experience it, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
-      B.push(b("As you mindfully experience it, are you more or less likely to smile?", "Let yourself smile if so."));
-      B.push(b("Do you feel more or less connection…?", "…to the present? To your senses? Your breath? Your inner experience? — Check your capacity."));
-      B.push(b("Validate", "Name the safety experience. Calm? Still? Playful? Joy? Curious? — “Something like…”"));
-      B.push(b("Normalize", "A yes-or-no question, not a case to argue. Does it make sense you feel this, given where you are and what you just did? — “I feel _____, which makes sense based on my life context.”"));
+      B.push(b("As you mindfully pay attention, how does it affect your breath?", "Are you breathing into your chest or belly? Is it more full or shallow? More tense or relaxed? — Just notice and be with it, not controlling it. Your body knows how to breathe. You are just paying attention to it."));
+      B.push(b("As you mindfully pay attention, how does it affect your posture?", "Upright or collapsed? Energized or relaxed?"));
+      B.push(b("As you mindfully pay attention, are you more or less likely to smile?", "If you’re more likely, let yourself smile."));
+      B.push(b("Do you feel more or less connected to the present moment?", "To your senses, your breath, your inner world?"));
+      B.push(b("What emotion word best fits your safety experience right now?", "Your experience of connection to the present moment. Is it calm, still, playful, joyful, curious, or something else?"));
+      B.push(b("Does it make sense that you would have this emotion right now?", "Yeah, I think so too."));
       /* READING ONE OF TWO now sits at the opening, straight after the arriving breath, where
          the app takes it (MIND-01). This is the second, at the gate before curiosity. */
-      B.push(b("Notice how safety feels in your body generally.", "Mobile or immobile? Heavy or light?"));
-      B.push(b("Notice how safety feels in your body specifically.", "Is there one place in your body where this emotion is even more obvious? Coming from, or going to? Common areas: face, chest, and belly. — If there’s nothing there, that’s fine. Numbness is a real experience too. Just notice the not-feeling."));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+      B.push(b("Notice how that safety emotion feels in your body overall.", "Is it more mobile or immobile? More heavy or light? What’s the general head-to-toe feel of it?"));
+      B.push(b("What does this safety experience feel like more specifically?", "Is there one place in your body where it’s even more obvious, like where it’s coming from or going to? Check your face, chest, and belly if you’re struggling. — If you’re not feeling much or anything at all, that’s okay. Numbness is a real experience too. You’re not doing it wrong. Just notice the not-feeling with as little judgment as you can."));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       if (v.descSafety !== false) descBeats(P, "safety", sense, v).forEach(x => B.push(x));
       /* READING TWO — the after half of the pair. */
-      if (o.rate) B.push(b("On a scale of 0–10, what is your current level of safety?", "Compare it with your first reading."));
+      if (o.rate) B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
       return B;
     }
 
-    const CURIOSITY = (P) => mkq(P)("Do you feel interest or curiosity about your non-safety internal experiences?", "You can say yes or no. Both are good answers — noticing which one is true for you is the practice. A yes is what opens the work on the other side.");
+    const CURIOSITY = (P) => mkq(P)("Do you feel interest or curiosity about your non-safety experiences?", "We’re going to turn our attention to non-safety now. Ask yourself, and be honest. — You can say yes or no.");
     /* ARRIVE-BREATH — the first beat of every practice, the pair to the intentional breath
        that closes it. Pushed by each practice rather than by the ladder, because three of
        CB's five skills push a setup beat before the ladder runs. */
-    const ARRIVE = (P) => mkq(P)("Take one intentional breath to begin.", "One breath in on purpose — and let it out however it wants to come out. — After this, we let your body breathe the way it wants. This one is on purpose; the rest are not.");
+    const ARRIVE = (P) => mkq(P)("Begin with one big intentional breath.", "Breathe in deeply, and let it out the way it wants to come out.");
 
     /* ---------- INVITING THE NON-SAFETY EMOTION ---------- */
     /* The app's defense half (2026-10-13): name it, make sense of it, permit, intensity — or,
@@ -4032,7 +4044,7 @@ PRACTICES.cb = (function(){
       B.push(b("How does this non-safety emotion feel in your body generally?", "Mobile or immobile? Heavy or light?" + (specific ? "" : " — " + NUMB)));
       if (specific) B.push(b("How does this non-safety emotion feel in your body specifically?", "Is there one place in your body where this emotion is even more obvious? Coming from, or going to? Common areas: face, chest, and belly. — " + NUMB));
       if (v.descOn) descBeats(P, "defense", st.sense, v).forEach(x => B.push(x));
-      B.push(b("How is your body breathing?", "Check your capacity."));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       return B;
     }
 
@@ -4069,7 +4081,7 @@ PRACTICES.cb = (function(){
       }
       B.push(LADDER.INTENSITY(P, "Compare it with the first one."));
       B.push(b("And back to safety.", flat ? t() : "~2 seconds"));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       if (v.holdwatch) {
         /* Permission for impulse AND for stillness, immediately before the hold (IMPULSE-CHECK). */
         B.push(b("Nothing has to happen here.", "You don’t have to make anything move or shift — being with it is enough. And if an impulse to move shows up — a stir, a shake, a stretch, a push — let it. Stillness is fine too."));
@@ -4099,17 +4111,17 @@ PRACTICES.cb = (function(){
         B = [];
       B.push(ptitle(P, "Mindfulness", "", "Brief, simple mindfulness — connect to the present moment.", "safety"));
       B.push(ARRIVE(P));
-      B.push(b("On a scale of 0–10, what is your current level of safety?"));
-      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+      B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
+      B.push(b("Notice the natural ins and outs of your breathing.", BREATH_NOTE_FULL));
       /* OUTSIDE → IN by distance (Justin, 2026-09-07): sight, then sound, then touch —
          the most proximal sense last. This ran hear → touch → see, with touch in the middle. */
       B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       B.push(b("What do you hear?", HEAR_NOTE));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
-      B.push(b("On a scale of 0–10, what is your current level of safety?"));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
+      B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
       if (v.emo) {
         B.push(b("Is there an emotion you’re holding onto?"));
         B.push(b("Invite it to be with you."));
@@ -4166,7 +4178,7 @@ PRACTICES.cb = (function(){
         B.push(b("Bring your attention back to the non-safety.", "Has it changed at all? Common, and okay if it has."));
         B.push(LADDER.INTENSITY(P, "Compare it with the first one."));
         B.push(b("And back to safety."));
-        B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+        B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
         if (v.holdwatch) {
           B.push(b("Nothing has to happen here.", "You don’t have to make anything move or shift — being with it is enough. And if an impulse to move shows up — a stir, a shake, a stretch, a push — let it. Stillness is fine too."));
           B.push(b("Hold the two.", "~" + v.dur + " seconds — Do they want to interact? Get closer, further away, or stay put?"));
@@ -4201,17 +4213,17 @@ PRACTICES.cb = (function(){
       B.push(ptitle("Practice 1", "Mindfulness", "", "Brief, simple mindfulness — connect to the present moment.", "safety"));
       B.push(checkinBeat("cb1", "before"));   /* reading 1 of 4 — before the first practice */
       B.push(ARRIVE("Practice 1"));
-      B.push(b("On a scale of 0–10, what is your current level of safety?"));
-      B.push(b("How is your body breathing?", BREATH_NOTE_FULL));
+      B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
+      B.push(b("Notice the natural ins and outs of your breathing.", BREATH_NOTE_FULL));
       /* OUTSIDE → IN by distance (Justin, 2026-09-07): sight, then sound, then touch —
          the most proximal sense last. This ran hear → touch → see, with touch in the middle. */
       B.push(b("What do you see?", "Let your eyes do what they want — resting, wandering, darting. Not steering them. — In this moment, what is pulling at them? A color? A movement? A texture? It might change; it probably will. — Notice how the light touches it, and how the shadows fall."));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       B.push(b("What do you hear?", HEAR_NOTE));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
       B.push(b("What do you touch?", "Start with the whole body — what are you sitting, standing, lying or leaning on? Firm or soft? Do you sink in, or does it push back? — Then the skin: the air, its temperature and movement, your clothes. — Then find one thing nearby you can hold on to."));
-      B.push(b("How is your body breathing?", BREATH_NOTE_SHORT));
-      B.push(b("On a scale of 0–10, what is your current level of safety?"));
+      B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
+      B.push(b("On a scale of 0–10, what’s your level of safety right now?"));
       if (st.p1.emo) {
         B.push(b("Is there an emotion you’re holding onto?"));
         B.push(b("Invite it to be with you."));
@@ -5430,10 +5442,10 @@ function practiceBeats(pr){
      capacity gauge, and also a comparison to before and after." One reading after the
      naming, one after the body work — the before and the after of the same instrument.
      Week 2 has no `rate` flag, so it stays reading-free; weeks 3 and 4 get both. */
-  if(pr.rate) B.push(q("On a scale of 0–10, what is your current level of safety?"));
+  if(pr.rate) B.push(q("On a scale of 0–10, what’s your level of safety right now?"));
   if(pr.depth==="witness"||pr.depth==="experience") seg.witness.forEach(b=>B.push(b));
   if(pr.depth==="experience") seg.experience.forEach(b=>B.push(b));
-  if(pr.rate) B.push(q("On a scale of 0–10, what is your current level of safety?", "Compare it with your reading from before."));
+  if(pr.rate) B.push(q("On a scale of 0–10, what’s your level of safety right now?", "Compare it with your reading from before."));
   /* THE INTEREST IMPULSE (app parity, 2026-09-06). Week 4 teaches it on a slide and then
      never asked it. The whole safety arc, then the one question, then the close either
      way — noticing the answer IS the practice, and the answer is what opens the defense
