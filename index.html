@@ -176,6 +176,36 @@
 .mini .mopt.sel::before{content:"✓ ";font-weight:700}
 .hint{font-size:12px;color:var(--muted);margin:0 0 16px;line-height:1.55}
 
+/* ---------- DARK MODE, BUILDER CHROME ONLY (Justin, 2026-10-14: "a dark mode that follows the
+   state of my system for the builder ... just for what i see, not the slides themselves").
+   Follows the system setting live. Only the tool's own colors change: the slides draw from
+   their own set (--sink, --smuted ... on .snbframe), which this block never touches, so every
+   slide renders exactly as the room sees it. Screen only, so Print / Save PDF stays light.
+   Selectors carry `html` so they outrank the shell rules that load after this file. */
+@media screen and (prefers-color-scheme: dark){
+  :root{
+    color-scheme:dark;
+    --bone:#16191f; --ink:#ece9e1; --line:#2d323c; --line2:#262a33; --card:#1e222a;
+    --muted:#9b978d; --soft:#1d2129; --draft:#d9aa5c; --notes:#cbc7bd;
+    --safety:#86acd9; --defense:#d9927a;
+    --body:#c8cad0; --focus:#86acd9;
+    --sh1:0 1px 2px rgba(0,0,0,.30);
+    --sh2:0 8px 26px rgba(0,0,0,.45);
+  }
+  html header{background:linear-gradient(180deg,#1a1d24,var(--bone))}
+  html header img{background:#FAF9F5;border-radius:7px;padding:3px 6px}
+  html .dials{background:linear-gradient(180deg,#1a1d24,var(--bone) 160px)}
+  html .cTop{background:linear-gradient(180deg,#1a1d24,var(--bone))}
+  html .cPrev{background:linear-gradient(180deg,var(--soft),#1a1e25)}
+  html .cBot{background:linear-gradient(0deg,#1a1d24,var(--bone))}
+  html .opt:hover,html .wk:hover,html .btn.ghost:hover,html .cBot button.ghost:hover,html .mini .mopt:hover{border-color:#4b515d}
+  html .slide .ovt{color:#86acd9}
+  html .slide .ovh,html .ep-danger{color:#e29393!important}
+  html .ep-danger{border-color:#e2939355!important}
+  html #editPanel{background:rgba(0,0,0,.55)}
+  html .ep-card{box-shadow:-12px 0 40px rgba(0,0,0,.5)}
+}
+
 /* live join overlay — AAMFT geometry (Justin, 2026-08-30: "everything should
    feel the same as the AAMFT slides"). The BIG panel occupies the image-well
    slot exactly — left on --artl, right on the margin, top on the body line,
