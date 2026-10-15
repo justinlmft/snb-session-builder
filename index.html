@@ -5000,7 +5000,7 @@ function tailBeats(kind, opt){
     : ["What color is your non-safety?","What shape is your non-safety?","What temperature is your non-safety?","What texture is your non-safety?","What is it doing?"]
   ).map(h=>q(h));
   const SAFE_RETURN = () => [
-    q("Bring your attention back to the safety experience."),
+    q("Bring your attention back to the safety experience.","Notice if anything is different — or not. If it is, that’s very normal: it might be smaller, less intense, or less obvious than before."),
     q("Has safety changed?"),
     q("Remind yourself that you’re literally safe.")
   ];
@@ -5048,7 +5048,7 @@ function tailBeats(kind, opt){
     B.push(q("Bring your focus back to the non-safety experience."));
     push(DESCRIBE());
     B.push(q("How is your body breathing?",CAP_NOTE));
-    B.push(q("Bring your attention back to the safety experience."));
+    B.push(q("Bring your attention back to the safety experience.","Notice if anything is different — or not. If it is, that’s very normal: it might be smaller, less intense, or less obvious than before."));
     B.push(q("Has safety changed?"));
     B.push(q("Are you still curious about the non-safety?","As long as the interest is still there, it’s okay to keep going. If curiosity has thinned, or hesitation has shown up, that’s the sign to stop — and stopping inside your capacity is the win, not the failure."));
     B.push(q("Bring your attention back to the non-safety experience."));
