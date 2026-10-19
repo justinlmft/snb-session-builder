@@ -4121,6 +4121,45 @@ PRACTICES.cb = (function(){
       return B;
     }
 
+    /* ---------- WHAT'S COMING, SAID UP FRONT ----------
+       Justin, 2026-10-19: "after I press randomize, I want to know ahead of time … especially
+       about obstacles … Oh, and also the depth of defensive practice. That should be clear ahead
+       of time for me and for attendees as well. I don't want them to get any unexpected
+       surprises." (A randomized Balancing opened with the four Obstacle statements and nobody,
+       Justin included, knew until the statements were on screen.)
+       ONE source for all three places it shows: the practice title slide (attendees), the
+       "what to expect" intro slide (attendees), and the builder's agenda + dial summary (host).
+       The description elements are deliberately left out — "they don't need to know what all
+       the different questions are." */
+    function expectParts(v) {
+      const k = v.skill, out = [];
+      if (k === "mindfulness" || k === "anchoring") return out;
+      const spec = v.bodySpecific !== false, desc = spec && !!v.descOn, hold = desc && !!v.holdwatch;
+      out.push(v.obs
+        ? { s: "with Obstacles", l: "Obstacles: yes, four statements will bring up the non-safety emotion" }
+        : { s: "no Obstacles", l: "Obstacles: no, you’ll choose a non-safety emotion ahead of time" });
+      if (k === "balancing" || k === "pendulating") {
+        out.push(!spec ? { s: "body overall", l: "Depth: how it feels in your body overall" }
+               : !desc ? { s: "one place", l: "Depth: your body overall, then the one place it lives" }
+                       : { s: "describing it", l: "Depth: the one place it lives, then describing it" });
+        if (k === "balancing") out.push({ s: "", l: "Safety → non-safety → back to safety" });
+        else if (v.skip) out.push({ s: "skipping stones", l: "Quick, light touches of non-safety" });
+        else out.push({ s: v.pend + " swings", l: "Back and forth between safety and non-safety, " + v.pend + " times" });
+        if (hold) out.push({ s: "hold ~" + v.dur + "s", l: "Then hold safety and non-safety together for ~" + v.dur + " seconds" });
+      }
+      return out;
+    }
+    /* host (agenda + dials): "with Obstacles · one place · 3 swings · hold ~30s".
+       `brief` keeps only the two things Justin asked to be told — Obstacles and depth — for the
+       attendee-facing "what to expect" line, so it stays one line. */
+    function expectShort(v, brief) {
+      return expectParts(v).slice(0, brief ? 2 : 99).map(x => x.s).filter(Boolean).join(brief ? ", " : " · ");
+    }
+    /* attendees, on the practice title slide — a real list (LISTIFY turns "—" lines into one) */
+    function expectBody(v) {
+      return expectParts(v).map(x => "— " + x.l).join("<br>");
+    }
+
     /* ---------- SKILL ASSEMBLERS ---------- */
     function ptitle(P, label, tagline, note, track) {
       return {
@@ -4204,10 +4243,14 @@ PRACTICES.cb = (function(){
         B = B.concat(ladder());
         B.push(CURIOSITY(P));
         B = B.concat(inviteBeats(P, v));
-        B.push(b("Bring your attention back to the safety experience.", "Notice if anything is different — or not. If it is, that’s very normal: it might be smaller, less intense, or less obvious than before."));
-        B.push(b("Bring your attention back to the non-safety.", "Has it changed at all? Common, and okay if it has."));
+        /* SAFETY → DEFENSE → SAFETY, AND THAT'S IT (Justin, 2026-10-19: "Balancing is supposed to
+           be safety to defense to safety, and that's it… this one went back to defense and back to
+           safety again. That is now a pendulating practice."). The defense was already found by
+           inviteBeats; the only thing left is the one return to safety. A second trip into the
+           non-safety is Pendulating's job, not Balancing's. The second 0–10 is still asked while
+           the non-safety is in view, right before the return (2026-09-23). */
         B.push(LADDER.INTENSITY(P, "Compare it with the first one."));
-        B.push(b("And back to safety."));
+        B.push(b("Bring your attention back to the safety experience.", "Notice if anything is different — or not. If it is, that’s very normal: it might be smaller, less intense, or less obvious than before."));
         B.push(b("Check on your breath again.", BREATH_NOTE_SHORT));
         if (v.holdwatch) {
           B.push(b("Nothing has to happen here.", "You don’t have to make anything move or shift — being with it is enough. And if an impulse to move shows up — a stir, a shake, a stretch, a push — let it. Stillness is fine too."));
@@ -4229,6 +4272,8 @@ PRACTICES.cb = (function(){
         B.push(CURIOSITY(P));
         B = B.concat(v.obs ? LADDER.OBSTACLES_TAIL(P) : LADDER.IMAGERY_TAIL(P));
       }
+      /* the title slide says what's coming before anything starts (Justin, 2026-10-19) */
+      B[0].body = expectBody(v);
       /* ARRIVE-BREATH IS BEAT ONE — after the title slide, before everything else,
          including the "Choose a non-safety emotion." that three of these skills push. */
       B.splice(1, 0, ARRIVE(P));
@@ -4276,6 +4321,18 @@ PRACTICES.cb = (function(){
       return "Capacity Builder — " + SENSES[st.sense].label + " · " + skillName(st.p2) + " → " + skillName(st.p3);
     }
 
+    /* the obstacles + depth, named on the "what to expect" slide too (Justin, 2026-10-19) */
+    function expectTail(v) {
+      const t = expectShort(v, true);
+      return t ? " — " + t : "";
+    }
+
+    /* the host's agenda strip carries the whole shape, swings and hold included */
+    function agendaTail(v) {
+      const t = expectShort(v);
+      return t ? " · " + t : "";
+    }
+
     function agendaLine() {
       return "1 · Mindfulness 2 · " + skillName(st.p2) + " 3 · " + skillName(st.p3);
     }
@@ -4318,7 +4375,7 @@ PRACTICES.cb = (function(){
       B.push(info("participation",
         "No pressure to participate<br>Use the chat if you’d like to share a reflection<br>– focus on the present moment"));
       B.push(info("what to expect",
-        "Over three practices, you will:<br>– mindfully connect to the present moment (~5min)<br>– " + SKILLS[st.p2.skill].expect + " (~10min)<br>– " + SKILLS[st.p3.skill].expect + " (~15min)<br><br>Regular Capacity prompts within and between practices"));
+        "Over three practices, you will:<br>– mindfully connect to the present moment (~5min)<br>– " + SKILLS[st.p2.skill].expect + expectTail(st.p2) + " (~10min)<br>– " + SKILLS[st.p3.skill].expect + expectTail(st.p3) + " (~15min)<br><br>Regular Capacity prompts within and between practices"));
       B.push(info("Capacity",
         "Capacity is your body’s ability to invite and maintain connection with defensive activation<br>– “window of tolerance”<br>– “distress tolerance”<br>– vagal brake strength"));
       B.push(info("Capacity & safety",
@@ -4421,6 +4478,9 @@ PRACTICES.cb = (function(){
         s = v.skill;
       let h = "";
       if (s === "mindfulness") return tog(pr, "emo", "Emotion check-in");
+      /* WHAT THE ROOM WILL BE TOLD, up top, so a randomize is readable at a glance before
+         Present (Justin, 2026-10-19). The same words go on the practice title slide. */
+      if (s !== "anchoring") h += '<p class="hint" style="margin:0 0 10px"><b>Up front:</b> ' + expectShort(v) + '</p>';
       /* OBSTACLES AS A TOGGLE (Justin, 2026-10-13) — the four statements open a defense
          practice instead of choosing the emotion in advance, as in the app and SRS. */
       if (s !== "anchoring") h += tog(pr, "obs", "Open with Obstacles", "4 statements");
@@ -4498,11 +4558,11 @@ PRACTICES.cb = (function(){
       if(b.style==="title")  return {kind:"cover", eyebrow:"", h:b.h, flow:b.tagline||""};
       if(b.style==="checkin")return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body, phone:(/:after$/.test(b.ci||"")?"after":"before")};
       if(b.style==="ptitle") return {kind:"ptitle",
-        eyebrow:[b.kind,b.tagline].filter(Boolean).join("<br>"), h:b.h};
+        eyebrow:[b.kind,b.tagline].filter(Boolean).join("<br>"), h:b.h, body:b.body};
       return {kind:"info", ask:b.ask, eyebrow:b.eyebrow||"", h:b.h,
         body:b.body, breakMin:b.breakMin};
     },
-    agenda:function(){ return ["Mindfulness", skillName(st.p2), skillName(st.p3)]; },
+    agenda:function(){ return ["Mindfulness", skillName(st.p2)+agendaTail(st.p2), skillName(st.p3)+agendaTail(st.p3)]; },
     renderDials:function(){
       chips("senseOpts",SENSES,()=>st.sense,k=>st.sense=k,false);
       chips("p2opts",SKILLS,()=>st.p2.skill,k=>st.p2.skill=k,true);
