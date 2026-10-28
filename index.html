@@ -3033,6 +3033,9 @@ var qrcode = function() {
    ================================================================== */
 const PRACTICES = {};
 const IS_STUDENT = /[?&]student=1/.test(location.search);
+/* live room mode (2026-10-28): the SNB app's live room opens the builder with ?room=1. Present then
+   sends every slide to the room that opened it, instead of to a student window. */
+const ROOM_MODE = !IS_STUDENT && /[?&]room=1/.test(location.search) && !!window.opener;
 const SHELL = { scene:"", testMode:false, room:"", editMode:false };
 /* referenced by a practice's verbatim state block; the shell owns the real value */
 const LIVE_ROOM_DEFAULT = "";
@@ -5867,6 +5870,9 @@ const AMB=(function(){
   const reduce=(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
   let scene='circles',motes=[],reeds=[],rips=[],strands=[],dust=[],flies=[],
       ripNext=0,sT=0,sLast=0,breath=.5,breath2=.5;
+  /* live room (2026-10-28): tint = a member's own state colour or the room's blend, eased in and out;
+     breathe = the app's breath timing on the reeds and circles, in for 4 seconds and out for 5 */
+  let TT=null,TC=null,TA=0,BW=false,BA=0,LEAN=0;
   const canvases=[];
   const fieldW=()=>(canvases[0]&&canvases[0].clientWidth)||1280;
   function seed(){
@@ -5909,8 +5915,11 @@ const AMB=(function(){
   function drawOne(cv){
     const g=fit(cv); if(!g)return;
     const W=cv.clientWidth,H=cv.clientHeight; g.clearRect(0,0,W,H);
-    const dark=!!SCENE_DARK[scene],base=dark?BONE:INK;
-    const col=a=>'rgba('+base[0]+','+base[1]+','+base[2]+','+a+')';
+    const dark=!!SCENE_DARK[scene],base0=dark?BONE:INK;
+    const tinted=!!TC&&TA>.01&&scene!=='sunbeam'&&scene!=='fireflies';
+    /* the state colours are pale; a little ink keeps them visible through the slide's veil */
+    const base=tinted?[0,1,2].map(i=>Math.round(TC[i]*TA*.68+base0[i]*(1-TA*.68))):base0;
+    const col=a=>'rgba('+base[0]+','+base[1]+','+base[2]+','+(tinted?Math.min(1,a*(1+.9*TA)):a)+')';
     const unit=Math.min(W*0.82,430,H*0.62);
     if(scene==='circles'){
       const cx=W/2,cy=H/2,dotR=Math.max(2.5,unit*0.02); g.lineCap='round';
@@ -5931,7 +5940,8 @@ const AMB=(function(){
       /* a reed tapers: the lower stalk carries the weight, the tip thins and
          lightens toward nothing. Two strokes off the same curve, not one — a
          constant-width hairline read as a scratch on the projector. */
-      reeds.forEach(rd=>{const sw=Math.sin(sT*6.283/rd.per+rd.ph)*rd.amp;
+      reeds.forEach(rd=>{let sw=Math.sin(sT*6.283/rd.per+rd.ph)*rd.amp;
+        if(BA>.01) sw=sw*(1-.65*BA)+LEAN*.16*BA*(.6+rd.h);
         const bx=rd.x*W,by=H,hh=rd.h*H,tx=bx+sw*hh,ty=by-hh;
         const a=(rd.a!=null?rd.a:.5);
         const cx=bx+sw*hh*.25,cy=by-hh*.55;
@@ -5975,6 +5985,11 @@ const AMB=(function(){
   function tick(t){
     const dt=Math.min(.05,Math.max(0,t-sLast)); sLast=t; if(reduce)return;
     sT+=dt; breath=Math.sin(t*0.55)*0.5+0.5; breath2=Math.sin(t*0.41+0.7)*0.5+0.5;
+    {const p=t%9; LEAN=p<4?Math.sin(p/4*Math.PI/2):Math.cos((p-4)/5*Math.PI/2);}
+    BA+=((BW?1:0)-BA)*Math.min(1,dt*1.5);
+    if(BA>.01){ breath=breath*(1-BA)+LEAN*BA; breath2=breath2*(1-BA)+LEAN*.9*BA; }
+    if(TT){ if(!TC)TC=TT.slice(); for(let i=0;i<3;i++)TC[i]+=(TT[i]-TC[i])*Math.min(1,dt*.8); }
+    TA+=((TT?1:0)-TA)*Math.min(1,dt*.6); if(!TT&&TA<.01)TC=null;
     motes.forEach(m=>{m.y-=m.v*dt*3;m.x+=m.dx*dt*3;if(m.y<-.05){m.y=1.05;m.x=Math.random();}});
     strands.forEach(s2=>{s2.x+=s2.sp*dt;if(s2.x>1.15){s2.x=-.35;s2.y=.15+Math.random()*.7;}});
     if(scene==='pond'&&sT>=ripNext){rips.push({x:.2+Math.random()*.6,y:.25+Math.random()*.5,b:sT});
@@ -5986,7 +6001,9 @@ const AMB=(function(){
       if(!cv.isConnected){canvases.splice(i,1);continue;} drawOne(cv);} }
   return { attach(cv){ if(cv&&canvases.indexOf(cv)<0)canvases.push(cv); if(!running){running=true;loop();} },
            set(sc){ if(sc&&sc!==scene){scene=sc;seed();} }, name(){return scene;},
-           isDark(){return !!SCENE_DARK[scene];} };
+           isDark(){return !!SCENE_DARK[scene];},
+           tint(rgb){ TT=(Array.isArray(rgb)&&rgb.length===3)?rgb.map(Number):null; if(reduce){TC=TT;TA=TT?1:0;} },
+           breathe(on){ BW=!!on; } };
 })();
 
 
@@ -6407,6 +6424,10 @@ window.addEventListener("message",e=>{
   if(IS_STUDENT){
     if(d.snbPractice && (!ACTIVE || ACTIVE.id!==d.snbPractice)) setPractice(d.snbPractice, true);
     if(d.snbSceneName) AMB.set(d.snbSceneName);
+    /* live room (2026-10-28): a member's own state colour, or the room's blend, tints the scene; a breath
+       prompt sets the reeds to the app's breath timing. Ignored by a plain student window. */
+    if(d.snbTint!==undefined) AMB.tint(d.snbTint);
+    if(d.snbBreathe!==undefined) AMB.breathe(!!d.snbBreathe);
     if(d.snbSlide!==undefined){
       const root=document.getElementById("stage");
       /* keep the frame across slides: only the slot re-renders, so the
@@ -6517,7 +6538,7 @@ function pRender(){
   }
   _lastImg=(c&&c.img)||null;
   if(sw && !sw.closed) sw.postMessage({snbPractice:ACTIVE.id, snbSlide:slideHTML,
-    snbScene:sceneOn, snbSceneName:sceneNm, snbJoin:join},"*");
+    snbScene:sceneOn, snbSceneName:sceneNm, snbJoin:join, snbIdx:pIdx, snbBuild:pBuild, snbBeat:beatInfo(b,c)},"*");
   const pv=document.getElementById("pvBox");
   pv.innerHTML=frameHTML(b, sceneOn, sceneOn&&AMB.isDark(), slideHTML);
   AMB.attach(pv.querySelector("canvas.ambient"));
@@ -6533,19 +6554,31 @@ function pRender(){
   document.getElementById("pSec").textContent=(ACTIVE.TABS[b.section]||"")+" · "+ACTIVE.label;
   postSeamForCurrent();
 }
+/* what the live room needs to know about a slide: is it a check-in seam, a 0–10 question, the breath check */
+function beatInfo(b,c){
+  const t=c?[c.eyebrow,c.h,c.body,c.p,c.ask].filter(Boolean).join(" ").replace(/<[^>]+>/g," "):"";
+  let ci=null; try{ ci=seamFor(b)||null; }catch(e){}
+  const prompt=!!c&&c.kind==="prompt";
+  /* the slides say "Safety, 0–10" / "On a scale of 0–10…"; the breath check is any breathing prompt that is not the intentional breath */
+  return {kind:(c&&c.kind)||null, ci:ci, z10:(prompt&&/0\s*[–-]\s*10|zero to ten|\b0 to 10\b/i.test(t))?(/intensity/i.test(t)?"intensity":"safety"):false,
+    breath:prompt&&!/intentional/i.test(t)&&/\bbreath(ing)?\b|chest or (your )?belly|full or shallow|tense or relaxed/i.test(t)};
+}
 function startPresent(){
-  if(!openStudentWindow())return;
+  if(ROOM_MODE) sw=window.opener;
+  else if(!openStudentWindow())return;
   pSlides=OV.filterBeats(ACTIVE.buildBeats());
   pIdx=Math.max(0,pSlides.findIndex(b=>b.section===curTab)); pBuild=0;
   if(!SHELL.scene) rollSessionScene();
   document.getElementById("console").classList.add("on");
-  publishLive();
+  if(!ROOM_MODE) publishLive();
+  else { const a=document.getElementById("pJoin"); if(a) a.textContent="live room · every slide goes to everyone in the room"; }
   pRender();
 }
 function endPresent(){
   endLive();
   document.getElementById("console").classList.remove("on");
-  if(sw && !sw.closed) sw.close();
+  if(ROOM_MODE){ try{ sw.postMessage({snbRoomEnd:1},"*"); }catch(e){} }
+  else if(sw && !sw.closed) sw.close();
   sw=null;
 }
 /* tap-to-reveal Discuss builds (Justin, 2026-09-03): on a slide with
@@ -6692,6 +6725,16 @@ const SBEDIT={
   },
   close(){ document.getElementById("editPanel").hidden=true; this.cur=null; }
 };
+/* live room mode: say so, and tell the room when this window goes away */
+if(ROOM_MODE){
+  const bn=document.createElement("div");
+  bn.setAttribute("role","status");
+  bn.style.cssText="position:sticky;top:0;z-index:50;padding:8px 16px;font:500 13px/1.4 Inter,system-ui,sans-serif;background:#1A1F2A;color:#FAF9F5;text-align:center";
+  bn.textContent="Live room: Present sends these slides to everyone in the room. Close this window to take them down.";
+  document.body.prepend(bn);
+  try{ window.opener.postMessage({snbRoomHello:1},"*"); }catch(e){}
+  window.addEventListener("pagehide",()=>{ try{ window.opener.postMessage({snbRoomEnd:1},"*"); }catch(e){} });
+}
 </script>
 </body>
 </html>
