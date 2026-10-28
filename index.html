@@ -5894,6 +5894,9 @@ const AMB=(function(){
       }
       rx+=.03+Math.random()*.14+(Math.random()<.22?.12:0); /* between stands: uneven, sometimes open water */
     }
+    /* a narrow canvas caps the count before the walk reaches the far bank; spread what grew across the
+       whole width so the reeds never stop halfway (Justin, 2026-10-28) */
+    {const last=reeds.length?reeds[reeds.length-1].x:1; if(last<.9){const k=.95/last; reeds.forEach(r=>{r.x*=k;});}}
     const MN=reduce?9:Math.round(Math.max(9,Math.min(20,fieldW()/70)));
     for(let i=0;i<MN;i++)motes.push({x:Math.random(),y:Math.random(),r:1.5+Math.random()*3.5,
       v:(3.5+Math.random()*8)/1000,dx:(Math.random()-.5)*.003,a:.18+Math.random()*.3});
@@ -6560,7 +6563,8 @@ function beatInfo(b,c){
   let ci=null; try{ ci=seamFor(b)||null; }catch(e){}
   const prompt=!!c&&c.kind==="prompt";
   /* the slides say "Safety, 0–10" / "On a scale of 0–10…"; the breath check is any breathing prompt that is not the intentional breath */
-  return {kind:(c&&c.kind)||null, ci:ci, z10:(prompt&&/0\s*[–-]\s*10|zero to ten|\b0 to 10\b/i.test(t))?(/intensity/i.test(t)?"intensity":"safety"):false,
+  /* h = the slide's own heading, so the room's answer sheet can carry the slide's words */
+  return {kind:(c&&c.kind)||null, h:(c&&c.h?String(c.h).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,140):""), ci:ci, z10:(prompt&&/0\s*[–-]\s*10|zero to ten|\b0 to 10\b/i.test(t))?(/intensity/i.test(t)?"intensity":"safety"):false,
     breath:prompt&&!/intentional/i.test(t)&&/\bbreath(ing)?\b|chest or (your )?belly|full or shallow|tense or relaxed/i.test(t)};
 }
 function startPresent(){
