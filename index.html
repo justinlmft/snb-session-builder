@@ -593,6 +593,98 @@
 .snbframe .well .ctacard .jlink{font-size:clamp(9px,1cqw,15px);color:var(--sink,#171c26);
   text-decoration:none;overflow-wrap:anywhere;line-height:1.3}
 
+/* ==================================================================
+   LIVE ROOM — the slide inside the SNB app's live room (2026-10-28,
+   Justin: "optimize the slides for various screen sizes").
+   The room draws the slide as its whole background and lays its cards
+   on top. The app tells the slide where the cards are (snbSafe, see
+   shell.html applySafe) and the slide's safe box shrinks to the free
+   area, so nothing the slide says ever sits under a card. Everything
+   here is scoped to .safe.room: a projector, the presenter preview and
+   a plain student window never match it and render exactly as before.
+
+   Wide areas keep the deck's own grid, re-measured inside the box.
+   Narrow areas (a phone, a tablet in portrait, the side cards on a 4:3
+   screen) stack: one full-width text column, type sized off the width
+   so a line never runs to two words, the picture as a band filling the
+   space under the text, the Discuss card across the column.
+   ================================================================== */
+.frame .safe.room{container-name:slide}
+/* nothing in the column gives up its height to make room: a long body steps down (roomFit) instead of
+   squeezing the heading into it */
+.snbframe .safe.room .s > *:not(.well){flex-shrink:0}
+/* measured fit (shell.html roomFit): the body steps down only as far as it must to clear the foot line */
+.snbframe .safe.room.fitm .s > *{animation:none!important}
+.snbframe .safe.room.rf1 .s > .body{zoom:.92}
+.snbframe .safe.room.rf2 .s > .body{zoom:.85}
+.snbframe .safe.room.rf3 .s > .body{zoom:.78}
+.snbframe .safe.room.rf4 .s > .body{zoom:.7}
+/* cards along the bottom: the mark + byline would sit on them; the room carries the brand */
+.snbframe .safe.room.bres .foot.gfoot{display:none!important}
+
+@container slide (max-aspect-ratio: 11/10){
+  .snbframe .s,.snbframe .s.prompt{padding:var(--top) var(--mx) calc(100cqh - var(--footl))}
+  .snbframe .eyebrow{font-size:max(10px,min(1.6cqh,2.6cqw));margin-bottom:1.6cqh;min-height:0}
+  .snbframe h1,.snbframe .s.haswell h1,.snbframe .s.checkin h1{max-width:none}
+  .snbframe .s.cover h1,.snbframe .s.ptitle h1,.snbframe .s.checkin h1{font-size:clamp(26px,min(8.6cqw,6.4cqh),60px)}
+  .snbframe .s.info h1,.snbframe .s.events h1{font-size:clamp(23px,min(7.4cqw,5.6cqh),52px)}
+  .snbframe .s.story h1,.snbframe .s.story.x2 h1,.snbframe .s.story.x3 h1{font-size:clamp(19px,min(6cqw,4.6cqh),40px)}
+  /* the head band holds the deck's body line; a stacked slide lets the body follow the heading */
+  .snbframe .s h1:has(~ .body),.snbframe .s h1:has(~ .flow),.snbframe .s h1:has(~ .sflow),
+  .snbframe .s h1:has(~ .mmflow){min-height:0}
+  .snbframe .body,.snbframe .s.story .body,.snbframe .s.haswell .body,
+  .snbframe .s.ptitle .body,.snbframe .s.checkin .body{max-width:none;margin-top:2cqh;
+    font-size:max(14px,min(3.3cqh,4.5cqw));line-height:1.45}
+  .snbframe .s.story.x1 .body{font-size:max(13px,min(2.9cqh,4.2cqw))}
+  .snbframe .s.story.x2 .body{font-size:max(13px,min(2.55cqh,3.9cqw));line-height:1.38}
+  .snbframe .s.story.x3 .body{font-size:max(12px,min(2.25cqh,3.6cqw));line-height:1.34}
+  .snbframe .s.prompt .p{font-size:clamp(22px,min(7.2cqw,5.6cqh),46px);max-width:none}
+  /* the picture: a band in the column, taking what the text leaves (and nothing when it leaves nothing) */
+  .snbframe .s > .well{position:relative;left:auto;right:auto;top:auto;bottom:auto;align-self:stretch;
+    flex:1 1 0;min-height:0;max-height:44cqh;margin-top:2.4cqh}
+  /* the invitation: the scan target is what matters on a small screen, so the card stands on its own and the
+     Academy picture steps aside */
+  .snbframe .s > .well.ctawell{flex:0 0 auto;max-height:none;overflow:visible;box-shadow:none}
+  .snbframe .s > .well.ctawell > img{display:none}
+  .snbframe .s > .well .ctacard{position:relative;left:auto;right:auto;bottom:auto;gap:3cqw;padding:1.6cqh 2.4cqw;
+    border:1px solid var(--shair);box-shadow:none}
+  .snbframe .s > .well .ctacard .qr{width:min(14cqh,20cqw)}
+  .snbframe .s > .well .ctacard .jlead{font-size:max(9px,2.2cqw)}
+  .snbframe .s > .well .ctacard .jlink{font-size:max(11px,2.8cqw)}
+  /* the drawn phone: in the room every member gets the app's own check-in, so the drawing steps aside */
+  .snbframe .snbphone{display:none}
+  .frame .snbjoin.big{position:relative;left:auto;right:auto;top:auto;bottom:auto;align-self:stretch;
+    margin-top:2.4cqh;padding:2.4cqh 4cqw;flex:0 1 auto}
+  .frame .snbjoin.big .qr{width:min(22cqh,34cqw)}
+  .frame .snbjoin.big .jlink{font-size:max(11px,2.8cqw)}
+  /* the Discuss card spans the column, seated on the foot line */
+  .snbframe .s > .discard:not(.foot){left:var(--mx);right:var(--mx);width:auto;padding:2cqh 4cqw 2.2cqh}
+  .snbframe .discard .dtag{font-size:max(9px,2.2cqw)}
+  .snbframe .discard .dq{font-size:max(14px,min(3.4cqh,4.6cqw))}
+  /* the session map wraps onto lines of whole chips */
+  .snbframe .flow,.snbframe .sflow,.snbframe .mmflow{gap:1.4cqw;padding:1cqh 1.6cqw;margin-top:2.4cqh}
+  .snbframe .flow .step,.snbframe .sstep,.snbframe .fstep{font-size:max(12px,3.4cqw);padding:.9cqh 2.6cqw;gap:1.8cqw}
+  .snbframe .flow .num,.snbframe .snum{width:max(16px,4.4cqw);height:max(16px,4.4cqw);font-size:max(9px,2.4cqw)}
+  .snbframe .flow .arr,.snbframe .sarr,.snbframe .farr{font-size:max(11px,2.8cqw)}
+  /* events: name and mark on one line, the date under the name */
+  .snbframe .evlist li{grid-template-columns:1fr auto;column-gap:4cqw;row-gap:.4cqh;padding:1.4cqh 0;font-size:max(13px,3.6cqw)}
+  .snbframe .evlist li .evwhen{grid-column:1;grid-row:2;font-size:max(12px,3.1cqw)}
+  .snbframe .evlist li .evmark{grid-column:2;grid-row:1;font-size:max(12px,3.1cqw)}
+  .snbframe .evlist .evhead{font-size:max(9px,2.2cqw)}
+  .snbframe .evlist .evhead .evwhen{display:none}
+  .snbframe .evnote{font-size:max(11px,2.8cqw)}
+  .snbframe .breakclock .bl{font-size:max(9px,2.2cqw)}
+  .snbframe .breakclock .bt{font-size:max(18px,5.4cqw)}
+}
+/* a short landscape area (a phone on its side, a laptop with the cards up): the deck grid, but the type
+   floors win over the height-based sizes so nothing goes microscopic */
+@container slide (min-aspect-ratio: 11/10) and (max-height: 520px){
+  .snbframe .eyebrow{font-size:max(9px,1.3cqw)}
+  .snbframe .s h1:has(~ .body),.snbframe .s h1:has(~ .flow),.snbframe .s h1:has(~ .sflow),
+  .snbframe .s h1:has(~ .mmflow){min-height:0}
+  .snbframe .body{margin-top:2cqh}
+}
+
   /* ---------- practice picker (shell-only chrome) ---------- */
   /* one segmented control rather than four loose buttons — the practice you
      are in is the single most important state on the page */
@@ -614,6 +706,10 @@
   .frame canvas.sky{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;
     opacity:0;transition:opacity 1.1s cubic-bezier(.22,.61,.36,1)}
   .frame.scene-on canvas.sky{opacity:1}
+  /* the safe box (2026-10-28): the slot, the foot and the join box sit in one box the size of the frame.
+     It stays the frame's size everywhere except the SNB app's live room, which tells the slide where its
+     cards are (snbSafe); the box then shrinks to the free area and the slide re-grids inside it. */
+  .frame .safe{position:absolute;inset:0;container-type:size}
   .frame .slot{position:absolute;inset:0;z-index:1}
   .frame .joinbox{position:absolute;z-index:3}
   /* ---------- copy editor (shell-only chrome) ---------- */
@@ -5876,6 +5972,9 @@ const AMB=(function(){
   /* live room (2026-10-28): tint = a member's own state colour or the room's blend, eased in and out;
      breathe = the app's breath timing on the reeds and circles, in for 4 seconds and out for 5 */
   let TT=null,TC=null,TA=0,BW=false,BA=0,LEAN=0,LEANZ=[0,0,0];
+  /* live room (2026-10-28): the free area beside or above the room's cards, as fractions of the canvas, so the
+     breathing circles sit in the middle of what a member can see rather than under the cards. null = whole field. */
+  let AREA=null;
   /* the sky behind the reeds (2026-10-28): a sunrise for the safety-side colours, a mist for the defense side */
   let SKYC=null,SKYM='sun',SUN=0,MIST=0;
   const SAFE_C=[[244,213,141],[232,168,113],[159,196,152]],DEF_C=[[232,155,155],[184,154,196],[163,192,221]];
@@ -5942,9 +6041,10 @@ const AMB=(function(){
     const TCx=(tinted&&scene==='reeds'&&!dark)?TC.map((v,i)=>v*.55+INK[i]*.45):TC; /* backlit: a deep shade of the colour */
     const base=tinted?[0,1,2].map(i=>Math.round(TCx[i]*TA*.68+base0[i]*(1-TA*.68))):base0;
     const col=a=>'rgba('+base[0]+','+base[1]+','+base[2]+','+(tinted?Math.min(1,a*(1+.9*TA)):a)+')';
-    const unit=Math.min(W*0.82,430,H*0.62);
+    const AW=AREA?W*AREA.w:W, AH=AREA?H*AREA.h:H;
+    const unit=Math.min(AW*0.82,430,AH*0.62);
     if(scene==='circles'){
-      const cx=W/2,cy=H/2,dotR=Math.max(2.5,unit*0.02); g.lineCap='round';
+      const cx=AREA?W*(AREA.x+AREA.w/2):W/2,cy=AREA?H*(AREA.y+AREA.h/2):H/2,dotR=Math.max(2.5,unit*0.02); g.lineCap='round';
       g.strokeStyle=col(0.16);g.lineWidth=1.5;g.beginPath();g.arc(cx,cy,unit*(0.30+0.13*breath2),0,6.283);g.stroke();
       g.strokeStyle=col(0.28);g.lineWidth=2.5;g.beginPath();g.arc(cx,cy,unit*(0.20+0.12*breath),0,6.283);g.stroke();
       g.fillStyle=col(0.30);g.beginPath();g.arc(cx,cy,dotR,0,6.283);g.fill();
@@ -6058,7 +6158,8 @@ const AMB=(function(){
            tint(rgb){ TT=(Array.isArray(rgb)&&rgb.length===3)?rgb.map(Number):null; if(reduce){TC=TT;TA=TT?1:0;}
              if(TT) SKYM=near(TT,SAFE_C)<=near(TT,DEF_C)?'sun':'mist';
              if(reduce){SKYC=TT;SUN=TT&&SKYM==='sun'?1:0;MIST=TT&&SKYM==='mist'?1:0;} },
-           breathe(on){ BW=!!on; } };
+           breathe(on){ BW=!!on; },
+           area(a){ AREA=(a&&a.w>0&&a.h>0)?a:null; } };
 })();
 
 
@@ -6466,14 +6567,50 @@ function openStudentWindow(){
 }
 function frameHTML(b, sceneOn, dark, inner){
   return '<div class="frame snbframe'+(sceneOn?" scene-on":"")+(dark?" dark":"")+'">'+
-    '<canvas class="sky"></canvas><canvas class="ambient"></canvas><div class="slot">'+inner+'</div>'+
+    '<canvas class="sky"></canvas><canvas class="ambient"></canvas><div class="safe"><div class="slot">'+inner+'</div>'+
     /* the mark + byline are a fixed frame element — created once, never
        re-mounted, shown only when the slide declares wfoot */
     '<div class="foot gfoot">'+
       '<img class="logo" src="https://static.wixstatic.com/media/2d354d_af56ea98dfab423d908b57ed57a01937~mv2.png" alt="Unstucking Academy">'+
       '<span class="byline">JUSTIN SUNSERI, STUCKNOTBROKEN.COM</span></div>'+
-    '<div class="joinbox" id="joinbox" style="display:none"></div></div>';
+    '<div class="joinbox" id="joinbox" style="display:none"></div></div></div>';
 }
+/* live room (2026-10-28, "optimize the slides for various screen sizes"): the app sends the free area left
+   by the room's cards, in px of this page — l and t are the room's own margin and top line, r is the right
+   edge the slide's text may reach (a gutter short of the cards), b is the foot line (a gutter above the
+   cards when they sit along the bottom). The safe box shrinks to that area and the slide's grid lines
+   follow it: the left margin and top line stay on the room's grid, the right margin lands on r, the foot
+   line on b. A narrow area (a phone, a tablet in portrait, the side cards on a 4:3 screen) switches the
+   slide to its stacked layout (design.css, "live room"). null puts the slide back to the full frame. */
+let ROOM_SAFE=null;
+function applySafe(fr, s){
+  const sf=fr&&fr.querySelector(".safe"); if(!sf) return;
+  const W=fr.clientWidth, H=fr.clientHeight;
+  const ok=s&&[s.l,s.r,s.t,s.b].every(v=>typeof v==="number"&&isFinite(v))&&W>0&&H>0;
+  if(!ok){ sf.classList.remove("room","bres"); sf.removeAttribute("style"); AMB.area(null); return; }
+  const l=Math.max(0,s.l), t=Math.max(0,s.t);
+  const bres=s.b<H*.88;                                    /* cards along the bottom */
+  const Wp=Math.round(Math.max(200,Math.min(W, s.r+l)));
+  const Hp=Math.round(Math.max(160,Math.min(H, bres ? s.b/.905 : H)));
+  sf.classList.add("room"); sf.classList.toggle("bres", bres);
+  sf.style.cssText="right:"+(W-Wp)+"px;bottom:"+(H-Hp)+"px;--mx:"+l+"px;--railr:"+l+"px;--top:"+t+"px";
+  AMB.area({x:0,y:0,w:Wp/W,h:(bres?s.b:Hp)/H});
+  roomFit(fr,s);
+}
+/* a long vignette in a small free area: step the text down until it clears the foot line (zoom keeps the
+   line breaks and spacing in proportion). Only in the room; four steps, then it stops. */
+function roomFit(fr,S){
+  S=S||ROOM_SAFE; const sf=fr&&fr.querySelector(".safe.room"); if(!sf||!S) return;
+  const steps=["","rf1","rf2","rf3","rf4"]; steps.forEach(c=>c&&sf.classList.remove(c));
+  const s0=sf.querySelector(".slot .s"); if(!s0) return;
+  const lim=fr.getBoundingClientRect().top+S.b+1;
+  const low=()=>{ let m=0; s0.querySelectorAll(":scope > *:not(.well:not(.ctawell)):not(.discard):not(.foot):not(.snbphone):not(.snbjoin)").forEach(el=>{
+    const q=el.getBoundingClientRect(); if(q.height) m=Math.max(m,q.bottom); }); return m; };
+  sf.classList.add("fitm");                    /* measure the settled layout, not the rise-in */
+  for(let i=1;i<steps.length&&low()>lim;i++){ if(i>1) sf.classList.remove(steps[i-1]); sf.classList.add(steps[i]); }
+  sf.classList.remove("fitm");
+}
+window.addEventListener("resize",()=>{ if(IS_STUDENT&&ROOM_SAFE){ const fr=document.querySelector("#stage .frame"); if(fr) applySafe(fr,ROOM_SAFE); } });
 window.addEventListener("message",e=>{
   const d=e.data||{};
   if(IS_STUDENT){
@@ -6483,6 +6620,7 @@ window.addEventListener("message",e=>{
        prompt sets the reeds to the app's breath timing. Ignored by a plain student window. */
     if(d.snbTint!==undefined) AMB.tint(d.snbTint);
     if(d.snbBreathe!==undefined) AMB.breathe(!!d.snbBreathe);
+    if(d.snbSafe!==undefined){ ROOM_SAFE=d.snbSafe||null; const f0=document.querySelector("#stage .frame"); if(f0) applySafe(f0,ROOM_SAFE); }
     if(d.snbSlide!==undefined){
       const root=document.getElementById("stage");
       /* keep the frame across slides: only the slot re-renders, so the
@@ -6491,6 +6629,7 @@ window.addEventListener("message",e=>{
       if(!fr){
         root.innerHTML=frameHTML(null, !!d.snbScene, !!d.snbScene && AMB.isDark(), d.snbSlide);
         fr=root.querySelector(".frame");
+        if(ROOM_SAFE) applySafe(fr,ROOM_SAFE);
       }else{
         fr.classList.toggle("scene-on", !!d.snbScene);
         fr.classList.toggle("dark", !!d.snbScene && AMB.isDark());
@@ -6499,6 +6638,7 @@ window.addEventListener("message",e=>{
       AMB.attach(fr.querySelector("canvas.ambient"));
       startBreakClock(root);
       applySNB(root);
+      if(ROOM_SAFE) roomFit(fr);
       if(d.snbJoin) renderJoin(root.querySelector("#joinbox"), d.snbJoin);
     }
     if(d.snbJoin!==undefined){ const jb=document.querySelector("#joinbox"); if(jb) renderJoin(jb,d.snbJoin); }
