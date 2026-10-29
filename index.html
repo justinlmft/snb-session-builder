@@ -233,8 +233,8 @@
 
 /* the big panel: one quiet stack — scan target, then the words to type. */
 .frame .snbjoin.big{position:absolute;
-  left:var(--artl,68cqw);right:var(--mx,6.25cqw);
-  top:var(--bodyl,29.9cqh);bottom:calc(100cqh - var(--footl,90.5cqh));
+  left:var(--artl);right:var(--mx);
+  top:var(--bodyl);bottom:calc(100cqh - var(--footl));
   flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:0;
   padding:3cqh 1.6cqw;background:transparent;border:1px solid var(--shair,rgba(23,28,38,.13));
   box-shadow:none}
@@ -265,8 +265,9 @@
 /* the app check-in on a phone (MM + CB check-in slides, 2026-10-13) — it takes the
    image-well slot the QR panel used, so the slide keeps the same grid. Sized in cqh
    off the frame so it scales with the projected slide, not the window. */
-.snbframe .snbphone{position:absolute;top:calc(var(--bodyl,29.9cqh) - 9cqh);bottom:calc(100cqh - var(--footl,90.5cqh) + 6.5cqh);
-  left:var(--artl,68cqw);right:var(--mx,6.25cqw);display:flex;justify-content:center;pointer-events:none}
+.snbframe .snbphone{position:absolute;top:calc(var(--top) + var(--rowh) + var(--colgap));
+  bottom:calc(100cqh - var(--footl) + var(--rowh) + var(--colgap));
+  left:var(--artl);right:var(--mx);display:flex;justify-content:flex-start;pointer-events:none}
 .snbframe .snbphone .phscr{pointer-events:auto;height:100%;aspect-ratio:9/18.5;box-sizing:border-box;
   background:#FAF9F5;color:var(--sink,#171c26);border-radius:5.2cqh;
   border:1.1cqh solid #1d2230;box-shadow:0 2.4cqh 5cqh rgba(26,31,42,.16);
@@ -291,8 +292,8 @@
 .snbframe .snbphone .phr::-moz-range-thumb{width:2.2cqh;height:2.2cqh;border-radius:50%;background:#fff;border:.25cqh solid var(--axc)}
 .snbframe .snbphone .phread{margin-top:auto;font-size:1.95cqh;line-height:1.3;font-weight:600;letter-spacing:-.01em;min-height:5.1cqh}
 /* the join code, when a session is live, rides under the phone — text only, no QR */
-.frame .snbjoin.code{position:absolute;left:var(--artl,68cqw);right:var(--mx,6.25cqw);
-  bottom:calc(100cqh - var(--footl,90.5cqh));height:4.6cqh;box-sizing:border-box;justify-content:center;
+.frame .snbjoin.code{position:absolute;left:var(--artl);right:var(--mx);
+  bottom:calc(100cqh - var(--footl));height:var(--rowh);box-sizing:border-box;justify-content:flex-start;
   gap:1cqw;background:transparent;border:0;box-shadow:none}
 .frame .snbjoin.code .jtext{flex-direction:row;align-items:baseline;gap:.9cqw}
 .frame .snbjoin.code .jlead{font-size:clamp(7px,.8cqw,12px)}
@@ -317,7 +318,20 @@
   font-feature-settings:"kern" 1,"liga" 1,"calt" 1;
   transition:background-color .7s cubic-bezier(.22,1,.36,1),color .7s cubic-bezier(.22,1,.36,1)}
 
-/* the invisible grid every slide snaps to.
+/* THE SLIDE GRID — SWISS-GRID-STANDARD v1.3 §4 (CANON, Justin 2026-10-28: "the grid is sacred").
+   A 12 x 12 modular grid inside the SAFE BOX: 12 columns (margin --mx, gutter --colgap) and 12 equal rows
+   between the top line and the foot line, using the same gutter. Every flowline is a row line:
+     row 1  --top    eyebrow (one line, band --ebh = one row)
+     row 2           heading (head line)
+     row 4  --bodyl  body, list, session map, art well
+     row 12 --footl  foot line: logo (column 1) and byline (right edge of column 12), bottom-aligned
+   The art well starts on column 9 (--artl); text stops at the end of column 8.
+   On a full slide --top and --footl sit one margin in; in the live room they are the room's lines and
+   --mx is the room's margin (applySafe sets them inline on .safe). The tokens live on .safe, not on
+   .snbframe, so they are computed from the margin the room hands over. A block that follows another
+   starts on the next row line (gridSnap in the shell). Portrait (stacked): 4 columns, 20px gutter.
+   ---- the older notes below describe the AAMFT values these replaced ----
+   the invisible grid every slide snaps to.
    --railr is the right rail: the break clock and the join block both hang off
    it, so they line up instead of drifting apart (Justin, 2026-08-10). It now
    sits ON the right margin, so everything on the right shares one edge.
@@ -327,8 +341,7 @@
    lifted from the AAMFT 16:9 deck (artl 68cqw; body 29.9 / foot 90.5).
    --ebh is the eyebrow band: fixing its height is what lets the head band
    below resolve to a number, so body copy can actually LAND on --bodyl. */
-.snbframe{--mx:6.25cqw;--top:11cqh;--gut:3cqh;--foot:6.5cqh;--railr:6.25cqw;
-  --artl:68cqw;--bodyl:29.9cqh;--footl:90.5cqh;--colgap:2cqw;--radius:1.8cqh;--ebh:3.2cqh;
+.snbframe{--mx:6.25cqw;--railr:6.25cqw;--colgap:2cqw;--radius:1.8cqh;
   /* ink family — warmed to the bone paper it sits on, and the body step
      deepened a little for a projected room. No type got smaller. */
   --sink:#171c26;--sbody:#353a44;--smuted:#8a877e;--shair:rgba(23,28,38,.13);
@@ -340,6 +353,15 @@
      held FLAT on purpose — that band is where headings and the prompt veil
      live, and a veil can only disappear into a colour that isn't moving. */
   background:#FAF9F5 linear-gradient(180deg,#FBFAF7 0%,#FBFAF7 44%,#FAF9F5 68%,#F6F4ED 100%) no-repeat}
+.snbframe .safe{--top:var(--mx);--footl:calc(100cqh - var(--mx));
+  --colw:calc((100cqw - 2 * var(--mx) - 11 * var(--colgap)) / 12);
+  --rowh:calc((var(--footl) - var(--top) - 11 * var(--colgap)) / 12);
+  --ebh:var(--rowh);--gut:var(--colgap);
+  --bodyl:calc(var(--top) + 3 * (var(--rowh) + var(--colgap)));
+  --artl:calc(var(--mx) + 8 * (var(--colw) + var(--colgap)))}
+/* the grid probe gridSnap reads the row lines from (never visible) */
+.snbframe .gprobe{position:absolute;left:var(--mx);top:var(--top);width:var(--colgap);height:var(--rowh);
+  visibility:hidden;pointer-events:none}
 /* the two light-based scenes bring a dark field with them, as in the app */
 .snbframe.dark{--sink:#FAF9F5;--sbody:#cfcdc6;--smuted:#a9a69c;--shair:rgba(255,255,255,.16);
   --tray:rgba(255,255,255,.05);--chip:rgba(255,255,255,.07);--chipnum:#1a1f2a;
@@ -347,15 +369,16 @@
   background:#1a1f2a linear-gradient(180deg,#1e2430 0%,#1e2430 44%,#1a1f2a 70%,#151a23 100%) no-repeat}
 
 .snbframe .s{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:flex-start;
-  padding:var(--top) var(--mx) calc(var(--foot) + 4cqh)}
+  padding:var(--top) var(--mx) calc(100cqh - var(--footl))}
 
 /* eyebrow — meta line, top left, on the same column as everything else.
    No leading rule or mark: Justin, 2026-09-01 — "the dashes in front of the
    eyebrows are unnecessary". The band height is still fixed, because that is
    what lets the head band below resolve to a number. */
-.snbframe .eyebrow{align-self:stretch;text-align:left;margin:0 0 var(--gut);
+.snbframe .eyebrow{align-self:stretch;text-align:left;margin:0 0 var(--gut);box-sizing:border-box;
   font-size:clamp(8px,1cqw,15px);font-weight:500;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--smuted);line-height:1.8;min-height:var(--ebh)}
+  color:var(--smuted);line-height:min(1.8em,var(--ebh));height:var(--ebh);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* headline scale — one ramp, by slide weight. Tracking is optical: the
    biggest sizes take the tightest fit, the small story head barely any. */
@@ -381,7 +404,8 @@
 .snbframe .s h1:has(~ .body),
 .snbframe .s h1:has(~ .flow),
 .snbframe .s h1:has(~ .sflow),
-.snbframe .s h1:has(~ .mmflow){min-height:calc(var(--bodyl) - var(--top) - var(--ebh) - var(--gut) * 2)}
+.snbframe .s h1:has(~ .mmflow),
+.snbframe .s h1:has(~ .evlist){min-height:calc(var(--bodyl) - var(--top) - var(--ebh) - var(--gut) * 2)}
 
 /* body block — one treatment, at the AAMFT body size (Justin, 2026-08-30:
    "make the text very legible"). The AAMFT deck holds ONE size for every
@@ -405,7 +429,7 @@
    bottom, the circles breathe in the middle). The veil keeps it legible over
    any scene, light or dark — now with a long four-stop falloff, so it stops
    reading as a pale oval drawn on the slide. ---- */
-.snbframe .s.prompt{padding:var(--top) var(--mx) calc(var(--foot) + 4cqh)}
+.snbframe .s.prompt{padding:calc(var(--top) + var(--rowh) + var(--colgap)) var(--mx) calc(100cqh - var(--footl))}
 .snbframe .s.prompt .p{font-size:clamp(20px,4cqw,66px);font-weight:400;letter-spacing:-.024em;
   line-height:1.14;max-width:80cqw;position:relative;isolation:isolate;color:var(--sink);
   text-wrap:balance;hyphens:none}
@@ -472,13 +496,15 @@
    itself (Justin, 2026-08-31: "leave it there if it repeats"). ---- */
 .snbframe .foot.gfoot{display:none}
 .snbframe:has(.s.wfoot) .foot.gfoot{display:flex}
-.snbframe .foot{position:absolute;left:var(--mx);bottom:var(--foot);display:flex;align-items:center;gap:1.6cqw}
+.snbframe .foot{position:absolute;left:var(--mx);right:var(--mx);bottom:calc(100cqh - var(--footl));
+  display:flex;justify-content:space-between;align-items:flex-end;gap:1.6cqw}
 .snbframe .foot .logo{height:clamp(20px,4.4cqh,50px);width:auto;display:block}
 .snbframe .foot .byline{font-size:clamp(6px,.78cqw,12px);letter-spacing:.14em;color:var(--smuted);
   text-transform:uppercase;font-weight:500}
 
 /* ---- break clock, bottom right ---- */
-.snbframe .breakclock{position:absolute;right:var(--railr);bottom:5cqh;display:flex;flex-direction:column;
+.snbframe .breakclock{position:absolute;left:calc(var(--mx) + 10 * (var(--colw) + var(--colgap)));right:var(--mx);
+  bottom:calc(100cqh - var(--footl));display:flex;flex-direction:column;
   align-items:flex-end;gap:.7cqh;color:var(--smuted);padding-top:1.1cqh;border-top:1px solid var(--shair)}
 .snbframe .breakclock .bl{font-size:clamp(7px,.9cqw,13px);letter-spacing:.18em;text-transform:uppercase;
   font-weight:500;opacity:.85}
@@ -487,10 +513,13 @@
 
 /* ---- events list (the closing invitation) ---- */
 .snbframe .evlist{list-style:none;margin:var(--gut) 0 0;padding:0;align-self:stretch}
-.snbframe .evlist li{display:grid;grid-template-columns:1fr auto 14cqw;align-items:baseline;gap:3cqw;
+.snbframe .evlist li{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:baseline;column-gap:var(--colgap);
   padding:1.4cqh 0;border-bottom:1px solid var(--shair);font-size:clamp(11px,1.35cqw,23px);color:var(--sbody)}
 .snbframe .evlist .evhead{font-size:clamp(8px,.92cqw,14px);letter-spacing:.14em;text-transform:uppercase;
   font-weight:500;color:var(--smuted);border-bottom:1px solid var(--shair);padding-bottom:1cqh}
+.snbframe .evlist li > :nth-child(1){grid-column:1 / 7}
+.snbframe .evlist li > :nth-child(2){grid-column:7 / 11}
+.snbframe .evlist li > :nth-child(3){grid-column:11 / 13}
 .snbframe .evlist .evname{font-weight:500;color:var(--sink)}
 .snbframe .evlist .evwhen{color:var(--smuted);font-size:clamp(10px,1.1cqw,18px);font-variant-numeric:tabular-nums}
 .snbframe .evlist .evmark{text-align:right;font-size:clamp(10px,1.1cqw,18px)}
@@ -559,7 +588,7 @@
    it sits over prose. ---- */
 @keyframes snbCard{from{opacity:0;transform:translateY(2.6cqh)}to{opacity:1;transform:none}}
 .snbframe .s > .discard:not(.foot){position:absolute;left:var(--mx);
-  width:calc(var(--artl) - var(--mx) - var(--colgap) - 4.4cqw);
+  width:calc(7 * var(--colw) + 6 * var(--colgap));
   bottom:calc(100cqh - var(--footl));box-sizing:border-box;
   background:#fff;border:1px solid var(--shair);border-radius:var(--radius);
   padding:2.1cqh 2.2cqw 2.3cqh;z-index:2;
@@ -614,17 +643,30 @@
    squeezing the heading into it */
 .snbframe .safe.room .s > *:not(.well){flex-shrink:0}
 /* measured fit (shell.html roomFit): the body steps down only as far as it must to clear the foot line */
-.snbframe .safe.room.fitm .s > *{animation:none!important}
+.snbframe .safe.fitm .s > *{animation:none!important}
 .snbframe .safe.room.rf1 .s > .body{zoom:.92}
 .snbframe .safe.room.rf2 .s > .body{zoom:.85}
 .snbframe .safe.room.rf3 .s > .body{zoom:.78}
 .snbframe .safe.room.rf4 .s > .body{zoom:.7}
+/* the events list steps with it: tighter rows, whole columns kept (zoom would narrow the 12 columns) */
+.snbframe .safe.room.rf1 .evlist li{padding-top:1cqh;padding-bottom:1cqh}
+.snbframe .safe.room.rf2 .evlist li{padding-top:.75cqh;padding-bottom:.75cqh}
+.snbframe .safe.room.rf3 .evlist li{padding-top:.5cqh;padding-bottom:.5cqh}
+.snbframe .safe.room.rf4 .evlist li{padding-top:.3cqh;padding-bottom:.3cqh}
 /* cards along the bottom: the mark + byline would sit on them; the room carries the brand */
 .snbframe .safe.room.bres .foot.gfoot{display:none!important}
 
 @container slide (max-aspect-ratio: 11/10){
+  /* the portrait grid (v1.3 §4): 4 columns, the compact 20px gutter, still 12 rows; re-declared on the safe
+     box's children because a container query cannot style the container itself */
+  .snbframe .safe > *{--colgap:20px;
+    --colw:calc((100cqw - 2 * var(--mx) - 3 * var(--colgap)) / 4);
+    --rowh:calc((var(--footl) - var(--top) - 11 * var(--colgap)) / 12);
+    --ebh:var(--rowh);--gut:var(--colgap);
+    --bodyl:calc(var(--top) + 3 * (var(--rowh) + var(--colgap)))}
   .snbframe .s,.snbframe .s.prompt{padding:var(--top) var(--mx) calc(100cqh - var(--footl))}
-  .snbframe .eyebrow{font-size:max(10px,min(1.6cqh,2.6cqw));margin-bottom:1.6cqh;min-height:0}
+  .snbframe .eyebrow{font-size:max(10px,min(1.6cqh,2.6cqw))}
+  .snbframe .breakclock{left:calc(var(--mx) + 3 * (var(--colw) + var(--colgap)))}
   .snbframe h1,.snbframe .s.haswell h1,.snbframe .s.checkin h1{max-width:none}
   .snbframe .s.cover h1,.snbframe .s.ptitle h1,.snbframe .s.checkin h1{font-size:clamp(26px,min(8.6cqw,6.4cqh),60px)}
   .snbframe .s.info h1,.snbframe .s.events h1{font-size:clamp(23px,min(7.4cqw,5.6cqh),52px)}
@@ -641,7 +683,7 @@
   .snbframe .s.prompt .p{font-size:clamp(22px,min(7.2cqw,5.6cqh),46px);max-width:none}
   /* the picture: a band in the column, taking what the text leaves (and nothing when it leaves nothing) */
   .snbframe .s > .well{position:relative;left:auto;right:auto;top:auto;bottom:auto;align-self:stretch;
-    flex:1 1 0;min-height:0;max-height:44cqh;margin-top:2.4cqh}
+    flex:1 1 0;min-height:0;margin-top:2.4cqh}
   /* the invitation: the scan target is what matters on a small screen, so the card stands on its own and the
      Academy picture steps aside */
   .snbframe .s > .well.ctawell{flex:0 0 auto;max-height:none;overflow:visible;box-shadow:none}
@@ -667,9 +709,10 @@
   .snbframe .flow .num,.snbframe .snum{width:max(16px,4.4cqw);height:max(16px,4.4cqw);font-size:max(9px,2.4cqw)}
   .snbframe .flow .arr,.snbframe .sarr,.snbframe .farr{font-size:max(11px,2.8cqw)}
   /* events: name and mark on one line, the date under the name */
-  .snbframe .evlist li{grid-template-columns:1fr auto;column-gap:4cqw;row-gap:.4cqh;padding:1.4cqh 0;font-size:max(13px,3.6cqw)}
-  .snbframe .evlist li .evwhen{grid-column:1;grid-row:2;font-size:max(12px,3.1cqw)}
-  .snbframe .evlist li .evmark{grid-column:2;grid-row:1;font-size:max(12px,3.1cqw)}
+  .snbframe .evlist li{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:var(--colgap);row-gap:.4cqh;padding:1.4cqh 0;font-size:max(13px,3.6cqw)}
+  .snbframe .evlist li > :nth-child(1){grid-column:1 / 4;grid-row:1}
+  .snbframe .evlist li > :nth-child(2){grid-column:1 / 4;grid-row:2;font-size:max(12px,3.1cqw)}
+  .snbframe .evlist li > :nth-child(3){grid-column:4 / 5;grid-row:1;font-size:max(12px,3.1cqw)}
   .snbframe .evlist .evhead{font-size:max(9px,2.2cqw)}
   .snbframe .evlist .evhead .evwhen{display:none}
   .snbframe .evnote{font-size:max(11px,2.8cqw)}
@@ -5796,7 +5839,9 @@ function senseChips(){
    repeats). Slides that carry it declare the `wfoot` class; the one persistent
    foot element lives in frameHTML and simply shows or hides. */
 
-function eyebrowHTML(t){ return '<div class="eyebrow">'+(t||"")+'</div>'; }
+/* one line, always (SWISS-GRID-STANDARD v1.3 §4): a two-part eyebrow is joined with " · " so the band
+   stays one row and the head line never moves */
+function eyebrowHTML(t){ return '<div class="eyebrow">'+String(t||"").replace(/\s*<br\s*\/?>\s*/gi," · ")+'</div>'; }
 /* IMAGE WELL — the AAMFT mechanism, browser-native. A slide that declares
    img:"<marker>" renders a right panel filled from images/<marker>.jpg (then
    .png). Drop the file next to index.html and the well fills on the next
@@ -5868,7 +5913,8 @@ function renderSlide(c){
     case "prompt":
       return '<div class="s prompt"><div class="p">'+(c.h||"")+'</div></div>';
     case "cover":
-      return '<div class="s cover wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+(c.flow||"")+'</div>';
+      /* with a session map the title is one line, so the map can sit on the body line (row 4) */
+      return '<div class="s cover wfoot">'+eb+'<h1>'+hdots(c.flow?String(c.h||"").replace(/\s*<br\s*\/?>\s*/gi," "):c.h)+'</h1>'+(c.flow||"")+'</div>';
     case "ptitle":
       return '<div class="s ptitle wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
         (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+'</div>';
@@ -6567,7 +6613,7 @@ function openStudentWindow(){
 }
 function frameHTML(b, sceneOn, dark, inner){
   return '<div class="frame snbframe'+(sceneOn?" scene-on":"")+(dark?" dark":"")+'">'+
-    '<canvas class="sky"></canvas><canvas class="ambient"></canvas><div class="safe"><div class="slot">'+inner+'</div>'+
+    '<canvas class="sky"></canvas><canvas class="ambient"></canvas><div class="safe"><i class="gprobe" aria-hidden="true"></i><div class="slot">'+inner+'</div>'+
     /* the mark + byline are a fixed frame element — created once, never
        re-mounted, shown only when the slide declares wfoot */
     '<div class="foot gfoot">'+
@@ -6587,13 +6633,14 @@ function applySafe(fr, s){
   const sf=fr&&fr.querySelector(".safe"); if(!sf) return;
   const W=fr.clientWidth, H=fr.clientHeight;
   const ok=s&&[s.l,s.r,s.t,s.b].every(v=>typeof v==="number"&&isFinite(v))&&W>0&&H>0;
-  if(!ok){ sf.classList.remove("room","bres"); sf.removeAttribute("style"); AMB.area(null); return; }
+  if(!ok){ sf.classList.remove("room","bres"); sf.removeAttribute("style"); AMB.area(null); gridSnap(fr); return; }
   const l=Math.max(0,s.l), t=Math.max(0,s.t);
   const bres=s.b<H*.88;                                    /* cards along the bottom */
   const Wp=Math.round(Math.max(200,Math.min(W, s.r+l)));
   const Hp=Math.round(Math.max(160,Math.min(H, bres ? s.b/.905 : H)));
   sf.classList.add("room"); sf.classList.toggle("bres", bres);
-  sf.style.cssText="right:"+(W-Wp)+"px;bottom:"+(H-Hp)+"px;--mx:"+l+"px;--railr:"+l+"px;--top:"+t+"px";
+  /* the room's lines are the slide's lines: margin, top line and foot line (SWISS-GRID-STANDARD v1.3 §4) */
+  sf.style.cssText="right:"+(W-Wp)+"px;bottom:"+(H-Hp)+"px;--mx:"+l+"px;--railr:"+l+"px;--top:"+t+"px;--footl:"+Math.min(Hp,s.b)+"px";
   AMB.area({x:0,y:0,w:Wp/W,h:(bres?s.b:Hp)/H});
   roomFit(fr,s);
 }
@@ -6607,10 +6654,60 @@ function roomFit(fr,S){
   const low=()=>{ let m=0; s0.querySelectorAll(":scope > *:not(.well:not(.ctawell)):not(.discard):not(.foot):not(.snbphone):not(.snbjoin)").forEach(el=>{
     const q=el.getBoundingClientRect(); if(q.height) m=Math.max(m,q.bottom); }); return m; };
   sf.classList.add("fitm");                    /* measure the settled layout, not the rise-in */
-  for(let i=1;i<steps.length&&low()>lim;i++){ if(i>1) sf.classList.remove(steps[i-1]); sf.classList.add(steps[i]); }
+  gridSnap(fr);
+  for(let i=1;i<steps.length&&low()>lim;i++){ if(i>1) sf.classList.remove(steps[i-1]); sf.classList.add(steps[i]); gridSnap(fr); }
   sf.classList.remove("fitm");
 }
-window.addEventListener("resize",()=>{ if(IS_STUDENT&&ROOM_SAFE){ const fr=document.querySelector("#stage .frame"); if(fr) applySafe(fr,ROOM_SAFE); } });
+/* GRID SNAP (SWISS-GRID-STANDARD v1.3 §4, "any block that follows another starts on the next row line").
+   The CSS seats the fixed lines (eyebrow on row 1, heading on row 2, body / list / map / well on row 4, the
+   foot on the foot line); a block whose top falls between rows - after a tall heading, or anywhere in the
+   stacked portrait layout - is pushed down to the next row line here. A cover title too tall for its band
+   steps down so its session map keeps the body line, and the Discuss card grows up to a row line. Measured
+   with the motion off; reruns from scratch every time, so it is safe to call as often as layout changes. */
+function gridSnap(fr){
+  const sf=fr&&fr.querySelector(".safe"); if(!sf) return;
+  const s0=sf.querySelector(".slot .s"); if(!s0) return;
+  let pr=sf.querySelector(":scope > .gprobe");
+  if(!pr){ pr=document.createElement("i"); pr.className="gprobe"; pr.setAttribute("aria-hidden","true"); sf.prepend(pr); }
+  const mine=!sf.classList.contains("fitm"); if(mine) sf.classList.add("fitm");
+  s0.querySelectorAll("[data-snap]").forEach(el=>{ el.style.marginTop=""; el.style.minHeight=""; el.style.fontSize=""; el.style.display=""; el.removeAttribute("data-snap"); });
+  const B=sf.getBoundingClientRect(), P=pr.getBoundingClientRect();
+  const top=P.top-B.top, rowh=P.height, gap=P.width, pitch=rowh+gap;
+  if(rowh>0&&pitch>0){
+    const lines=[]; for(let k=0;k<12;k++) lines.push(top+k*pitch);
+    /* a cover title with a session map after it fits its band (rows 2-3) */
+    const h1=s0.querySelector(":scope > h1"), band=h1?parseFloat(getComputedStyle(h1).minHeight)||0:0;
+    if(h1&&band>0&&s0.classList.contains("cover")&&h1.nextElementSibling){
+      const rg=document.createRange(); rg.selectNodeContents(h1);
+      const fs0=parseFloat(getComputedStyle(h1).fontSize);
+      for(let i=1;i<=6&&rg.getBoundingClientRect().height>band+.5;i++){ h1.style.fontSize=(fs0*Math.pow(.92,i))+"px"; h1.setAttribute("data-snap",""); }
+    }
+    for(const el of s0.children){
+      const cs=getComputedStyle(el);
+      if(cs.display==="none"||el.classList.contains("foot")) continue;
+      const q=el.getBoundingClientRect(); if(!q.height&&!q.width) continue;
+      const t=q.top-B.top;
+      if(cs.position==="absolute"){
+        /* bottom-anchored cards grow up to the row line above their top */
+        if(el.classList.contains("discard")){
+          let L=null; for(const x of lines) if(x<=t+.5) L=x;
+          if(L!==null&&t-L>.25){ el.style.minHeight=(q.bottom-B.top-L)+"px"; el.setAttribute("data-snap",""); }
+        }
+        continue;
+      }
+      const L=lines.find(x=>x>=t-.5);
+      /* a zoomed block (roomFit) renders its own margin zoomed too */
+      if(L!==undefined&&L-t>.25){ el.style.marginTop=(parseFloat(cs.marginTop)+(L-t)/(parseFloat(cs.zoom)||1))+"px"; el.setAttribute("data-snap",""); }
+      /* a stacked picture fills whole rows to the foot line; left less than one row, it steps aside */
+      if(el.classList.contains("well")&&!el.classList.contains("ctawell")&&el.getBoundingClientRect().height<rowh-.5){
+        el.style.display="none"; el.setAttribute("data-snap",""); }
+    }
+  }
+  if(mine) sf.classList.remove("fitm");
+}
+function gridSnapAll(){ document.querySelectorAll("#stage .frame, #pvBox .frame").forEach(f=>{ if(f.querySelector(".safe.room")&&ROOM_SAFE) roomFit(f); else gridSnap(f); }); }
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(gridSnapAll);
+window.addEventListener("resize",()=>{ if(IS_STUDENT&&ROOM_SAFE){ const fr=document.querySelector("#stage .frame"); if(fr) applySafe(fr,ROOM_SAFE); } else gridSnapAll(); });
 window.addEventListener("message",e=>{
   const d=e.data||{};
   if(IS_STUDENT){
@@ -6638,7 +6735,7 @@ window.addEventListener("message",e=>{
       AMB.attach(fr.querySelector("canvas.ambient"));
       startBreakClock(root);
       applySNB(root);
-      if(ROOM_SAFE) roomFit(fr);
+      if(ROOM_SAFE) roomFit(fr); else gridSnap(fr);
       if(d.snbJoin) renderJoin(root.querySelector("#joinbox"), d.snbJoin);
     }
     if(d.snbJoin!==undefined){ const jb=document.querySelector("#joinbox"); if(jb) renderJoin(jb,d.snbJoin); }
@@ -6739,6 +6836,7 @@ function pRender(){
   AMB.attach(pv.querySelector("canvas.ambient"));
   startBreakClock(pv); applySNB(pv);
   renderJoin(pv.querySelector("#joinbox"), join);
+  gridSnap(pv.querySelector(".frame"));
   document.getElementById("cNotes").innerHTML=fmtNote(OV.apply(b).note);
   const nxt=pSlides[pIdx+1];
   if(pBuild<_steps.length)
