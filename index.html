@@ -638,7 +638,9 @@
    so a line never runs to two words, the picture as a band filling the
    space under the text, the Discuss card across the column.
    ================================================================== */
-.frame .safe.room{container-name:slide}
+/* every safe box is the slide container (SWISS-GRID-STANDARD v1.6 §6.8, audit S7): a plain window held upright
+   stacks on 4 columns exactly like the room in portrait; the short-landscape floors below stay room-only */
+.frame .safe{container-name:slide}
 /* nothing in the column gives up its height to make room: a long body steps down (roomFit) instead of
    squeezing the heading into it */
 .snbframe .safe.room .s > *:not(.well){flex-shrink:0}
@@ -722,10 +724,10 @@
 /* a short landscape area (a phone on its side, a laptop with the cards up): the deck grid, but the type
    floors win over the height-based sizes so nothing goes microscopic */
 @container slide (min-aspect-ratio: 11/10) and (max-height: 520px){
-  .snbframe .eyebrow{font-size:max(9px,1.3cqw)}
-  .snbframe .s h1:has(~ .body),.snbframe .s h1:has(~ .flow),.snbframe .s h1:has(~ .sflow),
-  .snbframe .s h1:has(~ .mmflow){min-height:0}
-  .snbframe .body{margin-top:2cqh}
+  .snbframe .safe.room .eyebrow{font-size:max(9px,1.3cqw)}
+  .snbframe .safe.room .s h1:has(~ .body),.snbframe .safe.room .s h1:has(~ .flow),.snbframe .safe.room .s h1:has(~ .sflow),
+  .snbframe .safe.room .s h1:has(~ .mmflow){min-height:0}
+  .snbframe .safe.room .body{margin-top:2cqh}
 }
 
   /* ---------- practice picker (shell-only chrome) ---------- */
@@ -6640,7 +6642,10 @@ function applySafe(fr, s){
   const Hp=Math.round(Math.max(160,Math.min(H, bres ? s.b/.905 : H)));
   sf.classList.add("room"); sf.classList.toggle("bres", bres);
   /* the room's lines are the slide's lines: margin, top line and foot line (SWISS-GRID-STANDARD v1.3 §4) */
-  sf.style.cssText="right:"+(W-Wp)+"px;bottom:"+(H-Hp)+"px;--mx:"+l+"px;--railr:"+l+"px;--top:"+t+"px;--footl:"+Math.min(Hp,s.b)+"px";
+  /* ...and its gutter (v1.6 §6.7, audit S6): the room sends g, so the slide's column lines and its right edge (r, a
+     room column line) sit on the room's grid; no g, the slide keeps its own 2cqw */
+  sf.style.cssText="right:"+(W-Wp)+"px;bottom:"+(H-Hp)+"px;--mx:"+l+"px;--railr:"+l+"px;--top:"+t+"px;--footl:"+Math.min(Hp,s.b)+"px"+
+    (typeof s.g==="number"&&isFinite(s.g)&&s.g>0 ? ";--colgap:"+s.g+"px" : "");
   AMB.area({x:0,y:0,w:Wp/W,h:(bres?s.b:Hp)/H});
   roomFit(fr,s);
 }
