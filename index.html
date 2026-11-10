@@ -3852,6 +3852,193 @@ function randomize(){
 })();
 
 /* ==================================================================
+   Mindful Reflection — 30-minute deeper Mindful Moment (Justin, 2026-11-10).
+   Source of record: this file. Copy approved by Justin in the Curriculum
+   Advisor project docs "30-min meeting - 01..10 (guide)". One Reflection per
+   meeting, three thoughts woven into sight / sound / touch, longer silences.
+   No live join yet: the app's publish-live-session does not know a
+   "mindful-reflection" type (App Designer handoff), so `live` is omitted and
+   Present runs the deck with no join code and no seams.
+   ================================================================== */
+PRACTICES.mr = (function(){
+const BEFORE_BODY="Open the Stuck Not Broken app and check in before the practice.";
+const AFTER_BODY="Open the app and check in again.";
+const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app and check in.<br>notice where you are right now. there's no right answer.<br>take your time.";
+const AFTER_NOTE="let's check in one more time.<br>open the app again and notice where you are now.<br>not better or worse, just what's true.";
+
+/* Mindful Moment's own sense and breath prompts, unchanged (the template says "MM prompt"). */
+const SIGHT="Now, we'll use your eyes. Open them if they're closed, as they're ready to open. You don't need to do anything special, just look where they want you to look. If your neck wants to move to help your eyes see more, let your neck and eyes work together.<br>Is there one thing pulling at your eyes? What's its shape? Let your eyes trace the edges. Notice how the light from the room touches it. And the shadows it creates.";
+const SOUND="Now, what do you hear? Anything? Silence?<br>Outside the room… what do you hear?<br>Inside the room… what do you hear?";
+const TOUCH="Now, let's check in with touch. We'll start with your entire body.<br>What is it you're sitting, standing, laying, or leaning on? Can you feel its firmness? Or is it soft? Does it let you sink into it?<br>What can you feel specifically on your skin? The air? The fabric of your clothes? Something you can hold onto nearby?";
+const BREATH="Check in with the natural ins and outs of your breath. How is your body naturally breathing right now? Don't change it, just notice it. If it changes by itself because you paid attention, that's fine.<br>Chest or belly? Full or shallow? Tense or relaxed?";
+
+const WELCOME="Welcome. For the next 30 minutes, we're creating a space to connect with the present moment, and to stay with it a little longer than usual. If your mind wanders, that's okay. Come back when prompted. Pause when needed.<br>There's no pressure to participate or share. I'll give a simple prompt, a few thoughts along the way, and lots of quiet.";
+const ACK="As we begin, acknowledge what else you might be holding onto. Not going into details. Just acknowledge it, and give yourself permission to also practice.<br>[silence, 30 sec]";
+/* Room for any state: Justin's wording (2026-11-09), said once at the start. */
+const ROOM="If what you're feeling is activated, big, anxious, angry, let it be here at the size it is if it's tolerable. Keep your eyes open if that helps. Hold onto something nearby.<br>If what you're feeling is collapsed, limp, numb or foggy, let that be here. That's a feeling too.<br>If the emotion inside you is calm, motivated, playful, present or happy, let that be here too. It counts.<br>(Repeat a line later only if someone seems to need it.)";
+const MOVE="The way we always close, inside the Unstucking Academy. Let your body move in whatever way it would like to. There's no wrong way. Push, pull, squeeze, wiggle, stretch, shake. Turn your camera off if you'd like.";
+const KIND="If you've got a genuine kind word for yourself, this is the time for it. Real, not performative. And if there isn't one available right now, that's alright. You showed up and practiced, and that stands on its own.";
+const THANKS="If you'd like, share a word in the chat. Share more if you've got more. Or just stay quiet with it. Thank you for practicing with me.";
+
+const EYES="Back to what your eyes are finding now.<br>[silence, 90 sec]";
+const EARS="Back to what you hear, or the silence.<br>[silence, 2 min]";
+const SKIN="Back to what you feel.<br>[silence, 2 min]";
+const P=s=>s.join("<br>");
+
+/* The ten Reflections, in schedule order (9:00 to 9:30 AM PT). */
+const REFL=[
+ {date:"2026-11-19", day:"Thu Nov 19", title:"I Think You're Normal", line:"I think you're normal.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: I think you're normal. And I invite you to reflect on it with me.","I say 'normal' for a reason. I say it because I think you might be saying the opposite to yourself. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["I say this a lot: I think you're normal. Someone once asked me what that even means. And honestly, I don't know. I can't define normal. That's not up to me.","But I know why I say it. It's an answer to what a lot of us think about ourselves. That we're different. Weird. Too much. Broken. A burden.","So here's my answer to that. I think you're normal. You're a human being, just like me."]),
+  t2:P(["Here's a little more of what I mean.","When something feels dangerous, mammals react. We run. If we can't run, we fight. If that doesn't work, the body can shut down, go numb, or freeze. None of that is what we'd choose. But it's supposed to happen. It's how all of us are built.","And the thoughts that come with those states, the judgments about yourself, they're tied to the state you're in. Story follows state.","So I won't ask you to stop judging yourself. I'll just ask: is it possible those judgments are wrong? Of course it is.","And you're not the only one. Everyone does this. Myself included."]),
+  t3:P(["Like I said earlier, we're mammals, and our bodies respond to safety and danger, right? You know that. So what do we do with that?","We connect with it. With the body. With the present moment, just like we're doing now. And we can take this same present-moment mindfulness and connect with the inner world in the same way.","We connect with the body, ideally with some curiosity. Get to know your body like you would a potential new friend. You're not going to tell them everything at once. You get to know them little by little.","How are your hands doing? Your shoulders? Your jaw?","Even if you can't say it to yourself right now, I'll say it for you. I don't judge you for where you're at. I think you're normal."]),
+  close:"Notice what's different now, if anything. If nothing feels different, that's normal too."},
+ {date:"2026-12-03", day:"Thu Dec 3", title:"Tell the Truth", line:"Tell the truth.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: telling the truth. And I invite you to reflect on it with me.","Not the truth about your life, or your past, or what you should be doing. The truth about what's within you, right now. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["So, what do I mean by telling the truth? I mean acknowledging what's within you. Honestly. Whatever it is.","Maybe there's joy in there. Maybe there's grief. Maybe both at the same time. That happens, right?","No matter. They're both real. And we can acknowledge them, just like we're acknowledging what your eyes are finding right now."]),
+  t2:P(["Here's the thing. When you hear a sound, you don't argue with it. A bird sings. A car drives by. You hear it. It's real.","What's inside you is just as real. The song of a bird is as real as the pit in your stomach. The hum of the room is as real as the heaviness behind your eyes, or the lightness in your chest.","We tend to treat the inside differently, don't we? We judge it. We try to fix it. We wish it was different. But the internal is as real as the external. And both can be noticed, mindfully. Without trying to change anything."]),
+  t3:P(["Notice the air on your skin. Its temperature. Maybe a little chill. That's real.","Now, notice inside. The tension in your chest, if it's there. Your stomach. Your throat. That's real too. The chill of the air is as real as the tension in the chest.","You don't need to change any of it. You don't need to like it. You're just telling the truth. This is what's here. This is what's within me, right now.","That's it. That's the practice."]),
+  skin:"Back to what you feel, outside and in.<br>[silence, 2 min]",
+  close:"Notice what's different now, if anything. Whatever's there, it's real."},
+ {date:"2026-12-05", day:"Sat Dec 5", title:"Let the Feeling Be Here", line:"Let the feeling be here.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: letting the feeling be here. Whatever it is. And I invite you to reflect on it with me.","It's okay to feel what you feel. And how much you feel it. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["I don't think you or I choose our feelings. We just have them. They're just there.","And they're there for a reason. Anxiety can warn us of danger. Sadness gives us quiet time to recover. Anger gives us power. There's nothing wrong with any of them on their own. They're just feelings. We all have them.","So whatever you're feeling right now, it's okay. And however big it is, that's okay too."]),
+  t2:P(["Here's what we tend to do instead. We minimize our feelings. We ignore them. Stuff them down. Explain them away. We say 'I'm fine' when we're not, right?","And maybe other people did that to you too. 'It's not a big deal.' 'Deal with it.' 'Be strong.' If someone treated your feelings that way, don't join them.","Your feelings come from your state. And states are supposed to come and go. So are the feelings.","Now, notice this. You don't know what I'm going to say next, right? But you're listening. Notice what that feels like. That interest. That curiosity. That's what we can bring to our feelings."]),
+  t3:P(["So let's bring that curiosity inside. Notice a feeling inside you. Any feeling. Big or small.","Then ask yourself: how do I know I feel this way? Where is it in my body? How big is it? Does it have a shape? A temperature?","You don't need to change it. You don't need to figure it out. Just let it be here while you get to know it a little.","And if it gets to be too much, come back to what you can touch, or see, or hear. That's allowed. That's part of the practice too."]),
+  close:"Notice what's different now, if anything. Whatever you feel now, it's okay to feel it."},
+ {date:"2026-12-17", day:"Thu Dec 17", title:"I Wish It Was Different", line:"I wish it was different.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: I wish it was different. And I invite you to reflect on it with me.","We all say it. Out loud or just in our heads. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["I wish it was different. About our lives. Our bodies. Our relationships. The way we feel. Maybe this time of year more than usual, right? (seasonal line: swap or cut on a rerun)","That wish isn't a problem. It's not something you're doing wrong. It's a really normal thing to feel and think.","So if there's something you wish was different right now, you don't have to push it away. It can be here too."]),
+  t2:P(["Here's the thing about the wish. It tells you something. It tells you what you care about. What you want. Wanting more isn't wrong.","And at the same time, what is, is. It is what it is. And it was what it was.","Both are here right now. The way things are. And the wish that they were different. We don't have to pick one.","It's kind of like what you're hearing right now. You can't make a sound go away by wishing. But you can hear it. And you can notice the wish too."]),
+  t3:P(["Let's bring this into the body. When you wish something was different, where do you feel that? Maybe a pull in your chest. An ache. A tightness in your throat. A heaviness. Maybe nothing you can name.","Let it be there. You don't need to make the wish go away. And you don't need to make things different right now.","For now, there's what is. And there's the wish. Both get to be here."]),
+  close:"Notice what's different now, if anything. And if you still wish things were different, that's okay too."},
+ {date:"2027-01-02", day:"Sat Jan 2", title:"Nothing to Fix Right Now", line:"Nothing to fix right now.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: there's nothing to fix right now. And I invite you to reflect on it with me.","New year, and a lot of us are making lists of what's wrong with us. (seasonal line: swap on a rerun) We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["You know I say this a lot. You're not broken. Stuck, not broken.","And I say it for a reason. When something is broken, it needs someone else to come along and fix it. For you, not with you. Like a teddy bear that needs a parent to sew its eye back on. It doesn't do anything. It just waits.","You're not a thing. You're not waiting to be fixed."]),
+  t2:P(["Being stuck is different. Stuck means there's momentum. It means you can get unstuck.","Your body is already working on it, all on its own. Without you choosing it, your nervous system is trying to climb toward safety. It's in our biology. Every single one of us. Yours too.","Kind of like your ears right now. You're not trying to hear. You just hear.","And here's something. You're here. Listening. That means you're unstuck enough to be here, right? Unstuck enough for this."]),
+  t3:P(["So I don't think you need healing. Not right now. I think you need more noticing. More curiosity. Less evaluation and less judgment. All of us do. Myself included.","So let's practice that. Notice your hands. Your feet. Your shoulders. Not good or bad. Not right or wrong. Just how they are.","There's nothing to fix right now. Just this. The present moment."]),
+  close:"Notice what's different now, if anything. Nothing to fix. Just notice."},
+ {date:"2027-01-14", day:"Thu Jan 14", title:"Let Change Be Small", line:"Let change be small.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: letting change be small. And I invite you to reflect on it with me.","Most of us want change to be big. And fast. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["We tend to want big change. All at once. A whole new me. And when it doesn't happen that way, we judge ourselves for it, right? 'I should be past this by now.'","But that's not really how change happens. It happens little by little. In little doses. When it's safe enough.","So I want to give you permission to let change be small."]),
+  t2:P(["Here's how I think about it. We stretch what we can handle, just a little. Then we come back to the present moment. Then we stretch again. We don't rush it.","A little at a time is totally appropriate. It's not a lesser version of change. It is change.","Kind of like the sounds right now. Some are loud and obvious. Some are faint. You have to be quiet to notice them. Small doesn't mean nothing. It just means you have to pay attention."]),
+  t3:P(["So let's look for something small right now. In your body. Maybe your shoulders are a little lower than they were. Maybe your breath is a little longer. A little warmth in your hands. Your jaw a little looser.","Or maybe nothing's changed. That's okay too.","If you do notice something small, let it count. You don't need to make it bigger. Just notice it."]),
+  close:"Notice what's different now, even if it's small. Small counts."},
+ {date:"2027-01-28", day:"Thu Jan 28", title:"You're Not Failing", line:"You're not failing.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: you're not failing. And I invite you to reflect on it with me.","I know that might not feel true. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["I'm not talking about the big stuff here. I'm talking about the everyday stuff. Those moments of feeling like you're just not winning. Not getting much done. Coming up short of what you want.","Even if you're stuck in bed, too shut down to make anything happen, I don't think you're failing. Even if you're too anxious to do the thing you want to do, I don't think you're failing.","Life might be uncomfortable right now. Even painful. But I don't think you're failing."]),
+  t2:P(["Here's what I think is going on instead. You may not be meeting your goals. We all fall short, by the way. All of us. But that's not failure. Maybe you've stalled. Stalled isn't failing.","There's a bigger picture here. This is just one point on your timeline. One moment.","And every moment, just like this one, there's another chance. Kind of like the sounds right now. They come and go. A new one shows up. Then another. There's always a next one."]),
+  t3:P(["I see you the way I see myself. A work in progress. I'm not done. You're not done.","So notice your body right now, in the middle of the process. Your hands. Your chest. Your feet on the floor. Not finished. Not failing. Just here.","For now, accept as best you can that you might be stalled, but you're not failing."]),
+  close:"Notice what's different now, if anything. You're not done. And you're not failing."},
+ {date:"2027-02-06", day:"Sat Feb 6", title:"Find the Safety Already in You", line:"Find the safety already in you.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: finding the safety that's already in you. And I invite you to reflect on it with me.","Not safety you have to go get. Safety that's already there, even if it's hard to find right now. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["We usually think of safety as something out there. A safe place. A safe person. And those matter a lot.","But safety is also something your body already knows how to do. We're mammals. We're built to feel safe with each other. That's in our biology. Every single one of us. Yours too.","So even if it's hard to feel right now, it's not missing. It's in there."]),
+  t2:P(["Let's try something, if you'd like. Remember a moment of connection. A time recently when you smiled. When you felt a little safe with someone. A friend. A family member. A pet. It can be small.","Or if nothing comes, make one up. A place you'd like to be. A person you'd like to be with. That works too.","And notice how it feels in your body to remember it. Even a little.","If nothing comes at all, that's okay. That doesn't mean it isn't there. Just come back to what you hear."]),
+  t3:P(["Now let's look for it right here. In the present moment. Maybe it's the way your body responds to the texture of the chair holding you up. Or the warmth of your socks. Your breath coming in more fully. A sound you like. A color you like.","It might be small. That's okay. Even a little counts.","That's the safety already in you. You didn't have to go get it. You just noticed it."]),
+  close:"Notice what's different now, if anything. Whatever safety you found, it was already yours."},
+ {date:"2027-02-11", day:"Thu Feb 11", title:"Your Feelings Aren't Too Much", line:"Your feelings aren't too much.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: your feelings aren't too much. And I invite you to reflect on it with me.","A lot of us have been told they are. Or we tell ourselves. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["'You're too much.' 'You're too sensitive.' 'You're being dramatic.' A lot of us have heard that. Or we say it to ourselves, right? 'I'm a burden.'","Here's what I think. Your feelings aren't too much. They're there for a reason. They come from the state you're in. They're not a sign that something's wrong with you."]),
+  t2:P(["Sometimes a feeling is big. Really big. That doesn't mean you're too much. It means the state underneath it is big right now.","And sometimes other people couldn't handle our feelings. Maybe they told you to calm down, or toughen up, or stop. That was about what they could handle. Not about you being too much. If someone treated your feelings that way, don't join them.","Kind of like the sounds right now. A loud sound isn't wrong for being loud. It's just loud."]),
+  t3:P(["Let's bring this into the body. Notice a feeling inside you. Any size. Where is it? How big is it right now?","Let it be the size it is, if it's tolerable. You don't need to shrink it. You don't need to make it bigger. It's not a burden. It's a feeling.","And if it starts to feel like a lot, come back to what you can touch. The chair. Your hands. That's allowed."]),
+  close:"Notice what's different now, if anything. Whatever you're feeling, it's not too much."},
+ {date:"2027-02-25", day:"Thu Feb 25", title:"There's More to You Than This State", line:"There's more to you than this state.",
+  name:P(["While we're connecting to the present moment, I want to also reflect on something: there's more to you than the state you're in. And I invite you to reflect on it with me.","Whatever you're feeling right now, it can feel like all of you. We'll talk more about that. But for now, it's time for one intentional breath."]),
+  t1:P(["When we're stuck in a state, it can feel like that's who we are. 'This is just me.' 'I'll always be like this.'","But it's a state. It's not all of you. You're more than what you've been through. More than how you grew up. More than a label or a diagnosis.","You're also a... I don't know, you fill in the blank. A parent. A painter. A grandkid. Someone who loves a certain song. There's more to you."]),
+  t2:P(["You're more than your thoughts too. Thoughts are a reflection of your state. Story follows state.","And I think a lot of us spend a lot of time in our heads, right? Thinking and thinking and thinking. Worrying about what's next. Going over what already happened.","When you notice that, remember there's more to you. And choose to bring your attention to the more. To your body. To the world around you. Like right now. The sounds reaching you. That's part of you too. Your hearing. Your connection to what's around you."]),
+  t3:P(["So there's your thoughts. Your feelings. The sensations in your body. What you see and hear and touch.","And there's also the part of you that's noticing all of it. Right now. The part that's been paying attention this whole time. That's you too.","And you're not done. There's more to you now, and there will be more to you later. I'm not done either. So be curious about what else is in there."]),
+  close:"Notice what's different now, if anything. Whatever state you're in, there's more to you."}
+];
+
+/* default: the next meeting on the schedule (or the last one once they've all passed) */
+function nextIdx(){
+  const d=new Date(), today=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const i=REFL.findIndex(r=>r.date>=today);
+  return i<0 ? REFL.length-1 : i;
+}
+
+let st = { pick: nextIdx(), scene:"" };
+
+function cover(h,note,eyebrow,logo){ return {style:"cover",h,note:note||"",eyebrow:eyebrow||"",flow:"",logo:logo!==false,fixed:true}; }
+function word(h,note,fixed){ return {style:"word",h,note:note||"",eyebrow:"",flow:"",logo:false,fixed:!!fixed}; }
+function checkinBeat(phase){ return {style:"checkin", phase:phase, h:(phase==="before"?"A quick check-in.":"One more check-in."), body:(phase==="before"?BEFORE_BODY:AFTER_BODY), note:(phase==="before"?BEFORE_NOTE:AFTER_NOTE), eyebrow:"", flow:"", logo:true, fixed:true}; }
+
+const TABS={intro:"Settle",practice:"Go deeper",closing:"Come back"};
+function buildBeats(){
+  const R=REFL[st.pick]||REFL[0];
+  let B=[];
+  const sec=(name,from)=>{for(let i=from;i<B.length;i++)B[i].section=name;};
+
+  /* SETTLE (0:00 to 5:00) + NAME THE REFLECTION (5:00 to 6:30) */
+  B.push(cover("Welcome.", WELCOME, "MINDFUL REFLECTION"));
+  B.push(checkinBeat("before"));
+  B.push(word("Acknowledge", ACK, true));
+  B.push(word("Come as you are.", ROOM, true));
+  B.push(cover(R.line, R.name+"<br>[silence, 30 sec]", "THE REFLECTION"));
+  B.push(word("One intentional breath", "One breath in, on purpose. Then we stop steering it. From here your body breathes the way it wants, and we just pay attention.", true));
+  sec("intro",0);
+
+  /* GO DEEPER (6:30 to 26:00): three senses, a thought after each, breath between */
+  let m=B.length;
+  B.push(word("Breath", BREATH+"<br>[silence, 60 sec]", true));
+  B.push(word("Sight", SIGHT+"<br>[silence, 90 sec]", true));
+  B.push(word(R.line, "Thought 1<br>"+R.t1+"<br>"+EYES));
+  B.push(word("Breath", BREATH+"<br>[silence, 60 sec]", true));
+  B.push(word("Sound", SOUND+"<br>[silence, 90 sec]", true));
+  B.push(word(R.line, "Thought 2<br>"+R.t2+"<br>"+EARS));
+  B.push(word("Breath", BREATH+"<br>[silence, 60 sec]", true));
+  B.push(word("Touch", TOUCH+"<br>[silence, 90 sec]", true));
+  B.push(word(R.line, "Thought 3<br>"+R.t3+"<br>"+(R.skin||SKIN)));
+  B.push(word("Breath", BREATH+"<br>[silence, 60 sec]", true));
+  sec("practice",m);
+
+  /* COME BACK (26:00 to 30:00) */
+  m=B.length;
+  B.push(word("Move", MOVE, true));
+  B.push(word("Kindness or acknowledgement", KIND, true));
+  B.push(word("One intentional breath", "One more on purpose to finish. In on purpose, and let the exhale leave however it likes.", true));
+  B.push(checkinBeat("after"));
+  B.push(cover(R.title, R.close+"<br>"+THANKS, "MINDFUL REFLECTION"));
+  sec("closing",m);
+  return B;
+}
+
+function sessionName(){ const R=REFL[st.pick]||REFL[0]; return "Mindful Reflection: "+R.title; }
+
+function reflChips(){
+  const el=document.getElementById("reflOpts"); if(!el) return; el.innerHTML="";
+  REFL.forEach((r,i)=>{
+    const d=document.createElement("div");
+    d.className="opt"+(i===st.pick?" sel":"");
+    d.textContent=r.day+" · "+r.title;
+    d.onclick=()=>{ st.pick=i; render(); };
+    el.appendChild(d);
+  });
+}
+function rollRefl(){ st.pick=Math.floor(Math.random()*REFL.length); render(); }
+
+  const DIALS = '    <div class="dial">\n      <label class="h">Reflection</label>\n      <p class="sub">Pick the meeting. The next one on the schedule is chosen for you.</p>\n      <div class="opts" id="reflOpts"></div>\n    </div>\n\n    ';
+
+  return {
+    id:"mr", label:"Mindful Reflection", blurb:"30-min deeper Mindful Moment, one Reflection, for Co-Regulators and Lifetime members",
+    st:st, TABS:TABS, buildBeats:buildBeats, sessionName:sessionName, dialsHTML:DIALS,
+    map:function(b){
+      if(b.style==="word")    return {kind:"prompt", h:b.h};
+      if(b.style==="checkin") return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body, phone:(b.phase==="after"?"after":"before")};
+      return {kind:"cover", eyebrow:b.eyebrow||"", h:b.h, flow:b.flow||""};
+    },
+    agenda:function(){ return [(REFL[st.pick]||REFL[0]).title]; },
+    renderDials:function(){ reflChips(); },
+    roll:function(){ rollRefl(); },
+    globals:{},
+    sceneOn:function(b){ return this.map(b).kind==="prompt"; },
+    joinMode:function(b){ return "off"; },
+    seam:function(b){ return null; },
+    recipe:function(){ const R=REFL[st.pick]||REFL[0]; return {reflection:R.title, date:R.date, scene:(SHELL.scene||"(surprise me)")}; }
+  };
+})();
+
+/* ==================================================================
    Capacity Builder — content lifted VERBATIM from its source tool.
    Edit the source and re-run build.py; do not hand-edit here.
    ================================================================== */
