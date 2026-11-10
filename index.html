@@ -3856,9 +3856,9 @@ function randomize(){
    Source of record: this file. Copy approved by Justin in the Curriculum
    Advisor project docs "30-min meeting - 01..10 (guide)". One Reflection per
    meeting, three thoughts woven into sight / sound / touch, longer silences.
-   No live join yet: the app's publish-live-session does not know a
-   "mindful-reflection" type (App Designer handoff), so `live` is omitted and
-   Present runs the deck with no join code and no seams.
+   Circle only for now (Justin, 2026-11-10): no app check-in slides and no
+   live join until the Co-Regulator tier is in the app, so `live` is omitted
+   and Present runs the deck with no join code and no seams.
    ================================================================== */
 PRACTICES.mr = (function(){
 const BEFORE_BODY="Open the Stuck Not Broken app and check in before the practice.";
@@ -3971,7 +3971,6 @@ function buildBeats(){
 
   /* SETTLE (0:00 to 5:00) + NAME THE REFLECTION (5:00 to 6:30) */
   B.push(cover("Welcome.", WELCOME, "MINDFUL REFLECTION"));
-  B.push(checkinBeat("before"));
   B.push(word("Acknowledge", ACK, true));
   B.push(word("Come as you are.", ROOM, true));
   B.push(cover(R.line, R.name+"<br>[silence, 30 sec]", "THE REFLECTION"));
@@ -3997,7 +3996,6 @@ function buildBeats(){
   B.push(word("Move", MOVE, true));
   B.push(word("Kindness or acknowledgement", KIND, true));
   B.push(word("One intentional breath", "One more on purpose to finish. In on purpose, and let the exhale leave however it likes.", true));
-  B.push(checkinBeat("after"));
   B.push(cover(R.title, R.close+"<br>"+THANKS, "MINDFUL REFLECTION"));
   sec("closing",m);
   return B;
