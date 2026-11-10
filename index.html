@@ -3556,7 +3556,7 @@ const COHORT = (function(){
   /* ---- canonical presenter notes (from SRS, the cohort that had them) ---- */
   const N = {
     checkinBefore:
-      "Before we do anything, open the app and check in. <br>— If you’re not in yet, type the join code on screen. <br>— Notice where you are right now. There’s no right answer. <br>— Two reasons we do this. One, it gives you a starting point, so at the end you can see whether the practice moved anything. Two, over the cohort it becomes a picture of your baseline, which is the thing we’re actually trying to move. <br>— Take your time.",
+      "Before we do anything, open the app and check in. <br>— Notice where you are right now. There’s no right answer. <br>— Two reasons we do this. One, it gives you a starting point, so at the end you can see whether the practice moved anything. Two, over the cohort it becomes a picture of your baseline, which is the thing we’re actually trying to move. <br>— Take your time.",
     checkinAfter:
       "Let’s check in one more time. — Open the app again and notice where you are now. Not better or worse, just what’s true. — Then look at where you started and where you are. Sometimes it moved. Sometimes it didn’t, and sometimes it went the other way. All three are real information, and none of them mean you did it wrong. — That comparison is the point. You’re building evidence about your own system.",
     homeworkReview:
@@ -3622,7 +3622,7 @@ const COHORT = (function(){
 PRACTICES.mm = (function(){
 const BEFORE_BODY="Open the Stuck Not Broken app and check in before the practice.";
 const AFTER_BODY="Open the app and check in again.";
-const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app. if you're not in yet, type the join code on screen.<br>notice where you are right now. there's no right answer.<br>take your time.";
+const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app.<br>notice where you are right now. there's no right answer.<br>take your time.";
 const AFTER_NOTE="let's check in one more time.<br>open the app again and notice where you are now.<br>not better or worse, just what's true.";
 const SENSES = {
   touch:{ word:"Touch", note:
@@ -3865,7 +3865,7 @@ function randomize(){
 PRACTICES.mr = (function(){
 const BEFORE_BODY="Open the Stuck Not Broken app and check in before the practice.";
 const AFTER_BODY="Open the app and check in again.";
-const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app. if you're not in yet, type the join code on screen.<br>notice where you are right now. there's no right answer.<br>take your time.";
+const BEFORE_NOTE="let's check in before we practice.<br>open the stuck not broken app.<br>notice where you are right now. there's no right answer.<br>take your time.";
 const AFTER_NOTE="let's check in one more time.<br>open the app again and notice where you are now.<br>not better or worse, just what's true.";
 
 /* Mindful Moment's own sense and breath prompts, unchanged (the template says "MM prompt"). */
@@ -4232,7 +4232,7 @@ PRACTICES.cb = (function(){
     const CI_REF = { "Practice 1": "cb1", "Practice 2": "cb2", "Practice 3": "cb3" };
     const CI_OPEN_H = "a quick check-in.";
     const CI_OPEN_BODY = "open the stuck not broken app and check in before we practice.";
-    const CI_OPEN_NOTE = "let’s check in before we practice.<br>open the stuck not broken app. if you’re not in yet, type the join code on screen.<br>notice where you are right now. there’s no right answer.<br>take your time.";
+    const CI_OPEN_NOTE = "let’s check in before we practice.<br>open the stuck not broken app.<br>notice where you are right now. there’s no right answer.<br>take your time.";
     const CI_AFTER_H = "one more check-in.";
     const CI_AFTER_BODY = "open the stuck not broken app and check in again.";
     const CI_AFTER_NOTE = "let’s check in again in the app — it will open on its own.<br>not better or worse, just what’s true right now.<br>take your time. then we’ll check capacity and take a break.";
@@ -6458,9 +6458,10 @@ function joinModeFor(b){
      every slide"): the code appears ONLY where a practice asks for the BIG
      panel — the opening and check-in slides. The per-slide corner reminder
      is retired; its CSS stays as a harmless fallback. */
-  if(!LIVE) return "off";
-  const m = ACTIVE.joinMode ? ACTIVE.joinMode(b) : "off";
-  return (m==="big"||m==="code") ? m : "off";
+  /* JOIN CODES RETIRED (Justin, 2026-11-10: "we don't need the join codes anymore.
+     i don't think anyone has ever used them. they're clutter."). Members reach the
+     live check-in through the app's own "we're live" nudge; no slide shows a code. */
+  return "off";
 }
 function pushJoin(){
   if(sw&&!sw.closed){ const b=pSlides[pIdx];
