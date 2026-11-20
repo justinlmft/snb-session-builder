@@ -751,6 +751,9 @@
   .frame canvas.sky{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;
     opacity:0;transition:opacity 1.1s cubic-bezier(.22,.61,.36,1)}
   .frame.scene-on canvas.sky{opacity:1}
+  /* the break paper (2026-11-20): it fills the frame under the slot; the scene stays off under it */
+  .frame canvas.brkpaper{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+  .frame.brk-on canvas.ambient,.frame.brk-on canvas.sky{opacity:0}
   /* the safe box (2026-10-28): the slot, the foot and the join box sit in one box the size of the frame.
      It stays the frame's size everywhere except the SNB app's live room, which tells the slide where its
      cards are (snbSafe); the box then shrinks to the free area and the slide re-grids inside it. */
@@ -6047,9 +6050,9 @@ function wellHTML(m){
     'onerror="if(!this.dataset.p){this.dataset.p=1;this.src=this.src.replace(/\.jpg$/,\'.png\');}'+
     'else{var s=this.closest(\'.s\');if(s)s.classList.remove(\'haswell\');this.parentNode.remove();}"></div>';
 }
-function breakClockHTML(min){
+function breakClockHTML(min,brk){
   if(!min) return "";
-  return '<div class="breakclock"><span class="bl">break</span>'+
+  return '<div class="breakclock"><span class="bl">'+(brk?'back in':'break')+'</span>'+
     '<span class="bt" data-secs="'+(min*60)+'">'+min+':00</span></div>';
 }
 
@@ -6145,8 +6148,8 @@ function renderSlide(c){
       return '<div class="s events wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+(c.rows||"")+'</div>';
     case "info":
     default:
-      return '<div class="s info'+(c.img?' haswell':'')+'">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
-        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+breakClockHTML(c.breakMin)+
+      return '<div class="s info'+(c.img?' haswell':'')+(c.brk?' brk':'')+'">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
+        (c.body?'<div class="body">'+LISTIFY(c.body)+'</div>':"")+wellHTML(c.img)+breakClockHTML(c.breakMin,c.brk)+
         askHTML(c)+'</div>';
   }
 }
@@ -6699,6 +6702,99 @@ function fetchSNB(){
 }
 
 
+/* ---------------- the break paper (Justin, 2026-11-20) ----------------
+   Live room only (?room=1&brk=1 from the app). The capacity slide becomes "Break.": the glyph paper fills
+   the frame, and every member's touches from the app light the glyphs in their own state colour. Two
+   people touching the same spot at about the same time bloom. No names, no counts, no lines: each light
+   fades in under 2 s. Bigger rooms are softer (each light dims with the number of people touching),
+   one finger lights only its last few points, and blooms get rarer. In the last 10 s the words change
+   and the paper stops answering new touches, so the room settles on its own. Nothing loops on a timer. */
+const BRK=(function(){
+  const ICONS={"heart":{"vb":"-4.0 36.4 478.2 386.7","d":"M 228.6626430999995,414.99967965948633 C 193.0931878499996,414.99967965948633 159.69623824999962,401.15528090948635 134.56332974999987,376.0223724094866 L 42.977307250000194,284.43634990948647 C 17.844398749999527,259.30344140948625 4.0,225.86389365948654 4.0,190.3370365594864 C 4.0,154.76758130948647 17.844398750000437,121.3706317094865 42.977307250000194,96.23772320948629 C 68.11021574999995,71.10481470948653 101.54976350000015,57.26041595948655 137.07662059999984,57.260415959486096 C 171.45332764999966,57.260415959486096 203.82792165000046,70.21025355948623 228.6626430999995,93.76703050948609 C 280.7175823999996,44.35317650948619 363.2727970999995,45.20513950948626 414.34797894999974,96.23772320948629 C 466.23252564999984,148.1222699094864 466.23252564999984,232.5518032094864 414.34797894999974,284.47894805948624 L 322.76195644999916,376.06497055948637 C 297.6290479499994,401.1978790594861 264.1895001999992,415.0422778094861 228.6626430999995,415.0422778094861 L 228.6626430999995,414.99967965948633 M 137.11921875000007,109.86913120948648 C 115.60715299999993,109.86913120948648 95.41562990000057,118.21836860948625 80.20809035000002,133.42590815948634 C 48.813253799999075,164.82074470948638 48.813253799999075,215.8533284094864 80.20809035000002,247.24816495948645 L 171.7941128499997,338.83418745948654 C 187.00165239999933,354.0417270094862 207.1931754999996,362.3909644094864 228.70524124999974,362.3909644094864 C 250.2173069999999,362.3909644094864 270.40883009999925,354.0417270094862 285.6163696499989,338.83418745948654 L 377.20239214999947,247.24816495948645 C 408.5546305500002,215.89592655948618 408.5546305500002,164.82074470948638 377.20239214999947,133.42590815948634 C 345.80755560000034,102.0310716094863 294.7749719000003,102.0310716094863 263.3801353500003,133.42590815948634 L 228.70524124999974,168.10080225948641 L 194.03034714999922,133.42590815948634 C 178.82280759999958,118.21836860948625 158.6312844999993,109.86913120948648 137.11921875000007,109.86913120948648"},"bolt":{"vb":"462.3 -9.4 434.4 459.8","d":"M 673.9837031999996,442.30509380948604 C 665.0806898499995,442.30509380948604 656.092480199999,440.5585696594861 647.4876538999997,437.02292320948607 C 621.5879787000003,426.2881894094861 604.8469057499997,401.24047720948636 604.8469057499997,373.2108945094859 L 604.8469057499997,282.43423685948653 L 544.8687105499994,282.43423685948653 C 516.8391278499994,282.43423685948653 491.7914156499992,265.6931639094863 481.05668185000013,239.79348870948652 C 470.3219480500002,213.89381350948625 476.2004927499993,184.3306974094866 496.0512306499995,164.4799595094859 L 636.2417422999997,24.28944785948616 C 656.092480199999,4.438709959486374 685.6129981499989,-1.439834740514101 711.5552714999994,9.294899059486312 C 737.4549466999997,20.02963285948627 754.1960196499995,45.07734505948602 754.1960196499995,73.10692775948601 L 754.1960196499995,163.8835854094863 L 814.1742148499998,163.8835854094863 C 842.2037975499998,163.8835854094863 867.25150975,180.62465835948652 877.9862435499999,206.52433355948634 C 888.7209773499999,232.4240087594866 882.842432649999,261.98712485948624 862.9916947499996,281.8378627594865 L 722.8011830999994,422.0283744094862 C 709.5531584499995,435.27639905948615 691.9601224999997,442.30509380948604 674.0263013499998,442.30509380948604 L 673.9837031999996,442.30509380948604 M 684.6758388499993,56.57884555948604 C 681.2679868499999,56.57884555948604 677.1785644499996,57.68639745948613 673.3873291,61.47763280948621 L 533.1968174499998,201.6681444594864 C 526.168122699999,208.69683920948628 528.3832264999992,216.53489880948646 529.6185728500004,219.60196560948626 C 530.8965173500001,222.6690324094865 534.9007434500008,229.7829234594864 544.8261124,229.7829234594864 L 657.4556210000001,229.7829234594864 L 657.4556210000001,373.16829635948613 C 657.4556210000001,383.09366530948625 664.5695120499995,387.0978914094861 667.6365788499998,388.3758359094862 C 670.70364565,389.6537804094859 678.5417052499997,391.8262860594858 685.5703999999996,384.7975913094864 L 825.7609116499998,244.60707965948623 C 832.7896063999988,237.57838490948635 830.5745025999995,229.74032530948617 829.3391562500001,226.67325850948637 C 828.0612117500004,223.60619170948613 824.0569856499997,216.49230065948623 814.1316166999995,216.49230065948623 L 701.5021080999995,216.49230065948623 L 701.5021080999995,73.10692775948601 C 701.5021080999995,63.18155880948589 694.3882170499992,59.17733270948602 691.3211502499989,57.899388209486375 C 689.9154112999995,57.30301410948633 687.5299148999993,56.536247409486265 684.6758388499993,56.536247409486265 L 684.6758388499993,56.57884555948604"},"x":{"vb":"887.4 11.7 413.6 422.6","d":"M 988.3580501999995,417.42777420948585 C 963.5233287499996,417.42777420948585 940.1795425499995,407.75799415948575 922.6291047499999,390.20755635948615 C 905.0786669499994,372.6571185594861 895.4088868999997,349.313332359486 895.4088868999997,324.4786109094865 C 895.4088868999997,299.64388945948656 905.0786669499994,276.3001032594865 922.6291047499999,258.749665459486 L 958.2837562999994,223.09501390948608 L 922.6291047499999,187.44036235948616 C 905.0786669499994,169.8899245594861 895.4088868999997,146.5461383594865 895.4088868999997,121.71141690948608 C 895.4088868999997,96.87669545948611 905.0786669499994,73.53290925948605 922.6291047499999,55.98247145948645 C 940.1795425499995,38.43203365948639 963.5233287499996,28.762253609486294 988.3580501999995,28.762253609486294 C 1013.1927716500004,28.762253609486294 1036.5365578500005,38.43203365948639 1054.0869956499992,55.98247145948645 L 1089.7416472000004,91.63712300948637 L 1125.39629875,55.98247145948645 C 1161.6473244,19.731445809486473 1220.6031639999992,19.731445809486473 1256.811591499999,55.98247145948645 C 1293.062617149999,92.23349710948642 1293.062617149999,151.18933670948664 1256.811591499999,187.39776420948593 L 1221.1569399499995,223.0524157594863 L 1256.811591499999,258.7070673094862 C 1293.062617149999,294.9580929594862 1293.062617149999,353.9139325594864 1256.811591499999,390.12236005948614 C 1220.560565849999,426.3733857094861 1161.6047262499997,426.3733857094861 1125.39629875,390.12236005948614 L 1089.7416472000004,354.4677085094862 L 1054.0869956499992,390.12236005948614 C 1036.5365578499996,407.6727978594862 1013.1927716499995,417.3425779094863 988.3580501999995,417.3425779094863 L 988.3580501999995,417.4277742094863 M 988.3580501999995,81.49876330948646 C 977.5807182499993,81.49876330948646 967.4849567000001,85.67338200948635 959.8598878499997,93.29845085948628 C 952.2348189999993,100.92351970948621 948.0602002999985,111.01928125948635 948.0602002999995,121.79661320948608 C 948.0602002999995,132.57394515948582 952.2348189999993,142.66970670948595 959.8598878499997,150.29477555948634 L 1032.7027243499997,223.13761205948586 L 959.8598878499997,295.98044855948626 C 952.2348189999993,303.60551740948665 948.0602002999985,313.7012789594868 948.0602002999995,324.4786109094865 C 948.0602002999995,335.25594285948625 952.2348189999993,345.3517044094864 959.8598878499997,352.97677325948587 C 967.4849566999992,360.60184210948626 977.5807182499993,364.7764608094857 988.3580501999995,364.77646080948614 C 999.1353821499997,364.77646080948614 1009.2311436999998,360.6018421094867 1016.8562125499993,352.97677325948587 L 1089.6990490499993,280.13393675948635 L 1162.5418855500002,352.97677325948587 C 1178.2606029000008,368.695490609486 1203.8194929000001,368.695490609486 1219.5382102499989,352.97677325948587 C 1235.2569275999995,337.2580559094862 1235.2569275999995,311.69916590948594 1219.5382102499989,295.98044855948626 L 1146.6953737499998,223.13761205948586 L 1219.5382102499989,150.29477555948634 C 1235.2569275999995,134.5760582094862 1235.2569275999995,109.01716820948596 1219.5382102499989,93.29845085948628 C 1203.8194928999992,77.57973350948615 1178.2606028999999,77.57973350948615 1162.5418855500002,93.29845085948628 L 1089.6990490499993,166.14128735948626 L 1016.8562125499993,93.29845085948628 C 1009.2311436999998,85.67338200948635 999.1353821499988,81.49876330948646 988.3580501999995,81.49876330948646"}};
+  const K=['heart','bolt','x'];
+  const COL={safety:'#F4D58D',fightflight:'#E89B9B',shutdown:'#A3C0DD',play:'#E8A871',stillness:'#9FC498',freeze:'#B89AC4'};
+  const AX={safety:['heart'],fightflight:['bolt'],shutdown:['x'],play:['heart','bolt'],stillness:['heart','x'],freeze:['bolt','x']};
+  const PAPER='#FAF9F5', BONE='#CDC5B0', LIFE=1.8;
+  const calm=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const PATH={}, MID={};
+  K.forEach(k=>{ PATH[k]=new Path2D(ICONS[k].d); const v=ICONS[k].vb.split(/\s+/).map(Number); MID[k]=[v[0]+v[2]/2, v[1]+v[3]/2]; });
+  const mix=(a,b,t)=>{ const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)); const A=h(a),B=h(b); return '#'+A.map((v,i)=>Math.round(v*t+B[i]*(1-t)).toString(16).padStart(2,'0')).join(''); };
+  const lightOf=(st,me)=> COL[st] ? mix(COL[st],PAPER,me?.95:.85) : BONE;
+  const mine=st=> AX[st]||K;
+  const TOP0=.34;
+  const topM=f=> f<TOP0?0:f>TOP0+.12?1:(f-TOP0)/.12;
+  const sprC={};
+  function sprite(k,col,dpr,SP,S){ const key=k+col+dpr+SP; if(sprC[key]) return sprC[key];
+    const c=document.createElement('canvas'); c.width=c.height=Math.ceil(SP*dpr); const x=c.getContext('2d');
+    x.scale(dpr,dpr); x.translate(SP/2,SP/2); x.scale(S,S); x.translate(-MID[k][0],-MID[k][1]); x.fillStyle=col; x.fill(PATH[k]); return (sprC[key]=c); }
+  let fr=null, cv=null, ro=null, raf=0, W=0, H=0, dpr=1, U=24, SP=21, S=.0288, GL=[], paper=null;
+  let pts=[], blooms=[], lastBloom=0, crowd=1, settled=false;
+  function size(){ if(!cv) return; W=fr.clientWidth; H=fr.clientHeight; if(!W||!H) return; dpr=Math.min(2,devicePixelRatio||1);
+    cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+    /* about 22 glyph columns on a wide screen, never smaller than a fingertip's worth on a phone */
+    U=Math.max(24,Math.min(36,W/22)); SP=U*.875; S=.0384*SP/28; grid(); paper=null; kick(); }
+  function grid(){ GL=[]; const x0=(W-3*U)/2;
+    for(let ty=0; ty<H+U; ty+=6*U) for(let r=0;r<6;r++){ const y=ty+U/2+U*r; if(y>H+U/2) break;
+      const odd=r%2, shift=(3-r%3)%3;
+      for(let tx=x0-3*U*Math.ceil((x0+U)/(3*U)); tx<W+U; tx+=3*U) for(let c=0;c<3;c++){
+        const x=tx+(odd?0:U/2)+U*c; if(x<-U/2||x>W+U/2) continue; GL.push({x,y,k:K[(c+shift)%3],f:y/H}); } } }
+  /* the embossed plain paper, drawn once per size */
+  function makePaper(){ const c=document.createElement('canvas'); c.width=cv.width; c.height=cv.height; const x=c.getContext('2d');
+    x.scale(dpr,dpr); x.fillStyle=PAPER; x.fillRect(0,0,W,H); const o=SP*.04;
+    for(const q of GL){ const a=topM(q.f); if(a<=0) continue; x.globalAlpha=a;
+      x.save(); x.filter='blur(1px)'; x.drawImage(sprite(q.k,'rgba(0,0,0,.1)',dpr,SP,S),q.x-SP/2+o,q.y-SP/2+o,SP,SP);
+      x.drawImage(sprite(q.k,'rgba(255,255,255,.75)',dpr,SP,S),q.x-SP/2-o,q.y-SP/2-o,SP,SP); x.restore();
+      x.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2,q.y-SP/2,SP,SP); }
+    x.globalAlpha=1; paper=c; }
+  function kick(){ if(!raf&&cv) raf=requestAnimationFrame(frame); }
+  function frame(now){ raf=0; if(!cv||!W) return; const g=cv.getContext('2d'), t=now/1000;
+    if(!paper) makePaper();
+    g.setTransform(1,0,0,1,0,0); g.drawImage(paper,0,0); g.setTransform(dpr,0,0,dpr,0,0);
+    pts=pts.filter(p=>t-p.t<LIFE); blooms=blooms.filter(b=>t-b.t<2.4);
+    crowd=Math.max(1,new Set(pts.map(p=>p.who)).size);
+    const damp=Math.min(1,2.4/Math.sqrt(crowd)), R=U*2.3, R2=2*R*R;
+    for(const q of GL){ let v=0, st='', me=false;
+      for(const p of pts){ if(mine(p.st).indexOf(q.k)<0) continue; const dx=q.x-p.u*W, dy=q.y-p.v*H; if(Math.abs(dx)>3*R||Math.abs(dy)>3*R) continue;
+        let w=(1-(t-p.t)/LIFE)*Math.exp(-(dx*dx+dy*dy)/R2);
+        if(!p.me) w*=damp*.85;   /* others soften with the crowd; your own touch stays full on your own device */
+        if(w>v){ v=w; st=p.st; me=p.me; } }
+      if(!calm()) for(const b of blooms){ const age=t-b.t, rad=U*(.6+6*(1-Math.pow(1-Math.min(1,age/2.4),3))), dd=Math.hypot(q.x-b.u*W,q.y-b.v*H), w=Math.abs(dd-rad);
+        const vv=Math.max((1-age/2.4)*Math.max(0,1-w/U)*.95, dd<U*1.2?(1-age/2.4):0);
+        if(vv>v){ v=vv; st=((Math.round(q.x/U)+Math.round(q.y/U))%2)?b.a:b.b; me=false; } }
+      v*=.35+.65*topM(q.f);
+      if(v>.02){ if(mine(st).indexOf(q.k)<0&&v<.5) continue;
+        g.globalAlpha=Math.min(1,v); g.drawImage(sprite(q.k,lightOf(st,me),dpr,SP,S),q.x-SP/2,q.y-SP/2,SP,SP); } }
+    g.globalAlpha=1;
+    if(pts.length||blooms.length) kick(); }
+  function mount(frameEl){
+    if(fr===frameEl&&cv&&cv.isConnected) return;
+    unmount(); fr=frameEl; cv=document.createElement('canvas'); cv.className='brkpaper'; cv.setAttribute('aria-hidden','true');
+    fr.insertBefore(cv, fr.querySelector('.safe')); fr.classList.add('brk-on');
+    ro=new ResizeObserver(size); ro.observe(fr); size(); }
+  function unmount(){ if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; }
+  /* u,v = 0..1 of the frame; st = the toucher's latest check-in key ('' = none, plain bone); who = a per-session id, never a name */
+  function touch(u,v,st,who,me){
+    if(!cv||settled) return; u=+u; v=+v; if(!(u>=0&&u<=1&&v>=0&&v<=1)) return; st=COL[st]?st:''; who=String(who||'').slice(0,64);
+    const t=performance.now()/1000; pts.push({u,v,t,st,who,me:!!me});
+    const own=pts.filter(p=>p.who===who); if(own.length>10) pts.splice(pts.indexOf(own[0]),1);   /* one finger lights only a short trail */
+    if(pts.length>900) pts.shift();
+    const k=Math.max(1,crowd/5);   /* a bigger room needs a closer match, and blooms come less often */
+    if(!calm()&&t-lastBloom>.9*k) for(const p of pts){ if(p.who===who||t-p.t>1) continue;
+      if(Math.hypot((p.u-u)*(W/H||1.78),p.v-v)<.1/Math.sqrt(k)){ blooms.push({u:(p.u+u)/2,v:(p.v+v)/2,t,a:st,b:p.st}); lastBloom=t; break; } }
+    kick(); }
+  function settle(on){ settled=!!on; }
+  return {mount, unmount, touch, settle, on:()=>!!cv};
+})();
+/* the break slide, from whatever capacity slide a practice built (every practice ends a practice the same way) */
+const NEW_BREAK = ROOM_MODE && /[?&]brk=1/.test(location.search);
+const BREAK_H = "Break.", BREAK_SETTLE_H = "We’ll start again in a moment.";
+function breakCard(c){ return {kind:"info", h:BREAK_H, body:"", breakMin:c.breakMin, brk:true}; }
+/* after any slide renders: the paper comes up under a break slide and goes away on the next one */
+function syncBreakPaper(root){
+  const fr=root&&root.querySelector(".frame"); if(!fr) return;
+  if(fr.querySelector(".s.brk")) BRK.mount(fr); else if(BRK.on()) BRK.unmount();
+}
+
 /* ---------------- break clock (shared) ---------------- */
 let _brkInt=null;
 function startBreakClock(root){
@@ -6707,8 +6803,12 @@ function startBreakClock(root){
   const el=root.querySelector(".breakclock .bt"); if(!el) return;
   const total=parseInt(el.getAttribute("data-secs"),10)||0;
   const end=Date.now()+total*1000;
+  /* the break slide settles in its last 10 s: new words, and the paper stops answering new touches */
+  const brk=root.querySelector(".s.brk"), bh=brk&&brk.querySelector("h1"); let calmed=false;
+  if(brk) BRK.settle(false);
   const upd=()=>{ let rem=Math.round((end-Date.now())/1000); if(rem<0)rem=0;
     el.textContent=Math.floor(rem/60)+":"+String(rem%60).padStart(2,"0");
+    if(brk&&!calmed&&rem<=10){ calmed=true; BRK.settle(true); if(bh) bh.textContent=BREAK_SETTLE_H; }
     if(rem<=0){clearInterval(_brkInt);_brkInt=null;} };
   upd(); _brkInt=setInterval(upd,250);
 }
@@ -6932,11 +7032,14 @@ window.addEventListener("message",e=>{
       }
       AMB.attach(fr.querySelector("canvas.ambient"));
       startBreakClock(root);
+      syncBreakPaper(root);
       applySNB(root);
       if(ROOM_SAFE) roomFit(fr); else gridSnap(fr);
       if(d.snbJoin) renderJoin(root.querySelector("#joinbox"), d.snbJoin);
     }
     if(d.snbJoin!==undefined){ const jb=document.querySelector("#joinbox"); if(jb) renderJoin(jb,d.snbJoin); }
+    /* the break paper: one touch from the app (this device's own, or a member's, relayed by the room) */
+    if(d.snbTouch && typeof d.snbTouch==="object"){ const t=d.snbTouch; BRK.touch(t.u,t.v,t.st,t.who,t.me); }
     return;
   }
   if(d.snbReady){ pRender(); pushJoin(); }
@@ -6989,7 +7092,8 @@ function pRender(){
      question revealed by the current tap (pBuild) */
   const _ob=OV.apply(b), _steps=ASKS(b), _view=Object.assign({},_ob);
   _view.ask=(pBuild>0&&_steps.length)?_steps[Math.min(pBuild,_steps.length)-1]:null;
-  const c=ACTIVE.map(_view);
+  let c=ACTIVE.map(_view);
+  if(NEW_BREAK && c && c.breakMin) c=breakCard(c);
   let slideHTML=renderSlide(c);
   if(c && c.img && c.img===_lastImg)
     slideHTML=slideHTML.replace('<div class="well">','<div class="well holdart">');
@@ -7032,7 +7136,7 @@ function pRender(){
   const pv=document.getElementById("pvBox");
   pv.innerHTML=frameHTML(b, sceneOn, sceneOn&&AMB.isDark(), slideHTML);
   AMB.attach(pv.querySelector("canvas.ambient"));
-  startBreakClock(pv); applySNB(pv);
+  startBreakClock(pv); syncBreakPaper(pv); applySNB(pv);
   renderJoin(pv.querySelector("#joinbox"), join);
   gridSnap(pv.querySelector(".frame"));
   document.getElementById("cNotes").innerHTML=fmtNote(OV.apply(b).note);
@@ -7053,7 +7157,9 @@ function beatInfo(b,c){
   /* the slides say "Safety, 0–10" / "On a scale of 0–10…"; the breath check is any breathing prompt that is not the intentional breath */
   /* h = the slide's own heading, so the room's answer sheet can carry the slide's words */
   return {kind:(c&&c.kind)||null, h:(c&&c.h?String(c.h).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,140):""), ci:ci, z10:(prompt&&/0\s*[–-]\s*10|zero to ten|\b0 to 10\b/i.test(t))?(/intensity/i.test(t)?"intensity":"safety"):false,
-    breath:prompt&&!/intentional/i.test(t)&&/\bbreath(ing)?\b|chest or (your )?belly|full or shallow|tense or relaxed/i.test(t)};
+    breath:prompt&&!/intentional/i.test(t)&&/\bbreath(ing)?\b|chest or (your )?belly|full or shallow|tense or relaxed/i.test(t),
+    /* the break slide: the app shows each member a Capacity Check and shares touches on the paper */
+    cap:!!(c&&c.brk)};
 }
 function startPresent(){
   if(ROOM_MODE) sw=window.opener;
