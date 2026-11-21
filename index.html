@@ -4752,6 +4752,8 @@ PRACTICES.cb = (function(){
       skillBeats("Practice 3", st.p3, st.sense).forEach(x => B.push(x));
       sec("p3", m);
       m = B.length;
+      /* the same celebration that closes a Mindful Moment (Justin 2026-11-21 10:25 AM: "gimme the woo hoo slide at the end of capacity builders") */
+      B.push({style:"title", kind:"", h:"Woo-hoo! 🎉", body:"", tagline:"", note:"You did it. Three practices, inside your capacity. Good job to you.", draft:false, fixed:true});
       B.push(info("Capacity building", "",
         "That was one! Great job. Keep practicing on your own through the Unstucking Academy pre-recorded meditations, simple mindfulness practices, and acknowledging discomfort. Always listen to your capacity. Show up to the next one to keep growing your capacity!"));
       B.push(info("take care of yourself",
@@ -7468,7 +7470,7 @@ function beatInfo(b,c){
 /* Justin 2026-11-20 8:57 PM PT: Glow on the sight anchor slides, Ripples on the sound ones, Wave on the last practice
    slide before the break. Pulse rides no slide (keys only). Practice slides only, never reading slides. */
 function slideMove(b,c){
-  /* the Woo-hoo slide celebrates: balloons and confetti from the bottom (Justin 2026-11-21 9:42 AM) */
+  /* the Woo-hoo slide celebrates in the glyphs (Justin 2026-11-21 9:42 and 9:58 AM) */
   if(c&&c.kind==="cover"&&/woo-?hoo/i.test(String(c.h||""))) return "celebrate";
   if(!c||c.brk||!(ACTIVE.sceneOn&&ACTIVE.sceneOn(b))) return "";
   const nx=pSlides[pIdx+1]; let nc=null; try{ nc=nx?ACTIVE.map(OV.apply(nx)):null; }catch(e){}
@@ -7478,7 +7480,8 @@ function slideMove(b,c){
   if(/^\s*invite it to be with you/i.test(h)) return "twinklec";
   if(/emotion you.re holding onto|^\s*if so, let it be/i.test(h)) return "twinkle";
   if(/^\s*now,? what do you see/i.test(h)) return "see";
-  if(/non-safety emotion to invite|something you can tolerate/i.test(h)) return "inward";
+  /* Capacity Builder's invite, its sense check and its permission carry the same inward pulse (Justin 2026-11-21 10:25 AM) */
+  if(/non-safety emotion to invite|something you can tolerate|non-safety emotion you would like to invite|make sense you have this non-safety|okay for this non-safety emotion to be/i.test(h)) return "inward";
   if(/emotion word best fits your safety/i.test(h)) return "inwardh";
   if(/\bkind(ness)?\b/i.test(h)) return "hearts";
   if(/\bmov(e|es|ing|ement)\b/i.test(h)) return "bolts";
