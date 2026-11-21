@@ -6725,7 +6725,7 @@ const BRK=(function(){
   const PATH={}, MID={};
   K.forEach(k=>{ PATH[k]=new Path2D(ICONS[k].d); const v=ICONS[k].vb.split(/\s+/).map(Number); MID[k]=[v[0]+v[2]/2, v[1]+v[3]/2]; });
   const mix=(a,b,t)=>{ const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)); const A=h(a),B=h(b); return '#'+A.map((v,i)=>Math.round(v*t+B[i]*(1-t)).toString(16).padStart(2,'0')).join(''); };
-  const lightOf=(st,me)=> COL[st] ? mix(COL[st],PAPER,me?.95:.85) : BONE;
+  const lightOf=(st,me)=> st==='light' ? '#FFFFFF' : COL[st] ? mix(COL[st],PAPER,me?.95:.85) : BONE;
   const mine=st=> AX[st]||K;
   const TOP0=.34;
   /* the whole frame is paper (Justin 2026-11-21: it stopped halfway up the screen) */
@@ -6891,19 +6891,26 @@ const BRK=(function(){
         const off=Math.abs(near(ang,a0))*d, front=age/.5; if(row<.4||row>depth+.5||off>width*2.2) continue;
         const ww=Math.exp(-(off*off)/(2*width*width))*Math.exp(-Math.pow(row-front,2)/.6)*(1-age/3.2)*.85; if(ww>w) w=ww; } }
     else if(n==='widen'){ /* Widen: one row lights, skip one, the next, skip two, the next, skip three, the next */
-      const rows=[1,3,6,10]; for(let i=0;i<rows.length;i++){ const t0=1+i*3, a=clampB((ct-t0)/.9); if(a<=0) continue;
-        const ww=rowW(rows[i])*a*(i===Math.min(rows.length-1,Math.floor((ct-1)/3))?.85:.45); if(ww>w) w=ww; } s=.08; }
+      /* repeats while the slide shows, and carries on into the reconnecting slide */
+      const c2=ct%15, fo=Math.min(1,Math.max(0,(15-c2)/2.5)), rows=[1,3,6,10]; for(let i=0;i<rows.length;i++){ const t0=1+i*3, a=clampB((c2-t0)/.9); if(a<=0) continue;
+        const ww=rowW(rows[i])*a*fo*(i===Math.min(rows.length-1,Math.floor((c2-1)/3))?.85:.45); if(ww>w) w=ww; } s=.08; }
     else if(n==='bolts'){ /* movement: only the bolts, a slow sweep travelling round the circle while the slide shows */
       if(q.k==='bolt'&&row>.4){ const a0=ct*.42, off=Math.abs(near(ang,a0)); w=.7*Math.exp(-(off*off)/(2*.35*.35))*Math.exp(-Math.max(0,row-1)/6); s=.14; } }
     else if(n==='hearts'){ /* kindness: only the hearts, a soft swell that travels out from the ring every few breaths */
       if(q.k==='heart'&&row>.4){ const ph=(ct%7)/7, front=ph*10; w=.7*Math.exp(-Math.pow(row-front,2)/1.6)*Math.sin(Math.PI*ph); s=.16; } }
     else if(n==='twinkle'){ /* an emotion held: a few glyphs at a time twinkle in their own state colour (heart yellow, bolt red, X blue),
          at random and overlapping, across the pair of slides (Justin 2026-11-21) */
-      const h=frac(Math.sin((q.gx||q.x)*12.9898+(q.gy||q.y)*78.233)*43758.5453), per=5+h*4, cyc=Math.floor((ct+h*per)/per), ph=((ct+h*per)%per)/per;
-      if(frac(Math.sin(cyc*91.7+h*311.3)*24634.63)<.07&&ph<.4){ w=.9*Math.sin(Math.PI*ph/.4); s=.12; st=q.k==='heart'?'safety':q.k==='bolt'?'fightflight':'shutdown'; } }
+      /* only the middle and outer rows, never the glyphs right against the rings; "Invite it to be with you" calms it: fewer,
+         softer, and in the darker bone instead of colour */
+      const cm=mv.calmCt!=null?clampB((ct-mv.calmCt)/3):0;
+      if(row>=2.5){ const h=frac(Math.sin((q.gx||q.x)*12.9898+(q.gy||q.y)*78.233)*43758.5453), per=5+h*4, cyc=Math.floor((ct+h*per)/per), ph=((ct+h*per)%per)/per;
+        if(frac(Math.sin(cyc*91.7+h*311.3)*24634.63)<.07*(1-.55*cm)&&ph<.4){ w=(.9-.4*cm)*Math.sin(Math.PI*ph/.4)*Math.min(1,(row-2.5)/1.2+.4); s=.12*(1-.6*cm);
+          st=cm>.5?'':q.k==='heart'?'safety':q.k==='bolt'?'fightflight':'shutdown'; } } }
     else if(n==='inward'||n==='inwardh'){ /* the non-safety emotion: only bolts and Xs, a pulse that comes from the outside in, across both
          slides; the safety emotion word: the same with only the hearts (Justin 2026-11-21) */
-      if((n==='inwardh'?q.k==='heart':q.k!=='heart')&&row>.4){ const ph=(ct%7)/6, front=9*(1-Math.min(1,ph)); if(ph<1) w=.7*Math.exp(-Math.pow(row-front,2)/.8)*Math.sin(Math.PI*Math.min(1,ph)); s=.12; } }
+      /* it starts at the edge of the screen and comes in, stopping at the third row, clear of the rings */
+      if((n==='inwardh'?q.k==='heart':q.k!=='heart')&&row>2.5){ const edge=(Math.max(cx,W-cx,cy,H-cy)-rb)/U, ph=(ct%7)/6, front=edge-(edge-3)*eio(Math.min(1,ph));
+        if(ph<1) w=.7*Math.exp(-Math.pow(row-front,2)/.8)*Math.min(1,ph*6)*Math.min(1,(1-ph)*5); s=.12; } }
     return {w,s,st}; }
   function lit(q,t,ex,cx,cy){ const R=U*.8, R2=2*R*R, still=calm(); let v=0, dx=0, dy=0, sc=1, cst='';
     for(const p of mine_){ const ax=q.x-p.u*W, ay=q.y-p.v*H; if(Math.abs(ax)>3*R||Math.abs(ay)>3*R) continue; const w=(1-(t-p.t)/LIFE)*Math.exp(-(ax*ax+ay*ay)/R2); if(w>v) v=w; }
@@ -6920,8 +6927,11 @@ const BRK=(function(){
       if(still){ w=.35*(.5-.5*Math.cos(Math.PI*2*ct/10)); }
       else if(CIRC_MOVES.indexOf(C.n)>=0){ let n=C.n, t2=ct, ev=1;
         /* "Now, what do you see?": the whole slide, drifting from one move to the next every 24 s, in an order of its own each time */
-        if(n==='see'){ const seg=Math.floor(ct/24), sq=mv.seq||['wave','glow','widen','pulse']; n=sq[seg%sq.length]; t2=ct-seg*24; ev=Math.min(1,t2/2)*Math.min(1,(24-t2)/3); }
-        const r=circMove(n,t2,q,cx,cy); w=r.w*ev; sc*=1+r.s*w; if(r.st&&w*C.env>v) cst=r.st; }
+        let lt=false;
+        if(n==='see'){ const seg=Math.floor(ct/24), sq=mv.seq||['glow','wave','widen','pulse']; n=sq[seg%sq.length]; t2=ct-seg*24; ev=Math.min(1,t2/2)*Math.min(1,(24-t2)/3); lt=seg%2===1; }
+        const r=circMove(n,t2,q,cx,cy); w=r.w*ev; sc*=1+r.s*w*(lt?1.6:1); if(r.st&&w*C.env>v) cst=r.st;
+        /* every other move on a seeing slide comes in the lighter glyphs, a little larger so they still read (Justin 2026-11-21) */
+        if(lt&&w*C.env>v){ cst='light'; w=Math.min(1,w*1.15); } }
       else if(C.n==='ripples'){ for(let i=0;i<1;i++){ const age=ct-i*3; if(age<0||age>4.5) continue; const rad=age/4.5*260*U/32*1.4, d=Math.hypot(q.x-cx,q.y-cy), ww=Math.max(0,1-Math.abs(d-rad)/(26*U/32))*(1-age/4.5); if(ww>w) w=ww; } sc*=1+.1*w; }
       w*=C.env; if(w>v) v=w; else cst=''; }
     return {v,dx,dy,sc,st:cst}; }
@@ -6994,16 +7004,17 @@ const BRK=(function(){
       g.fillStyle=INK+'.5)'; g.beginPath(); g.arc(C.x,C.y,4.5*u,0,Math.PI*2); g.fill(); }
     g.globalAlpha=1; return true; }
   /* Pulse and Ripples play once (Justin 2026-11-21: "keep it to 1") */
-  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:16,see:900,bolts:900,hearts:900,inward:900,inwardh:900,twinkle:900};
+  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:900,see:900,bolts:900,hearts:900,inward:900,inwardh:900,twinkle:900};
   /* moves that last the whole slide carry on across a following slide with the same move (the non-safety pair) */
-  const LONG={see:1,bolts:1,hearts:1,inward:1,inwardh:1,twinkle:1};
+  const LONG={see:1,bolts:1,hearts:1,inward:1,inwardh:1,twinkle:1,widen:1};
   let spread=0, spreadT=0;
   const frac=x=>x-Math.floor(x);
-  function move(n){ if(!cv) return; spreadT=0;
-    if(n==='stop'||!LEN[n]){ mv=null; kick(); return; }
+  function move(n){ if(!cv) return; spreadT=0; const calmStart=n==='twinklec';
+    if(n==='stop'||!(LEN[n]||n==='twinklec')){ mv=null; kick(); return; }
     if(LONG[n]&&mv&&mv.n===n){ kick(); return; }
+    if(n==='twinklec'){ if(mv&&mv.n==='twinkle'){ if(mv.calmCt==null) mv.calmCt=performance.now()/1000-mv.t0; kick(); return; } n='twinkle'; }
     const sq=['wave','glow','widen','pulse']; for(let i=sq.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [sq[i],sq[j]]=[sq[j],sq[i]]; }
-    mv={n,t0:performance.now()/1000,len:LEN[n],seed:1+Math.random()*9,seq:sq};
+    mv={n,t0:performance.now()/1000,len:LEN[n],seed:1+Math.random()*9,seq:['glow',...sq.filter(x=>x!=='glow')],calmCt:calmStart?0:null};
     /* hearing: after the one ripple the glyphs drift a little further apart, and come back together when the slide closes */
     if(n==='ripples') spreadT=1;
     kick(); }
@@ -7432,14 +7443,15 @@ function slideMove(b,c){
   const nx=pSlides[pIdx+1]; let nc=null; try{ nc=nx?ACTIVE.map(OV.apply(nx)):null; }catch(e){}
   if(b===pSlides[pIdx]&&nc&&nc.breakMin) return "wave";
   const h=String(c.h||"").replace(/<[^>]+>/g," ");
-  if(/\bwiden/i.test(h)) return "widen";
+  if(/\bwiden|^\s*reconnect to the external/i.test(h)) return "widen";
+  if(/^\s*invite it to be with you/i.test(h)) return "twinklec";
   if(/emotion you.re holding onto|^\s*if so, let it be/i.test(h)) return "twinkle";
   if(/^\s*now,? what do you see/i.test(h)) return "see";
   if(/non-safety emotion to invite|something you can tolerate/i.test(h)) return "inward";
   if(/emotion word best fits your safety/i.test(h)) return "inwardh";
   if(/\bkind(ness)?\b/i.test(h)) return "hearts";
   if(/\bmov(e|es|ing|ement)\b/i.test(h)) return "bolts";
-  if(/\b(see|eyes|look(ing)?|sight)\b/i.test(h)) return "glow";
+  if(/\b(see|eyes|look(ing)?|sight)\b/i.test(h)) return "see";
   if(/\b(hear|sounds?|listen(ing)?)\b/i.test(h)) return "ripples";
   return "";
 }
