@@ -6738,7 +6738,7 @@ const BRK=(function(){
   let pts=[], blooms=[], lastBloom=0, crowd=1, settled=false;
   /* the member's own paper on every live slide (Justin 2026-11-20: "Just them"): drag, tap ripple, hold with pull,
      plain bone, never sent to the room. Plus the breath Justin starts with B and the four moves (GLYPH-LIVE-SPEC.md). */
-  let mine_=[], rip=[], hold=null, lifts=[], dn=null, breath=null, mv=null, pendB=false, cel=null;
+  let mine_=[], rip=[], hold=null, lifts=[], dn=null, breath=null, mv=null, pendB=false;
   function size(){ if(!cv) return; W=fr.clientWidth; H=fr.clientHeight; if(!W||!H) return; dpr=Math.min(2,devicePixelRatio||1);
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
     /* about 22 glyph columns on a wide screen, never smaller than a fingertip's worth on a phone */
@@ -6817,9 +6817,9 @@ const BRK=(function(){
   function frame(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; }
     if(!cv||!W) return; const g=cv.getContext('2d'), t=performance.now()/1000;
     { const M=mid(), mk=Math.round(M.x)+','+Math.round(M.y); if(mk!==midKey){ seatC(); if(!lay) place(); paper=null; } }
-    if(lay){ if(layFrame(g,t)){ if(cel&&!celFrame(g,t)) cel=null; kick(); return; } }
+    if(lay){ if(layFrame(g,t)){ kick(); return; } }
     if(!paper) makePaper();
-    if(breath){ lastT=0; if(nowBreath(g,t)){ if(cel&&!celFrame(g,t)) cel=null; kick(); return; } }
+    if(breath){ lastT=0; if(nowBreath(g,t)){ kick(); return; } }
     const live=circ&&!calm(), G=restG(); let E=0, RR=G.ro, sc=1;
     if(live){ const dt=lastT?Math.min(.1,t-lastT):0; lastT=t; idlePh+=dt; E=.13*swayE(idlePh%10.5);
       /* the finger: lean toward a slide, draw in and tighten on a hold */
@@ -6865,36 +6865,7 @@ const BRK=(function(){
       for(const f of [1,.72]){ g.beginPath(); g.arc(cx,cy,base*(1+.55*B.k)*f,0,7); g.stroke(); } }
     g.globalAlpha=1;
     if(live) restRings(g,G,1,sc,rox,roy,tightK);
-    if(cel&&!celFrame(g,t)) cel=null;
-    if(pts.length||blooms.length||ex||live||cel) kick(); }
-  /* Woo-hoo (Justin 2026-11-21 9:42 AM: "balloons rising and confetti being thrown", from the bottom up): balloons in the
-     six state colours float up with a little sway, and two handfuls of confetti (small glyphs and flecks) are thrown up
-     from the bottom corners and drift down. About 11 s, once. Off with Reduce Motion. */
-  const CEL_COLS=['#F4D58D','#E89B9B','#A3C0DD','#E8A871','#9FC498','#B89AC4'];
-  function celRnd(i,k){ return frac(Math.sin((cel.seed+i*12.9898+k*78.233))*43758.5453); }
-  function celFrame(g,t){ const ct=t-cel.t0, END=11; if(ct>END) return false;
-    g.setTransform(dpr,0,0,dpr,0,0); const fade=Math.min(1,(END-ct)/1.5), Bn=Math.max(10,Math.round(W/45));
-    /* balloons */
-    for(let i=0;i<Bn;i++){ const st=celRnd(i,1)*3.2, a=ct-st; if(a<0) continue; const sz=(.85+celRnd(i,2)*.6)*Math.max(34,Math.min(60,W/11)), rise=H*(.11+celRnd(i,3)*.05),
-        y=H+sz*2-a*rise, x=W*(.06+.88*celRnd(i,4))+Math.sin(a*1.1+i)*sz*.35; if(y<-sz*3) continue;
-      const col=CEL_COLS[i%6], tilt=Math.sin(a*1.1+i)*.08;
-      g.save(); g.translate(x,y); g.rotate(tilt); g.globalAlpha=.92*fade*Math.min(1,a/.6);
-      g.strokeStyle='rgba(138,132,120,.55)'; g.lineWidth=1; g.beginPath(); g.moveTo(0,sz*.62);
-      for(let k=1;k<=6;k++) g.lineTo(Math.sin(a*2+k)*3,sz*.62+k*sz*.22); g.stroke();
-      g.fillStyle=col; g.beginPath(); g.ellipse(0,0,sz*.42,sz*.52,0,0,Math.PI*2); g.fill();
-      g.beginPath(); g.moveTo(-sz*.07,sz*.6); g.lineTo(sz*.07,sz*.6); g.lineTo(0,sz*.5); g.fill();
-      g.fillStyle='rgba(255,255,255,.45)'; g.beginPath(); g.ellipse(-sz*.15,-sz*.2,sz*.08,sz*.15,-.5,0,Math.PI*2); g.fill(); g.restore(); }
-    /* confetti: two throws from each bottom corner, up and in, then falling and turning */
-    const N=Math.round(Math.min(180,W/3));
-    for(let i=0;i<N;i++){ const th=i%4, st=th<2?.15:1.9, a=ct-st-celRnd(i,5)*.25; if(a<0) continue; const left=th%2===0;
-      const x0=left?-10:W+10, y0=H+10, ang=.15+celRnd(i,6)*.5, sp=H*(1.25+celRnd(i,7)*.6), vx=(left?1:-1)*Math.sin(ang)*sp, vy=-Math.cos(ang)*sp, vt=H*(.17+celRnd(i,10)*.09);
-      const drag=Math.exp(-a*.9), px=x0+vx*(1-drag)/.9+Math.sin(a*2.2+i)*U*.5*Math.min(1,a/2), py=y0+vy*(1-drag)/.9+vt*a;
-      if(py>H+30||px<-30||px>W+30) continue; const col=CEL_COLS[(i*7)%6], rot=a*(2+celRnd(i,8)*4)*(i%2?1:-1), z=(.5+celRnd(i,9)*.5)*SP;
-      g.save(); g.translate(px,py); g.rotate(rot); g.globalAlpha=fade*Math.min(1,a/.15);
-      if(i%3===0) g.drawImage(sprite(K[i%3===0?(i>>2)%3:0],col,dpr,SP,S),-z/2,-z/2,z,z);
-      else { g.fillStyle=col; g.fillRect(-z*.16,-z*.28*Math.abs(Math.cos(a*5+i)),z*.32,z*.56*Math.abs(Math.cos(a*5+i))+1); }
-      g.restore(); }
-    g.globalAlpha=1; return true; }
+    if(pts.length||blooms.length||ex||live) kick(); }
   /* ---- own touch, breath and moves: what each one lights, how far it nudges ---- */
   const HOLD=.45, TAP=.35;
   function extras(t){
@@ -6946,6 +6917,23 @@ const BRK=(function(){
       if((n==='inwardh'?q.k==='heart':q.k!=='heart')&&row>2.5){ const edge=(Math.max(cx,W-cx,cy,H-cy)-rb)/U, ph=(ct%7)/6, front=edge-(edge-3)*eio(Math.min(1,ph));
         if(ph<1) w=.7*Math.exp(-Math.pow(row-front,2)/.8)*Math.min(1,ph*6)*Math.min(1,(1-ph)*5); s=.12; } }
     return {w,s,st}; }
+  /* Woo-hoo, in the paper's own glyphs (Justin 2026-11-21 9:58 AM: "it should FEEL that way, not literal"): soft columns of
+     state colour float up the paper from the bottom, each glyph lifting a little as the colour passes (the balloons), and
+     a few handfuls of glyphs pop into colour, scattered, as a burst sweeps out from the bottom corners (the confetti).
+     Starts once the glyphs are back in the grid, about 10 s, once. */
+  const CEL_ST=['safety','fightflight','shutdown','play','stillness','freeze'];
+  function celMove(ct,q){ const x=q.gx!=null?q.gx:q.x, y=q.gy!=null?q.gy:q.y, h=frac(Math.sin(x*12.9898+y*78.233)*43758.5453), sd=(mv&&mv.seed)||1;
+    let w=0, dx=0, dy=0, st='';
+    /* rising: about half the columns, each its own colour, start and speed */
+    const col=Math.floor(x/(U*1.4)), rc=frac(Math.sin(col*91.7+sd*13.1)*24634.6), rc2=frac(Math.sin(col*37.3+sd*7.7)*35724.2);
+    if(rc<.55){ const s0=2.6+rc2*3.2, a=ct-s0, sp=H*(.16+rc*.12), fy=H+2*U-a*sp;
+      if(a>0){ const ww=Math.exp(-Math.pow((y-fy)/(2.2*U),2))*Math.min(1,a/.8)*.85; if(ww>w){ w=ww; st=CEL_ST[Math.floor(rc2*6)]; dy=-U*.5*ww; dx=Math.sin(ct*1.3+col)*U*.12*ww; } } }
+    /* thrown: four bursts from the bottom corners; a few glyphs at random pop as the burst reaches them */
+    for(const [tb,left] of [[3.0,1],[3.5,0],[5.8,1],[6.3,0]]){ const a=ct-tb; if(a<0||a>3.2) continue; const ox=left?0:W, oy=H, d=Math.hypot(x-ox,y-oy), fr0=H*1.1*(1-Math.pow(1-a/3.2,2));
+      const pick=frac(Math.sin(h*311.3+tb*17.1)*24634.63); if(pick>.16) continue;
+      const pass=fr0-d; if(pass<-U||pass>U*5) continue; const ww=(pass<0?1+pass/U:Math.exp(-pass/(U*2.2)))*(.95-.2*a/3.2);
+      if(ww>w){ w=ww; st=CEL_ST[Math.floor(pick/.16*6)%6]; dx=(x-ox)/(d||1)*U*.35*ww; dy=(y-oy)/(d||1)*U*.35*ww; } }
+    return {w:Math.min(1,w),dx,dy,s:.18,st}; }
   function lit(q,t,ex,cx,cy){ const R=U*.8, R2=2*R*R, still=calm(); let v=0, dx=0, dy=0, sc=1, cst='';
     for(const p of mine_){ const ax=q.x-p.u*W, ay=q.y-p.v*H; if(Math.abs(ax)>3*R||Math.abs(ay)>3*R) continue; const w=(1-(t-p.t)/LIFE)*Math.exp(-(ax*ax+ay*ay)/R2); if(w>v) v=w; }
     if(!still) for(const r of rip){ const a=(t-r.t)/1.2, rad=a*130*U/32, d=Math.hypot(q.x-r.u*W,q.y-r.v*H), w=Math.max(0,1-Math.abs(d-rad)/(U*.7))*(1-a)*.8; if(w>v) v=w; }
@@ -6959,6 +6947,7 @@ const BRK=(function(){
         if(Math.abs(d-pd)<U&&d>1){ const f=3*(1-Math.abs(d-pd)/U); dx+=(q.x-cx)/d*f; dy+=(q.y-cy)/d*f; } } }
     const C=ex.C; if(C){ let w=0; const ct=C.ct;
       if(still){ w=.35*(.5-.5*Math.cos(Math.PI*2*ct/10)); }
+      else if(C.n==='celebrate'){ const r=celMove(ct,q); w=r.w; dy+=r.dy; dx+=r.dx; sc*=1+r.s*w; if(r.st&&w*C.env>v) cst=r.st; }
       else if(CIRC_MOVES.indexOf(C.n)>=0){ let n=C.n, t2=ct, ev=1;
         /* "Now, what do you see?": the whole slide, drifting from one move to the next every 24 s, in an order of its own each time */
         let lt=false;
@@ -7041,13 +7030,12 @@ const BRK=(function(){
       ringsAt(BONE,BONE,rOp*(1-dk)); ringsAt(INK+'.16)',INK+'.5)',rOp*.9*dk); }
     g.globalAlpha=1; return true; }
   /* Pulse and Ripples play once (Justin 2026-11-21: "keep it to 1") */
-  const LEN={wave:19,pulse:10,ripples:900,glow:24,widen:900,see:900,bolts:900,hearts:900,inward:900,inwardh:900,twinkle:900};
+  const LEN={celebrate:13,wave:19,pulse:10,ripples:900,glow:24,widen:900,see:900,bolts:900,hearts:900,inward:900,inwardh:900,twinkle:900};
   /* moves that last the whole slide carry on across a following slide with the same move (the non-safety pair) */
   const LONG={ripples:1,see:1,bolts:1,hearts:1,inward:1,inwardh:1,twinkle:1,widen:1};
   let spread=0, spreadT=0;
   const frac=x=>x-Math.floor(x);
   function move(n){ if(!cv) return; spreadT=0; const calmStart=n==='twinklec';
-    if(n==='celebrate'){ if(!calm()) cel={t0:performance.now()/1000, seed:Math.random()*99}; kick(); return; }
     /* a move ends softly, fading out over 1.5 s (Justin 2026-11-21 9:42 AM) */
     if(n==='stop'||!(LEN[n]||n==='twinklec')){ if(mv){ const ct=performance.now()/1000-mv.t0; mv.len=Math.min(mv.len,ct+1.5); } kick(); return; }
     if(LONG[n]&&mv&&mv.n===n){ mv.len=LEN[n]; kick(); return; }
@@ -7057,13 +7045,13 @@ const BRK=(function(){
     /* hearing: after the one ripple the glyphs drift a little further apart, and come back together when the slide closes */
     if(n==='ripples') spreadT=1;
     kick(); }
-  function moveOff(){ mv=null; spreadT=0; cel=null; }
+  function moveOff(){ mv=null; spreadT=0; }
   function mount(frameEl){
     if(fr===frameEl&&cv&&cv.isConnected) return;
     unmount(); fr=frameEl; cv=document.createElement('canvas'); cv.className='brkpaper'; cv.setAttribute('aria-hidden','true');
     fr.insertBefore(cv, fr.querySelector('.safe')); fr.classList.add('brk-on');
     ro=new ResizeObserver(size); ro.observe(fr); size(); }
-  function unmount(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; } if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on','gp-breath'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; embC={}; mine_=[]; rip=[]; hold=null; lifts=[]; dn=null; breath=null; mv=null; lay=null; circ=false; pendB=false; cel=null; }
+  function unmount(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; } if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on','gp-breath'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; embC={}; mine_=[]; rip=[]; hold=null; lifts=[]; dn=null; breath=null; mv=null; lay=null; circ=false; pendB=false; }
   /* u,v = 0..1 of the frame; st = the toucher's latest check-in key ('' = none, plain bone); who = a per-session id, never a name */
   function touch(u,v,st,who,me){
     if(!cv||settled) return; u=+u; v=+v; if(!(u>=0&&u<=1&&v>=0&&v<=1)) return; st=COL[st]?st:''; who=String(who||'').slice(0,64);
