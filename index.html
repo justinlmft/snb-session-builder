@@ -6844,7 +6844,7 @@ const BRK=(function(){
     const damp=Math.min(1,2.4/Math.sqrt(crowd)), R=U*.8, R2=2*R*R;   /* about one glyph around the finger (Justin 2026-11-20: "should be more discreet") */
     const ex=extras(t), M=mid(), cx=M.x, cy=M.y;
     for(const q of GL){ let v=0, st='', me=false, dx=0, dy=0, sc=1;
-      if(ex){ const o=lit(q,t,ex,cx,cy); v=o.v; dx=o.dx; dy=o.dy; sc=o.sc; }
+      if(ex){ const o=lit(q,t,ex,cx,cy); v=o.v; dx=o.dx; dy=o.dy; sc=o.sc; if(o.st){ st=o.st; me=true; } }
       for(const p of pts){ if(mine(p.st).indexOf(q.k)<0) continue; const dx=q.x-p.u*W, dy=q.y-p.v*H; if(Math.abs(dx)>3*R||Math.abs(dy)>3*R) continue;
         let w=(1-(t-p.t)/LIFE)*Math.exp(-(dx*dx+dy*dy)/R2);
         if(!p.me) w*=damp*.85;   /* others soften with the crowd; your own touch stays full on your own device */
@@ -6876,10 +6876,10 @@ const BRK=(function(){
     return {B,C,Hd};
   }
   /* the moves live on the circle (Justin 2026-11-21): rows are counted out from the outer ring (row 1 sits just outside it) */
-  const CIRC_MOVES=['wave','pulse','glow','widen','see','bolts','hearts','inward'];
+  const CIRC_MOVES=['wave','pulse','glow','widen','see','bolts','hearts','inward','twinkle'];
   function circMove(n,ct,q,cx,cy){ const d=Math.hypot(q.x-cx,q.y-cy)||1, rb=RB||restG().ro, row=(d-rb)/U, ang=Math.atan2(q.y-cy,q.x-cx);
     const near=(a,b)=>{ let x=a-b; x-=Math.round(x/(2*Math.PI))*2*Math.PI; return x; }, rowW=k=>Math.exp(-Math.pow(row-k,2)/(2*.18));
-    let w=0, s=.1;
+    let w=0, s=.1, st='';
     if(n==='pulse'){ /* Pulse: one pulse from the rings out to the first row of glyphs, one breath long */
       const ph=Math.min(ct,10), k=ph<4?(.5-.5*Math.cos(Math.PI*ph/4)):(.5+.5*Math.cos(Math.PI*(ph-4)/6)); w=.75*k*rowW(.9+.3*k); s=.08; }
     else if(n==='wave'){ /* Lap: one column reaches out from the ring, then walks once round it */
@@ -6897,10 +6897,14 @@ const BRK=(function(){
       if(q.k==='bolt'&&row>.4){ const a0=ct*.42, off=Math.abs(near(ang,a0)); w=.7*Math.exp(-(off*off)/(2*.35*.35))*Math.exp(-Math.max(0,row-1)/6); s=.14; } }
     else if(n==='hearts'){ /* kindness: only the hearts, a soft swell that travels out from the ring every few breaths */
       if(q.k==='heart'&&row>.4){ const ph=(ct%7)/7, front=ph*10; w=.7*Math.exp(-Math.pow(row-front,2)/1.6)*Math.sin(Math.PI*ph); s=.16; } }
+    else if(n==='twinkle'){ /* an emotion held: a few glyphs at a time twinkle in their own state colour (heart yellow, bolt red, X blue),
+         at random and overlapping, across the pair of slides (Justin 2026-11-21) */
+      const h=frac(Math.sin((q.gx||q.x)*12.9898+(q.gy||q.y)*78.233)*43758.5453), per=5+h*4, cyc=Math.floor((ct+h*per)/per), ph=((ct+h*per)%per)/per;
+      if(frac(Math.sin(cyc*91.7+h*311.3)*24634.63)<.07&&ph<.4){ w=.9*Math.sin(Math.PI*ph/.4); s=.12; st=q.k==='heart'?'safety':q.k==='bolt'?'fightflight':'shutdown'; } }
     else if(n==='inward'){ /* the non-safety emotion: only bolts and Xs, a pulse that comes from the outside in, across both slides */
       if(q.k!=='heart'&&row>.4){ const ph=(ct%7)/6, front=9*(1-Math.min(1,ph)); if(ph<1) w=.7*Math.exp(-Math.pow(row-front,2)/.8)*Math.sin(Math.PI*Math.min(1,ph)); s=.12; } }
-    return {w,s}; }
-  function lit(q,t,ex,cx,cy){ const R=U*.8, R2=2*R*R, still=calm(); let v=0, dx=0, dy=0, sc=1;
+    return {w,s,st}; }
+  function lit(q,t,ex,cx,cy){ const R=U*.8, R2=2*R*R, still=calm(); let v=0, dx=0, dy=0, sc=1, cst='';
     for(const p of mine_){ const ax=q.x-p.u*W, ay=q.y-p.v*H; if(Math.abs(ax)>3*R||Math.abs(ay)>3*R) continue; const w=(1-(t-p.t)/LIFE)*Math.exp(-(ax*ax+ay*ay)/R2); if(w>v) v=w; }
     if(!still) for(const r of rip){ const a=(t-r.t)/1.2, rad=a*130*U/32, d=Math.hypot(q.x-r.u*W,q.y-r.v*H), w=Math.max(0,1-Math.abs(d-rad)/(U*.7))*(1-a)*.8; if(w>v) v=w; }
     const pool=(x,y,r,a,pull,ease)=>{ const d=Math.hypot(q.x-x,q.y-y), w=Math.max(0,Math.min(1,(r-d)/(U*1.2)+.6))*a*.9; if(w>v) v=w;
@@ -6916,10 +6920,10 @@ const BRK=(function(){
       else if(CIRC_MOVES.indexOf(C.n)>=0){ let n=C.n, t2=ct, ev=1;
         /* "Now, what do you see?": the whole slide, drifting from one move to the next every 24 s, in an order of its own each time */
         if(n==='see'){ const seg=Math.floor(ct/24), sq=mv.seq||['wave','glow','widen','pulse']; n=sq[seg%sq.length]; t2=ct-seg*24; ev=Math.min(1,t2/2)*Math.min(1,(24-t2)/3); }
-        const r=circMove(n,t2,q,cx,cy); w=r.w*ev; sc*=1+r.s*w; }
+        const r=circMove(n,t2,q,cx,cy); w=r.w*ev; sc*=1+r.s*w; if(r.st&&w*C.env>v) cst=r.st; }
       else if(C.n==='ripples'){ for(let i=0;i<1;i++){ const age=ct-i*3; if(age<0||age>4.5) continue; const rad=age/4.5*260*U/32*1.4, d=Math.hypot(q.x-cx,q.y-cy), ww=Math.max(0,1-Math.abs(d-rad)/(26*U/32))*(1-age/4.5); if(ww>w) w=ww; } sc*=1+.1*w; }
-      w*=C.env; if(w>v) v=w; }
-    return {v,dx,dy,sc}; }
+      w*=C.env; if(w>v) v=w; else cst=''; }
+    return {v,dx,dy,sc,st:cst}; }
   /* the member's own finger: ph 'd' down, 'm' move, 'u' up (u,v = 0..1 of the frame). Off during the breath. */
   function own(u,v,ph){ if(!cv||breath) return; u=+u; v=+v; if(!(u>=0&&u<=1&&v>=0&&v<=1)) return; const t=performance.now()/1000;
     if(ph==='d'){ dn={u0:u,v0:v,u,v,t0:t,moved:false}; clearTimeout(own._h); own._h=setTimeout(()=>{ if(dn&&!dn.moved){ hold={u:dn.u,v:dn.v,t0:performance.now()/1000}; kick(); } },HOLD*1000); }
@@ -6989,9 +6993,9 @@ const BRK=(function(){
       g.fillStyle=INK+'.5)'; g.beginPath(); g.arc(C.x,C.y,4.5*u,0,Math.PI*2); g.fill(); }
     g.globalAlpha=1; return true; }
   /* Pulse and Ripples play once (Justin 2026-11-21: "keep it to 1") */
-  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:16,see:900,bolts:900,hearts:900,inward:900};
+  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:16,see:900,bolts:900,hearts:900,inward:900,twinkle:900};
   /* moves that last the whole slide carry on across a following slide with the same move (the non-safety pair) */
-  const LONG={see:1,bolts:1,hearts:1,inward:1};
+  const LONG={see:1,bolts:1,hearts:1,inward:1,twinkle:1};
   let spread=0, spreadT=0;
   const frac=x=>x-Math.floor(x);
   function move(n){ if(!cv) return; spreadT=0;
@@ -7428,6 +7432,7 @@ function slideMove(b,c){
   if(b===pSlides[pIdx]&&nc&&nc.breakMin) return "wave";
   const h=String(c.h||"").replace(/<[^>]+>/g," ");
   if(/\bwiden/i.test(h)) return "widen";
+  if(/emotion you.re holding onto|^\s*if so, let it be/i.test(h)) return "twinkle";
   if(/^\s*now,? what do you see/i.test(h)) return "see";
   if(/non-safety emotion to invite|something you can tolerate/i.test(h)) return "inward";
   if(/\bkind(ness)?\b/i.test(h)) return "hearts";
