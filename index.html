@@ -6748,8 +6748,13 @@ const BRK=(function(){
       x.drawImage(sprite(q.k,'rgba(255,255,255,.75)',dpr,SP,S),q.x-SP/2-o,q.y-SP/2-o,SP,SP); x.restore();
       x.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2,q.y-SP/2,SP,SP); }
     x.globalAlpha=1; paper=c; }
-  function kick(){ if(!raf&&cv) raf=requestAnimationFrame(frame); }
-  function frame(now){ raf=0; if(!cv||!W) return; const g=cv.getContext('2d'), t=now/1000;
+  /* Inside the app the paper sits in an iframe behind the room, and phones can slow or pause animation frames
+     there, which left the last lit frame on screen ("like a coloring book", Justin 2026-11-20). So every frame
+     reads the real clock, and a timer backs up the animation frame so the fade always finishes. */
+  let tmo=0;
+  function kick(){ if(!cv) return; if(!raf) raf=requestAnimationFrame(frame); if(!tmo) tmo=setTimeout(frame,80); }
+  function frame(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; }
+    if(!cv||!W) return; const g=cv.getContext('2d'), t=performance.now()/1000;
     if(!paper) makePaper();
     g.setTransform(1,0,0,1,0,0); g.drawImage(paper,0,0); g.setTransform(dpr,0,0,dpr,0,0);
     pts=pts.filter(p=>t-p.t<LIFE); blooms=blooms.filter(b=>t-b.t<2.4);
@@ -6773,7 +6778,7 @@ const BRK=(function(){
     unmount(); fr=frameEl; cv=document.createElement('canvas'); cv.className='brkpaper'; cv.setAttribute('aria-hidden','true');
     fr.insertBefore(cv, fr.querySelector('.safe')); fr.classList.add('brk-on');
     ro=new ResizeObserver(size); ro.observe(fr); size(); }
-  function unmount(){ if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; }
+  function unmount(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; } if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; }
   /* u,v = 0..1 of the frame; st = the toucher's latest check-in key ('' = none, plain bone); who = a per-session id, never a name */
   function touch(u,v,st,who,me){
     if(!cv||settled) return; u=+u; v=+v; if(!(u>=0&&u<=1&&v>=0&&v<=1)) return; st=COL[st]?st:''; who=String(who||'').slice(0,64);
