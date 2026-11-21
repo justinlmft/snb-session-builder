@@ -6726,7 +6726,8 @@ const BRK=(function(){
   const lightOf=(st,me)=> COL[st] ? mix(COL[st],PAPER,me?.95:.85) : BONE;
   const mine=st=> AX[st]||K;
   const TOP0=.34;
-  const topM=f=> f<TOP0?0:f>TOP0+.12?1:(f-TOP0)/.12;
+  /* the whole frame is paper (Justin 2026-11-21: it stopped halfway up the screen) */
+  const topM=()=>1;
   const sprC={};
   function sprite(k,col,dpr,SP,S){ const key=k+col+dpr+SP; if(sprC[key]) return sprC[key];
     const c=document.createElement('canvas'); c.width=c.height=Math.ceil(SP*dpr); const x=c.getContext('2d');
@@ -6745,12 +6746,16 @@ const BRK=(function(){
       const odd=r%2, shift=(3-r%3)%3;
       for(let tx=x0-3*U*Math.ceil((x0+U)/(3*U)); tx<W+U; tx+=3*U) for(let c=0;c<3;c++){
         const x=tx+(odd?0:U/2)+U*c; if(x<-U/2||x>W+U/2) continue; GL.push({x,y,k:K[(c+shift)%3],f:y/H}); } } }
+  function soft(k,col){ const key='s'+k+col+dpr+SP; if(sprC[key]) return sprC[key]; const s=sprite(k,col,dpr,SP,S), c=document.createElement('canvas');
+    const pad=Math.ceil(2*dpr); c.width=s.width+2*pad; c.height=s.height+2*pad; const x=c.getContext('2d'); x.filter='blur('+dpr+'px)'; x.drawImage(s,pad,pad);
+    const o=document.createElement('canvas'); o.width=s.width; o.height=s.height; o.getContext('2d').drawImage(c,-pad,-pad); return (sprC[key]=o); }
   /* the embossed plain paper, drawn once per size */
   function makePaper(){ const c=document.createElement('canvas'); c.width=cv.width; c.height=cv.height; const x=c.getContext('2d');
     x.scale(dpr,dpr); x.fillStyle=PAPER; x.fillRect(0,0,W,H); const o=SP*.04;
     for(const q of GL){ const a=topM(q.f); if(a<=0) continue; x.globalAlpha=a;
-      x.save(); x.filter='blur(1px)'; x.drawImage(sprite(q.k,'rgba(0,0,0,.1)',dpr,SP,S),q.x-SP/2+o,q.y-SP/2+o,SP,SP);
-      x.drawImage(sprite(q.k,'rgba(255,255,255,.75)',dpr,SP,S),q.x-SP/2-o,q.y-SP/2-o,SP,SP); x.restore();
+      /* blurred once per glyph kind, not once per glyph (a full-height paper is a lot of glyphs on a phone) */
+      x.drawImage(soft(q.k,'rgba(0,0,0,.1)'),q.x-SP/2+o,q.y-SP/2+o,SP,SP);
+      x.drawImage(soft(q.k,'rgba(255,255,255,.75)'),q.x-SP/2-o,q.y-SP/2-o,SP,SP);
       x.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2,q.y-SP/2,SP,SP); }
     x.globalAlpha=1; paper=c; }
   /* Inside the app the paper sits in an iframe behind the room, and phones can slow or pause animation frames
@@ -6761,6 +6766,7 @@ const BRK=(function(){
   function frame(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; }
     if(!cv||!W) return; const g=cv.getContext('2d'), t=performance.now()/1000;
     if(!paper) makePaper();
+    if(breath){ if(nowBreath(g,t)){ kick(); return; } }
     g.setTransform(1,0,0,1,0,0); g.drawImage(paper,0,0); g.setTransform(dpr,0,0,dpr,0,0);
     pts=pts.filter(p=>t-p.t<LIFE); blooms=blooms.filter(b=>t-b.t<2.4);
     crowd=Math.max(1,new Set(pts.map(p=>p.who)).size);
@@ -6787,10 +6793,7 @@ const BRK=(function(){
   const HOLD=.45, TAP=.35;
   function extras(t){
     mine_=mine_.filter(p=>t-p.t<LIFE); rip=rip.filter(r=>t-r.t<1.2); lifts=lifts.filter(l=>t-l.t<1.5);
-    let B=null; if(breath){ const bt=t-breath.t0, IN=4, OUT=5, LEAD=1.2, tot=LEAD+IN+OUT+1.6;
-      if(bt>tot){ breath=null; if(fr) fr.classList.remove('gp-breath'); }
-      else{ let k=bt<LEAD?0:bt<LEAD+IN?(bt-LEAD)/IN:bt<LEAD+IN+OUT?1-(bt-LEAD-IN)/OUT:0; k=.5-.5*Math.cos(Math.PI*k);
-        B={k, env:Math.min(1,bt/1)*Math.min(1,(tot-bt)/1.2), push:bt>LEAD?(bt-LEAD)*U*2.4:-1}; } }
+    const B=null;
     let C=null; if(mv){ const ct=t-mv.t0; if(ct>mv.len) mv=null; else C={n:mv.n, ct, env:Math.min(1,ct/1.5)*Math.min(1,(mv.len-ct)/2)}; }
     let Hd=null; if(hold){ const ht=t-hold.t0; Hd={r:(24+110*(1-Math.exp(-ht/4)))*U/32, p:1-Math.exp(-ht/2.5), a:Math.min(1,ht/.6)}; }
     if(!mine_.length&&!rip.length&&!lifts.length&&!B&&!C&&!Hd) return null;
@@ -6810,8 +6813,8 @@ const BRK=(function(){
     const C=ex.C; if(C){ let w=0; const ct=C.ct;
       if(still){ w=.35*(.5-.5*Math.cos(Math.PI*2*ct/10)); }
       else if(C.n==='wave'){ const front=H*1.2-((ct%6.5)/6.5)*(H*1.5)+Math.sin(q.x/W*6+ct)*U*.6; w=Math.max(0,1-Math.abs(q.y-front)/(U*2.2)); sc*=1+.12*w; }
-      else if(C.n==='pulse'){ const ph=ct%10, k=ph<4?(.5-.5*Math.cos(Math.PI*ph/4)):(.5+.5*Math.cos(Math.PI*(ph-4)/6)); w=.15+.45*k; sc*=1+.06*k; }
-      else if(C.n==='ripples'){ for(let i=0;i<6;i++){ const age=ct-i*3; if(age<0||age>4.5) continue; const rad=age/4.5*260*U/32*1.4, d=Math.hypot(q.x-cx,q.y-cy), ww=Math.max(0,1-Math.abs(d-rad)/(26*U/32))*(1-age/4.5); if(ww>w) w=ww; } sc*=1+.1*w; }
+      else if(C.n==='pulse'){ const ph=Math.min(ct,10), k=ph<4?(.5-.5*Math.cos(Math.PI*ph/4)):(.5+.5*Math.cos(Math.PI*(ph-4)/6)); w=.6*k; sc*=1+.06*k; }
+      else if(C.n==='ripples'){ for(let i=0;i<1;i++){ const age=ct-i*3; if(age<0||age>4.5) continue; const rad=age/4.5*260*U/32*1.4, d=Math.hypot(q.x-cx,q.y-cy), ww=Math.max(0,1-Math.abs(d-rad)/(26*U/32))*(1-age/4.5); if(ww>w) w=ww; } sc*=1+.1*w; }
       else if(C.n==='glow'){ const a=ct*.35, gx=cx+Math.sin(a)*W*.3, gy=cy+Math.sin(2*a)*H*.18, d=Math.hypot(q.x-gx,q.y-gy); w=Math.exp(-(d*d)/(2*Math.pow(70*U/32,2)))*.9; }
       w*=C.env; if(w>v) v=w; }
     return {v,dx,dy,sc}; }
@@ -6824,7 +6827,61 @@ const BRK=(function(){
     kick(); }
   function endHold(t){ const ht=t-hold.t0; lifts.push({u:hold.u,v:hold.v,t,r:(24+110*(1-Math.exp(-ht/4)))*U/32,p:1-Math.exp(-ht/2.5)}); hold=null; }
   function breathe(){ if(!cv||breath) return; breath={t0:performance.now()/1000}; dn=null; hold=null; mine_=[]; fr.classList.add('gp-breath'); kick(); }
-  const LEN={wave:20,pulse:30,ripples:18,glow:24};
+  /* ---- Now's One breath, the same motion as the app's Now page (app.js _gpBreath + _nqBreath, no check-in form;
+     Justin 2026-11-21: "it needs to mirror the one breath on the Now page"). The words step aside for 1.2 s, then the
+     three breath rings rise out of the paper at 62% and swell for 4 s to full size and settle for 5 s back; the glyphs
+     slide from the grid into true circles round the rings, swell near them with the in-breath, a lit ring of glyphs rides
+     just outside, the push leaves them and keeps going until it is gone, and the rings sit on clear paper. Then the
+     glyphs slide back and the words return. Reduce Motion: only the soft glow round the rings, no movement. ---- */
+  const REST=.62, LEADB=1.2, ENDB=LEADB+10, INK='rgba(26,31,42,', FACE=(()=>{ const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)), A=h('#8A8478'), Bp=h(PAPER); return '#'+A.map((v,i)=>Math.round(v*.35+Bp[i]*.65).toString(16).padStart(2,'0')).join(''); })();
+  const clampB=v=>Math.max(0,Math.min(1,v)), eio=v=>v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2, smB=v=>v*v*(3-2*v);
+  let embC={};
+  function emb(k){ const key=k+dpr+SP; if(embC[key]) return embC[key]; const c=document.createElement('canvas'); c.width=c.height=Math.ceil(SP*dpr); const x=c.getContext('2d');
+    x.scale(dpr,dpr); x.translate(SP/2,SP/2); x.scale(S,S); x.translate(-MID[k][0],-MID[k][1]); const z=1/(S*SP/28);
+    x.fillStyle=PAPER; x.shadowColor='rgba(0,0,0,.1)'; x.shadowBlur=2.3*dpr; x.shadowOffsetX=x.shadowOffsetY=1.08*dpr; x.fill(PATH[k]);
+    x.shadowColor='rgba(255,255,255,.75)'; x.shadowOffsetX=x.shadowOffsetY=-.92*dpr; x.fill(PATH[k]); x.shadowColor='transparent'; x.fill(PATH[k]); return (embC[key]=c); }
+  function seatB(C){ const seats=[{x:C.x,y:C.y}], gap=U;
+    for(let n=1;n<60;n++){ const r=n*gap, cnt=Math.max(6,Math.round(2*Math.PI*r/gap)), a0=n*.37;
+      for(let i=0;i<cnt;i++){ const a=a0+i*2*Math.PI/cnt, sx=C.x+r*Math.cos(a), sy=C.y+r*Math.sin(a); if(sx>-20&&sx<W+20&&sy>-20&&sy<H+20) seats.push({x:sx,y:sy}); }
+      if(seats.length>=GL.length) break; }
+    const use=seats.slice(0,GL.length), pairs=[];
+    use.forEach((s,si)=>GL.forEach((q,gi)=>{ const d=Math.abs(s.x-q.x)+Math.abs(s.y-q.y); if(d<8*U) pairs.push([d,si,gi]); }));
+    pairs.sort((a,b)=>a[0]-b[0]); const uS=new Uint8Array(use.length), uG=new Uint8Array(GL.length);
+    for(const p of pairs){ if(uS[p[1]]||uG[p[2]]) continue; uS[p[1]]=1; uG[p[2]]=1; GL[p[2]].tx=use[p[1]].x; GL[p[2]].ty=use[p[1]].y; }
+    GL.forEach(q=>{ if(q.tx===undefined){ q.tx=q.x; q.ty=q.y; } }); }
+  function nowBreath(g,now){ const t=now-breath.t0, still=calm();
+    if(t>=ENDB){ breath=null; GL.forEach(q=>{ delete q.tx; delete q.ty; }); if(fr) fr.classList.remove('gp-breath'); return false; }
+    const L=LEADB, base=Math.min(.64*W,.40*H), C=breath.C||(breath.C={x:W/2,y:H*.52});
+    if(!breath.seated&&!still){ breath.seated=true; seatB(C); }
+    /* the rings' scale: .62 at rest, to 1 over 4 s, back over 5 s; they show from 1.2 s and fade after 9 s more */
+    const rt=t-L, sc=rt<=0?REST:rt<4?REST+(1-REST)*smB(rt/4):rt<9?1-(1-REST)*smB((rt-4)/5):REST;
+    const rOp=rt<=0?0:Math.min(1,rt/.9)*(rt>9?Math.max(0,1-(rt-9)/.9):1);
+    const u=base*sc/300, ri=80*u, ro=128*u, rgap=(ro-ri)/2, ro0=128*base*REST/300, e=still?0:clampB((sc-REST)/(1-REST));
+    const mo=eio(clampB((t-L)/.9))*(1-eio(clampB((t-L-9)/.9))), cm=still?0:mo;
+    g.setTransform(dpr,0,0,dpr,0,0); g.globalAlpha=1; g.fillStyle=PAPER; g.fillRect(0,0,W,H);
+    const u9=clampB((t-L)/9), front=ro0+8+.55*Math.max(W,H)*(1-Math.pow(1-u9,1.5));
+    const amp=still||t<L?0:.85*.8*Math.min(1,(t-L)/1.2)*(1-eio(clampB((u9-.35)/.65)));
+    const fadeOut=130+70*e, vis=.82*mo;
+    for(const q of GL){ const px=cm&&q.tx!==undefined?q.x+(q.tx-q.x)*cm:q.x, py=cm&&q.ty!==undefined?q.y+(q.ty-q.y)*cm:q.y;
+      let dx=0, dy=0, k=0, ring=0; const d=Math.hypot(px-C.x,py-C.y)||1, r0=ro+6;
+      k=d<r0?smB(clampB((d-(r0-44))/44)):smB(clampB(1-(d-r0)/fadeOut));
+      if(still) k=clampB(1-Math.abs(d-ro)/60)*(rOp);
+      ring=amp*Math.exp(-Math.pow((d-front)/60,2));
+      if(d<front&&d>ri) ring=Math.max(ring,.35*amp*clampB(1-(front-d)/140));
+      if(!still){ const n=3*amp*Math.exp(-Math.pow((d-front)/50,2)); dx=(px-C.x)/d*n; dy=(py-C.y)/d*n; }
+      const s=still?1:1+.2*e*k*mo, Z=SP*s, gx=px+dx-Z/2, gy=py+dy-Z/2;
+      g.globalAlpha=1; g.drawImage(emb(q.k),gx,gy,Z,Z);
+      const lit=(vis*1.1*k+ring)*(still?1:1); if(lit>.01){ g.globalAlpha=Math.min(1,lit); g.drawImage(sprite(q.k,FACE,dpr,SP,S),gx,gy,Z,Z); } }
+    /* the rings sit on clear paper; under the outer ring the glyphs show through faintly */
+    if(rOp>0){ const R=ro+1.5*rgap, gr=g.createRadialGradient(C.x,C.y,0,C.x,C.y,R), st=v=>Math.min(1,v/R), rgb='250,249,245';
+      gr.addColorStop(0,'rgba('+rgb+',1)'); gr.addColorStop(st(ri+.75*rgap),'rgba('+rgb+',1)'); gr.addColorStop(st(ri+1.6*rgap),'rgba('+rgb+',.6)');
+      gr.addColorStop(st(ro+.25*rgap),'rgba('+rgb+',.45)'); gr.addColorStop(1,'rgba('+rgb+',0)');
+      g.globalAlpha=Math.max(mo,still?rOp:0); g.fillStyle=gr; g.beginPath(); g.arc(C.x,C.y,R,0,Math.PI*2); g.fill();
+      g.globalAlpha=rOp*.9; g.strokeStyle=INK+'.16)'; g.lineWidth=2*u; for(const r of [128,104,80]){ g.beginPath(); g.arc(C.x,C.y,r*u,0,Math.PI*2); g.stroke(); }
+      g.fillStyle=INK+'.5)'; g.beginPath(); g.arc(C.x,C.y,4.5*u,0,Math.PI*2); g.fill(); }
+    g.globalAlpha=1; return true; }
+  /* Pulse and Ripples play once (Justin 2026-11-21: "keep it to 1") */
+  const LEN={wave:20,pulse:10,ripples:5.5,glow:24};
   function move(n){ if(!cv) return; if(n==='stop'||!LEN[n]){ mv=null; kick(); return; } mv={n,t0:performance.now()/1000,len:LEN[n]}; kick(); }
   function moveOff(){ mv=null; }
   function mount(frameEl){
@@ -6832,7 +6889,7 @@ const BRK=(function(){
     unmount(); fr=frameEl; cv=document.createElement('canvas'); cv.className='brkpaper'; cv.setAttribute('aria-hidden','true');
     fr.insertBefore(cv, fr.querySelector('.safe')); fr.classList.add('brk-on');
     ro=new ResizeObserver(size); ro.observe(fr); size(); }
-  function unmount(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; } if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on','gp-breath'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; mine_=[]; rip=[]; hold=null; lifts=[]; dn=null; breath=null; mv=null; }
+  function unmount(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; } if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on','gp-breath'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; embC={}; mine_=[]; rip=[]; hold=null; lifts=[]; dn=null; breath=null; mv=null; }
   /* u,v = 0..1 of the frame; st = the toucher's latest check-in key ('' = none, plain bone); who = a per-session id, never a name */
   function touch(u,v,st,who,me){
     if(!cv||settled) return; u=+u; v=+v; if(!(u>=0&&u<=1&&v>=0&&v<=1)) return; st=COL[st]?st:''; who=String(who||'').slice(0,64);
@@ -6860,8 +6917,8 @@ function breakCard(c){ return {kind:"info", h:BREAK_H, body:"", breakMin:c.break
    site until the app's prod release, then go. */
 function syncBreakPaper(root, glyph, sceneOn){
   const fr=root&&root.querySelector(".frame"); if(!fr) return;
-  const brk=!!fr.querySelector(".s.brk");
-  if(brk||glyph){ BRK.mount(fr); fr.classList.toggle("brk-dim", !brk && !sceneOn); }
+  const brk=!!fr.querySelector(".s.brk"), cover=!!fr.querySelector(".s.cover");
+  if(brk||glyph){ BRK.mount(fr); fr.classList.toggle("brk-dim", !brk && !cover && !sceneOn); }
   else if(BRK.on()) BRK.unmount();
 }
 
@@ -7237,6 +7294,8 @@ function beatInfo(b,c){
     breath:prompt&&!/intentional/i.test(t)&&/\bbreath(ing)?\b|chest or (your )?belly|full or shallow|tense or relaxed/i.test(t),
     /* the break slide: the app shows each member a Capacity Check and shares touches on the paper */
     cap:!!(c&&c.brk),
+    /* the opening title slide shares touches with the room like the break, with no Capacity Check (Justin 2026-11-21) */
+    share:!!(c&&(c.brk||c.kind==="cover")),
     /* the intentional breath (Justin presses B on these) and the move a practice slide carries (GLYPH-LIVE-SPEC.md 5) */
     ib:!!c&&/intentional/i.test(t), move:NEW_BREAK?slideMove(b,c):""};
 }
