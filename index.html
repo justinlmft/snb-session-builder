@@ -6876,7 +6876,7 @@ const BRK=(function(){
     return {B,C,Hd};
   }
   /* the moves live on the circle (Justin 2026-11-21): rows are counted out from the outer ring (row 1 sits just outside it) */
-  const CIRC_MOVES=['wave','pulse','glow','widen','see','bolts','hearts','inward','twinkle'];
+  const CIRC_MOVES=['wave','pulse','glow','widen','see','bolts','hearts','inward','inwardh','twinkle'];
   function circMove(n,ct,q,cx,cy){ const d=Math.hypot(q.x-cx,q.y-cy)||1, rb=RB||restG().ro, row=(d-rb)/U, ang=Math.atan2(q.y-cy,q.x-cx);
     const near=(a,b)=>{ let x=a-b; x-=Math.round(x/(2*Math.PI))*2*Math.PI; return x; }, rowW=k=>Math.exp(-Math.pow(row-k,2)/(2*.18));
     let w=0, s=.1, st='';
@@ -6901,8 +6901,9 @@ const BRK=(function(){
          at random and overlapping, across the pair of slides (Justin 2026-11-21) */
       const h=frac(Math.sin((q.gx||q.x)*12.9898+(q.gy||q.y)*78.233)*43758.5453), per=5+h*4, cyc=Math.floor((ct+h*per)/per), ph=((ct+h*per)%per)/per;
       if(frac(Math.sin(cyc*91.7+h*311.3)*24634.63)<.07&&ph<.4){ w=.9*Math.sin(Math.PI*ph/.4); s=.12; st=q.k==='heart'?'safety':q.k==='bolt'?'fightflight':'shutdown'; } }
-    else if(n==='inward'){ /* the non-safety emotion: only bolts and Xs, a pulse that comes from the outside in, across both slides */
-      if(q.k!=='heart'&&row>.4){ const ph=(ct%7)/6, front=9*(1-Math.min(1,ph)); if(ph<1) w=.7*Math.exp(-Math.pow(row-front,2)/.8)*Math.sin(Math.PI*Math.min(1,ph)); s=.12; } }
+    else if(n==='inward'||n==='inwardh'){ /* the non-safety emotion: only bolts and Xs, a pulse that comes from the outside in, across both
+         slides; the safety emotion word: the same with only the hearts (Justin 2026-11-21) */
+      if((n==='inwardh'?q.k==='heart':q.k!=='heart')&&row>.4){ const ph=(ct%7)/6, front=9*(1-Math.min(1,ph)); if(ph<1) w=.7*Math.exp(-Math.pow(row-front,2)/.8)*Math.sin(Math.PI*Math.min(1,ph)); s=.12; } }
     return {w,s,st}; }
   function lit(q,t,ex,cx,cy){ const R=U*.8, R2=2*R*R, still=calm(); let v=0, dx=0, dy=0, sc=1, cst='';
     for(const p of mine_){ const ax=q.x-p.u*W, ay=q.y-p.v*H; if(Math.abs(ax)>3*R||Math.abs(ay)>3*R) continue; const w=(1-(t-p.t)/LIFE)*Math.exp(-(ax*ax+ay*ay)/R2); if(w>v) v=w; }
@@ -6993,9 +6994,9 @@ const BRK=(function(){
       g.fillStyle=INK+'.5)'; g.beginPath(); g.arc(C.x,C.y,4.5*u,0,Math.PI*2); g.fill(); }
     g.globalAlpha=1; return true; }
   /* Pulse and Ripples play once (Justin 2026-11-21: "keep it to 1") */
-  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:16,see:900,bolts:900,hearts:900,inward:900,twinkle:900};
+  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:16,see:900,bolts:900,hearts:900,inward:900,inwardh:900,twinkle:900};
   /* moves that last the whole slide carry on across a following slide with the same move (the non-safety pair) */
-  const LONG={see:1,bolts:1,hearts:1,inward:1,twinkle:1};
+  const LONG={see:1,bolts:1,hearts:1,inward:1,inwardh:1,twinkle:1};
   let spread=0, spreadT=0;
   const frac=x=>x-Math.floor(x);
   function move(n){ if(!cv) return; spreadT=0;
@@ -7435,6 +7436,7 @@ function slideMove(b,c){
   if(/emotion you.re holding onto|^\s*if so, let it be/i.test(h)) return "twinkle";
   if(/^\s*now,? what do you see/i.test(h)) return "see";
   if(/non-safety emotion to invite|something you can tolerate/i.test(h)) return "inward";
+  if(/emotion word best fits your safety/i.test(h)) return "inwardh";
   if(/\bkind(ness)?\b/i.test(h)) return "hearts";
   if(/\bmov(e|es|ing|ement)\b/i.test(h)) return "bolts";
   if(/\b(see|eyes|look(ing)?|sight)\b/i.test(h)) return "glow";
