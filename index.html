@@ -754,6 +754,8 @@
   /* the break paper (2026-11-20): it fills the frame under the slot; the scene stays off under it */
   .frame canvas.brkpaper{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
   .frame.brk-on canvas.ambient,.frame.brk-on canvas.sky{opacity:0}
+  .frame canvas.brkpaper{transition:opacity 1.1s cubic-bezier(.22,.61,.36,1)}
+  .frame.brk-dim canvas.brkpaper{opacity:.4}
   /* the safe box (2026-10-28): the slot, the foot and the join box sit in one box the size of the frame.
      It stays the frame's size everywhere except the SNB app's live room, which tells the slide where its
      cards are (snbSafe); the box then shrinks to the free area and the slide re-grids inside it. */
@@ -6787,12 +6789,21 @@ const BRK=(function(){
 })();
 /* the break slide, from whatever capacity slide a practice built (every practice ends a practice the same way) */
 const NEW_BREAK = ROOM_MODE && /[?&]brk=1/.test(location.search);
+let _stGlyph = false;   /* a student page: the host last said the scene is the glyph paper */
 const BREAK_H = "Break.", BREAK_SETTLE_H = "We’ll start again in a moment.";
 function breakCard(c){ return {kind:"info", h:BREAK_H, body:"", breakMin:c.breakMin, brk:true}; }
 /* after any slide renders: the paper comes up under a break slide and goes away on the next one */
-function syncBreakPaper(root){
+/* Glyph paper is the only scene in the app's live room (Justin, 2026-11-20 7:09 PM PT: "it needs the other scenes
+   removed entirely. this new glyphs paper should appear in all live practices"). With brk=1 the host sends the
+   scene name "glyph" and every device keeps the paper up for the whole session: full on the practice slides
+   (where a scene used to show) and on the break, softer behind slides that are mostly reading. Texture only,
+   no state colour; touches are shared on the break slide only. The old scenes stay in the code for the live
+   site until the app's prod release, then go. */
+function syncBreakPaper(root, glyph, sceneOn){
   const fr=root&&root.querySelector(".frame"); if(!fr) return;
-  if(fr.querySelector(".s.brk")) BRK.mount(fr); else if(BRK.on()) BRK.unmount();
+  const brk=!!fr.querySelector(".s.brk");
+  if(brk||glyph){ BRK.mount(fr); fr.classList.toggle("brk-dim", !brk && !sceneOn); }
+  else if(BRK.on()) BRK.unmount();
 }
 
 /* ---------------- break clock (shared) ---------------- */
@@ -7010,7 +7021,9 @@ window.addEventListener("message",e=>{
   const d=e.data||{};
   if(IS_STUDENT){
     if(d.snbPractice && (!ACTIVE || ACTIVE.id!==d.snbPractice)) setPractice(d.snbPractice, true);
-    if(d.snbSceneName) AMB.set(d.snbSceneName);
+    const glyph = d.snbSceneName==="glyph" || (d.snbSceneName===undefined && _stGlyph);
+    if(d.snbSceneName!==undefined) _stGlyph = d.snbSceneName==="glyph";
+    if(d.snbSceneName && !glyph) AMB.set(d.snbSceneName);
     /* live room (2026-10-28): a member's own state colour, or the room's blend, tints the scene; a breath
        prompt sets the reeds to the app's breath timing. Ignored by a plain student window. */
     if(d.snbTint!==undefined) AMB.tint(d.snbTint);
@@ -7022,17 +7035,17 @@ window.addEventListener("message",e=>{
          ambient canvas and the foot chrome are continuous elements */
       let fr=root.querySelector(".frame");
       if(!fr){
-        root.innerHTML=frameHTML(null, !!d.snbScene, !!d.snbScene && AMB.isDark(), d.snbSlide);
+        root.innerHTML=frameHTML(null, !!d.snbScene, !glyph && !!d.snbScene && AMB.isDark(), d.snbSlide);
         fr=root.querySelector(".frame");
         if(ROOM_SAFE) applySafe(fr,ROOM_SAFE);
       }else{
         fr.classList.toggle("scene-on", !!d.snbScene);
-        fr.classList.toggle("dark", !!d.snbScene && AMB.isDark());
+        fr.classList.toggle("dark", !glyph && !!d.snbScene && AMB.isDark());
         fr.querySelector(".slot").innerHTML=d.snbSlide;
       }
-      AMB.attach(fr.querySelector("canvas.ambient"));
+      if(!glyph) AMB.attach(fr.querySelector("canvas.ambient"));
       startBreakClock(root);
-      syncBreakPaper(root);
+      syncBreakPaper(root, glyph, !!d.snbScene);
       applySNB(root);
       if(ROOM_SAFE) roomFit(fr); else gridSnap(fr);
       if(d.snbJoin) renderJoin(root.querySelector("#joinbox"), d.snbJoin);
@@ -7082,8 +7095,8 @@ function pRender(){
   if(!pSlides.length)return;
   const b=pSlides[pIdx];
   const sceneOn = ACTIVE.sceneOn ? ACTIVE.sceneOn(b) : false;
-  const sceneNm = SHELL.scene || _sessionScene;
-  AMB.set(sceneNm);
+  const sceneNm = NEW_BREAK ? "glyph" : (SHELL.scene || _sessionScene);
+  if(!NEW_BREAK) AMB.set(sceneNm);
   const join = LIVE ? {code:LIVE.code,url:liveJoinURL(),mode:joinModeFor(b)} : {mode:"off"};
   /* AAMFT rule (Justin, 2026-08-30): an image carried over unchanged from the
      slide we just left is not arriving, it is staying — hold it still and let
@@ -7134,9 +7147,9 @@ function pRender(){
   if(sw && !sw.closed) sw.postMessage({snbPractice:ACTIVE.id, snbSlide:slideHTML,
     snbScene:sceneOn, snbSceneName:sceneNm, snbJoin:join, snbIdx:pIdx, snbBuild:pBuild, snbBeat:beatInfo(b,c)},"*");
   const pv=document.getElementById("pvBox");
-  pv.innerHTML=frameHTML(b, sceneOn, sceneOn&&AMB.isDark(), slideHTML);
-  AMB.attach(pv.querySelector("canvas.ambient"));
-  startBreakClock(pv); syncBreakPaper(pv); applySNB(pv);
+  pv.innerHTML=frameHTML(b, sceneOn, !NEW_BREAK&&sceneOn&&AMB.isDark(), slideHTML);
+  if(!NEW_BREAK) AMB.attach(pv.querySelector("canvas.ambient"));
+  startBreakClock(pv); syncBreakPaper(pv, NEW_BREAK, sceneOn); applySNB(pv);
   renderJoin(pv.querySelector("#joinbox"), join);
   gridSnap(pv.querySelector(".frame"));
   document.getElementById("cNotes").innerHTML=fmtNote(OV.apply(b).note);
@@ -7212,6 +7225,8 @@ document.addEventListener("keydown",e=>{
 })();
 
 /* ---------------- boot ---------------- */
+/* the app's live room (brk=1): glyph paper is the only scene, so the scene picker goes */
+if(NEW_BREAK){ const so=document.getElementById("sceneOpts"), dl=so&&so.closest(".dial"); if(dl) dl.style.display="none"; }
 (function(){
   const want=(location.search.match(/[?&]p=([a-z]+)/)||[])[1];
   if(IS_STUDENT){ setPractice(want||practiceKeys()[0], true); bootStudent(); }
