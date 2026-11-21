@@ -473,6 +473,8 @@
    the step number as a filled badge, the arrows quiet between.
    The track class CB puts on each step (safety / defense) is deliberately NOT
    coloured — no colour rails, the 2026-08-04 standard. ---- */
+/* on the glyph paper the step tray is solid darker bone, never see-through (Justin 2026-11-21) */
+.frame.brk-on .snbframe,.frame.brk-on.snbframe,.frame.brk-on{--tray:#F0EEE7}
 .snbframe .flow,.snbframe .sflow,.snbframe .mmflow{
   display:inline-flex;align-items:center;flex-wrap:wrap;gap:.45cqw;margin-top:var(--gut);
   padding:.65cqh .65cqw;background:var(--tray);border:1px solid var(--shair);
@@ -6745,6 +6747,11 @@ const BRK=(function(){
      glyphs upright, app.js _gpSlots); for a run of practice slides the glyphs travel once into true circles round
      resting rings in the middle of the open paper (the app's practice layout), and back to the grid when the run ends */
   let circ=false, lay=null, midKey='';
+  /* the rings are alive (Justin 2026-11-21): the app's practice sway, a small swell 4 s in and 5 s out with a short rest, the
+     glyphs round them leaning and swelling with it; and they answer the finger as in the app: a slide leans them toward it,
+     a hold draws them to it and tightens the inner ring, a tap's ripple reaching them sends one soft shiver */
+  let idlePh=0, lastT=0, lastDraw=0, rox=0, roy=0, tightK=0, shivers=[], RB=0;
+  const swayE=t=>t<=0||t>=9?0:t<4?.5-.5*Math.cos(Math.PI*t/4):.5+.5*Math.cos(Math.PI*(t-4)/5);
   const LAYT=3.2;
   function grid(){ GL=[]; const cs=Math.SQRT1_2, T=3*U, T2=6*U, A=[], B=[];
     [[0,0],[W,0],[0,H],[W,H]].forEach(([X,Y])=>{ const dx=X-W/2; A.push(cs*dx+cs*Y); B.push(-cs*dx+cs*Y); });
@@ -6768,12 +6775,13 @@ const BRK=(function(){
   function place(){ for(const q of GL){ q.x=circ?q.sx:q.gx; q.y=circ?q.sy:q.gy; q.f=q.y/H; } }
   /* the resting rings: the breath's rings at rest (62%), so B swells exactly these */
   function restG(){ const M=mid(), base=Math.min(.64*M.w,.40*H,.62*M.h), u=base*REST/300; return {x:M.x,y:M.y,u,ro:128*u,ri:80*u}; }
-  function clearA(x,y,G){ const d=Math.hypot(x-G.x,y-G.y), R=G.ro+.5*(G.ro-G.ri); return d<R?clampB((d-G.ri)/(R-G.ri))*.5:1; }
-  function restRings(x,G,a){ if(a<=0) return; const gap=(G.ro-G.ri)/2, R=G.ro+1.5*gap, gr=x.createRadialGradient(G.x,G.y,0,G.x,G.y,R), st=v=>Math.min(1,v/R), rgb='250,249,245';
+  function clearA(x,y,G,R){ R=R||G.ro; const d=Math.hypot(x-G.x,y-G.y); return d<R?clampB((d-R*.75)/(R*.25))*.5:1; }
+  function restRings(x,G0,a,sc,ox,oy,tight){ if(a<=0) return; sc=sc||1; const G={x:G0.x+(ox||0),y:G0.y+(oy||0),u:G0.u*sc,ro:G0.ro*sc,ri:G0.ri*sc*(1-.1*(tight||0))};
+    const gap=(G.ro-G.ri)/2, R=G.ro+1.5*gap, gr=x.createRadialGradient(G.x,G.y,0,G.x,G.y,R), st=v=>Math.min(1,v/R), rgb='250,249,245';
     gr.addColorStop(0,'rgba('+rgb+',1)'); gr.addColorStop(st(G.ri+.75*gap),'rgba('+rgb+',1)'); gr.addColorStop(st(G.ri+1.6*gap),'rgba('+rgb+',.6)');
     gr.addColorStop(st(G.ro+.25*gap),'rgba('+rgb+',.45)'); gr.addColorStop(1,'rgba('+rgb+',0)');
     x.globalAlpha=a; x.fillStyle=gr; x.beginPath(); x.arc(G.x,G.y,R,0,Math.PI*2); x.fill();
-    x.globalAlpha=a*.9; x.strokeStyle=INK+'.16)'; x.lineWidth=2*G.u; for(const r of [128,104,80]){ x.beginPath(); x.arc(G.x,G.y,r*G.u,0,Math.PI*2); x.stroke(); }
+    x.globalAlpha=a*.9; x.strokeStyle=INK+'.16)'; x.lineWidth=2*G0.u; for(const r of [128,104,80]){ x.beginPath(); x.arc(G.x,G.y,Math.max(1,r===80?G.ri:r*G.u),0,Math.PI*2); x.stroke(); }
     x.fillStyle=INK+'.5)'; x.beginPath(); x.arc(G.x,G.y,4.5*G.u,0,Math.PI*2); x.fill(); x.globalAlpha=1; }
   function layout(on){ on=!!on; if(on===circ) return; circ=on; if(!cv||!W){ place(); return; }
     breath=null; if(fr) fr.classList.remove('gp-breath'); mv=null;
@@ -6810,8 +6818,27 @@ const BRK=(function(){
     { const M=mid(), mk=Math.round(M.x)+','+Math.round(M.y); if(mk!==midKey){ seatC(); if(!lay) place(); paper=null; } }
     if(lay){ if(layFrame(g,t)){ kick(); return; } }
     if(!paper) makePaper();
-    if(breath){ if(nowBreath(g,t)){ kick(); return; } }
-    g.setTransform(1,0,0,1,0,0); g.drawImage(paper,0,0); g.setTransform(dpr,0,0,dpr,0,0);
+    if(breath){ lastT=0; if(nowBreath(g,t)){ kick(); return; } }
+    const live=circ&&!calm(), G=restG(); let E=0, RR=G.ro, sc=1;
+    if(live){ const dt=lastT?Math.min(.1,t-lastT):0; lastT=t; idlePh+=dt; E=.13*swayE(idlePh%10.5);
+      /* the finger: lean toward a slide, draw in and tighten on a hold */
+      let tx=0, ty=0, tk=0; const last=mine_[mine_.length-1];
+      if(hold){ const hp=1-Math.exp(-(t-hold.t0)/2.5), dx=hold.u*W-G.x, dy=hold.v*H-G.y, d=Math.hypot(dx,dy)||1, k=10*hp*Math.min(1,260/d); tx=dx/d*k; ty=dy/d*k; tk=hp; }
+      else if(dn&&dn.moved&&last){ const dx=last.u*W-G.x, dy=last.v*H-G.y, d=Math.hypot(dx,dy)||1, k=6*Math.min(1,220/d); tx=dx/d*k; ty=dy/d*k; }
+      const a=(tx||ty)?.08:.04; rox+=(tx-rox)*a; roy+=(ty-roy)*a; tightK+=(tk-tightK)*.05;
+      if(Math.abs(rox)<.05&&Math.abs(roy)<.05&&!tx&&!ty) rox=roy=0; if(tightK<.003&&!tk) tightK=0;
+      sc=1+.739*E;
+      /* Pulse: the rings swell once with the light (one breath, 10 s) */
+      if(mv&&mv.n==='pulse'){ const ct=t-mv.t0, ph=Math.min(ct,10), k=ph<4?(.5-.5*Math.cos(Math.PI*ph/4)):(.5+.5*Math.cos(Math.PI*(ph-4)/6)); sc+=.08*k*Math.min(1,ct/1.5)*Math.min(1,(mv.len-ct)/2); }
+      shivers=shivers.filter(v=>t-v.t0<1.4); RR=G.ro*sc;
+      for(const v of shivers){ const age=t-v.t0; if(age>0) RR+=3*(G.ro/60)*v.k*Math.sin(age*Math.PI*6)*Math.exp(-age*3.2); }
+      sc=RR/G.ro;
+      { const tgt=spreadT&&(!mv||t-mv.t0>3.2)?1:0, k=tgt>spread?.012:.03; spread+=(tgt-spread)*k; if(Math.abs(tgt-spread)<.002) spread=tgt; }
+      { const busy=mv||spread!==(spreadT?1:0)||hold||dn||mine_.length||rip.length||lifts.length||pts.length||blooms.length||shivers.length||rox||roy||tightK;
+        if(!busy&&t-lastDraw<.032){ kick(); return; } lastDraw=t; }
+      g.setTransform(dpr,0,0,dpr,0,0); g.globalAlpha=1; g.fillStyle=PAPER; g.fillRect(0,0,W,H); }
+    else { lastT=0; g.setTransform(1,0,0,1,0,0); g.drawImage(paper,0,0); g.setTransform(dpr,0,0,dpr,0,0); }
+    RB=RR;
     pts=pts.filter(p=>t-p.t<LIFE); blooms=blooms.filter(b=>t-b.t<2.4);
     crowd=Math.max(1,new Set(pts.map(p=>p.who)).size);
     const damp=Math.min(1,2.4/Math.sqrt(crowd)), R=U*.8, R2=2*R*R;   /* about one glyph around the finger (Justin 2026-11-20: "should be more discreet") */
@@ -6826,13 +6853,18 @@ const BRK=(function(){
         const vv=Math.max((1-age/2.4)*Math.max(0,1-w/(U*.7))*.9, dd<U*.8?(1-age/2.4):0);
         if(vv>v){ v=vv; st=((Math.round(q.x/U)+Math.round(q.y/U))%2)?b.a:b.b; me=false; } }
       const tm=topM(q.f); v*=.35+.65*tm;
-      if((dx||dy)&&tm>0){ g.globalAlpha=tm; g.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2-1,q.y-SP/2-1,SP+2,SP+2); }
+      if(live){ const ax=q.x-G.x, ay=q.y-G.y, dist=Math.hypot(ax,ay)||1, lean=14*E*Math.exp(-Math.abs(dist-RR-14)/40), r0=RR+6;
+        const kk=dist<r0?smB(clampB((dist-(r0-44))/44)):smB(clampB(1-(dist-r0)/(130+70*E))); dx+=ax/dist*lean; dy+=ay/dist*lean; sc*=1+.2*E*kk;
+        if(spread>0){ const sp=eio(spread)*.22*Math.min(1,Math.max(0,dist-RR)/(3*U)); dx+=ax*sp; dy+=ay*sp; }
+        const ua=dist<RR?clampB((dist-RR*.75)/(RR*.25))*.5:1; if(ua>.02){ const z=SP*sc; g.globalAlpha=ua; g.drawImage(emb(q.k),q.x+dx-z/2,q.y+dy-z/2,z,z); } }
+      else if((dx||dy)&&tm>0){ g.globalAlpha=tm; g.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2-1,q.y-SP/2-1,SP+2,SP+2); }
       if(v>.02){ if(st&&mine(st).indexOf(q.k)<0&&v<.5) continue;
         const s=SP*sc; g.globalAlpha=Math.min(1,v); g.drawImage(sprite(q.k,lightOf(st,me),dpr,SP,S),q.x+dx-s/2,q.y+dy-s/2,s,s); } }
     if(ex&&ex.B){ const B=ex.B, base=Math.min(W,H)*.15; g.globalAlpha=.5*B.env; g.strokeStyle='#BFB59C'; g.lineWidth=1.2;
       for(const f of [1,.72]){ g.beginPath(); g.arc(cx,cy,base*(1+.55*B.k)*f,0,7); g.stroke(); } }
     g.globalAlpha=1;
-    if(pts.length||blooms.length||ex) kick(); }
+    if(live) restRings(g,G,1,sc,rox,roy,tightK);
+    if(pts.length||blooms.length||ex||live) kick(); }
   /* ---- own touch, breath and moves: what each one lights, how far it nudges ---- */
   const HOLD=.45, TAP=.35;
   function extras(t){
@@ -6843,6 +6875,31 @@ const BRK=(function(){
     if(!mine_.length&&!rip.length&&!lifts.length&&!B&&!C&&!Hd) return null;
     return {B,C,Hd};
   }
+  /* the moves live on the circle (Justin 2026-11-21): rows are counted out from the outer ring (row 1 sits just outside it) */
+  const CIRC_MOVES=['wave','pulse','glow','widen','see','bolts','hearts','inward'];
+  function circMove(n,ct,q,cx,cy){ const d=Math.hypot(q.x-cx,q.y-cy)||1, rb=RB||restG().ro, row=(d-rb)/U, ang=Math.atan2(q.y-cy,q.x-cx);
+    const near=(a,b)=>{ let x=a-b; x-=Math.round(x/(2*Math.PI))*2*Math.PI; return x; }, rowW=k=>Math.exp(-Math.pow(row-k,2)/(2*.18));
+    let w=0, s=.1;
+    if(n==='pulse'){ /* Pulse: one pulse from the rings out to the first row of glyphs, one breath long */
+      const ph=Math.min(ct,10), k=ph<4?(.5-.5*Math.cos(Math.PI*ph/4)):(.5+.5*Math.cos(Math.PI*(ph-4)/6)); w=.75*k*rowW(.9+.3*k); s=.08; }
+    else if(n==='wave'){ /* Lap: one column reaches out from the ring, then walks once round it */
+      const len=4, grow=clampB(ct/2.5)*len, lap=eio(clampB((ct-3)/13)), a0=-Math.PI/2+lap*2*Math.PI, off=Math.abs(near(ang,a0))*d;
+      if(row>.4&&row<grow+.5) w=.8*Math.exp(-(off*off)/(2*Math.pow(.45*U,2)))*(1-.12*Math.max(0,row-1)); }
+    else if(n==='glow'){ /* Emanate: now and then a few glyphs travel out from the ring, a few rows deep, never the same twice */
+      const sd=(mv&&mv.seed)||1; for(let i=0;i<6;i++){ const r1=frac(Math.sin(sd*12.9+i*78.2)*43758.5), r2=frac(Math.sin(sd*39.3+i*11.7)*24634.6), r3=frac(Math.sin(sd*7.1+i*91.3)*35724.2);
+        const st0=1.2+i*3.6+r1*1.6, age=ct-st0; if(age<0||age>3.2) continue; const depth=2+Math.floor(r2*3), width=(.4+r3*.9)*U, a0=r1*2*Math.PI+i*2.1;
+        const off=Math.abs(near(ang,a0))*d, front=age/.5; if(row<.4||row>depth+.5||off>width*2.2) continue;
+        const ww=Math.exp(-(off*off)/(2*width*width))*Math.exp(-Math.pow(row-front,2)/.6)*(1-age/3.2)*.85; if(ww>w) w=ww; } }
+    else if(n==='widen'){ /* Widen: one row lights, skip one, the next, skip two, the next, skip three, the next */
+      const rows=[1,3,6,10]; for(let i=0;i<rows.length;i++){ const t0=1+i*3, a=clampB((ct-t0)/.9); if(a<=0) continue;
+        const ww=rowW(rows[i])*a*(i===Math.min(rows.length-1,Math.floor((ct-1)/3))?.85:.45); if(ww>w) w=ww; } s=.08; }
+    else if(n==='bolts'){ /* movement: only the bolts, a slow sweep travelling round the circle while the slide shows */
+      if(q.k==='bolt'&&row>.4){ const a0=ct*.42, off=Math.abs(near(ang,a0)); w=.7*Math.exp(-(off*off)/(2*.35*.35))*Math.exp(-Math.max(0,row-1)/6); s=.14; } }
+    else if(n==='hearts'){ /* kindness: only the hearts, a soft swell that travels out from the ring every few breaths */
+      if(q.k==='heart'&&row>.4){ const ph=(ct%7)/7, front=ph*10; w=.7*Math.exp(-Math.pow(row-front,2)/1.6)*Math.sin(Math.PI*ph); s=.16; } }
+    else if(n==='inward'){ /* the non-safety emotion: only bolts and Xs, a pulse that comes from the outside in, across both slides */
+      if(q.k!=='heart'&&row>.4){ const ph=(ct%7)/6, front=9*(1-Math.min(1,ph)); if(ph<1) w=.7*Math.exp(-Math.pow(row-front,2)/.8)*Math.sin(Math.PI*Math.min(1,ph)); s=.12; } }
+    return {w,s}; }
   function lit(q,t,ex,cx,cy){ const R=U*.8, R2=2*R*R, still=calm(); let v=0, dx=0, dy=0, sc=1;
     for(const p of mine_){ const ax=q.x-p.u*W, ay=q.y-p.v*H; if(Math.abs(ax)>3*R||Math.abs(ay)>3*R) continue; const w=(1-(t-p.t)/LIFE)*Math.exp(-(ax*ax+ay*ay)/R2); if(w>v) v=w; }
     if(!still) for(const r of rip){ const a=(t-r.t)/1.2, rad=a*130*U/32, d=Math.hypot(q.x-r.u*W,q.y-r.v*H), w=Math.max(0,1-Math.abs(d-rad)/(U*.7))*(1-a)*.8; if(w>v) v=w; }
@@ -6856,10 +6913,11 @@ const BRK=(function(){
         if(Math.abs(d-pd)<U&&d>1){ const f=3*(1-Math.abs(d-pd)/U); dx+=(q.x-cx)/d*f; dy+=(q.y-cy)/d*f; } } }
     const C=ex.C; if(C){ let w=0; const ct=C.ct;
       if(still){ w=.35*(.5-.5*Math.cos(Math.PI*2*ct/10)); }
-      else if(C.n==='wave'){ const front=H*1.2-((ct%6.5)/6.5)*(H*1.5)+Math.sin(q.x/W*6+ct)*U*.6; w=Math.max(0,1-Math.abs(q.y-front)/(U*2.2)); sc*=1+.12*w; }
-      else if(C.n==='pulse'){ const ph=Math.min(ct,10), k=ph<4?(.5-.5*Math.cos(Math.PI*ph/4)):(.5+.5*Math.cos(Math.PI*(ph-4)/6)); w=.6*k; sc*=1+.06*k; }
+      else if(CIRC_MOVES.indexOf(C.n)>=0){ let n=C.n, t2=ct, ev=1;
+        /* "Now, what do you see?": the whole slide, drifting from one move to the next every 24 s, in an order of its own each time */
+        if(n==='see'){ const seg=Math.floor(ct/24), sq=mv.seq||['wave','glow','widen','pulse']; n=sq[seg%sq.length]; t2=ct-seg*24; ev=Math.min(1,t2/2)*Math.min(1,(24-t2)/3); }
+        const r=circMove(n,t2,q,cx,cy); w=r.w*ev; sc*=1+r.s*w; }
       else if(C.n==='ripples'){ for(let i=0;i<1;i++){ const age=ct-i*3; if(age<0||age>4.5) continue; const rad=age/4.5*260*U/32*1.4, d=Math.hypot(q.x-cx,q.y-cy), ww=Math.max(0,1-Math.abs(d-rad)/(26*U/32))*(1-age/4.5); if(ww>w) w=ww; } sc*=1+.1*w; }
-      else if(C.n==='glow'){ const a=ct*.35, gx=cx+Math.sin(a)*W*.3, gy=cy+Math.sin(2*a)*H*.18, d=Math.hypot(q.x-gx,q.y-gy); w=Math.exp(-(d*d)/(2*Math.pow(70*U/32,2)))*.9; }
       w*=C.env; if(w>v) v=w; }
     return {v,dx,dy,sc}; }
   /* the member's own finger: ph 'd' down, 'm' move, 'u' up (u,v = 0..1 of the frame). Off during the breath. */
@@ -6867,7 +6925,8 @@ const BRK=(function(){
     if(ph==='d'){ dn={u0:u,v0:v,u,v,t0:t,moved:false}; clearTimeout(own._h); own._h=setTimeout(()=>{ if(dn&&!dn.moved){ hold={u:dn.u,v:dn.v,t0:performance.now()/1000}; kick(); } },HOLD*1000); }
     else if(ph==='m'&&dn){ dn.u=u; dn.v=v; if(Math.hypot((u-dn.u0)*W,(v-dn.v0)*H)>10){ if(!dn.moved){ dn.moved=true; clearTimeout(own._h); if(hold) endHold(t); }
         mine_.push({u,v,t}); if(mine_.length>40) mine_.shift(); } }
-    else if(ph==='u'&&dn){ clearTimeout(own._h); if(hold) endHold(t); else if(!dn.moved&&t-dn.t0<TAP) rip.push({u:dn.u,v:dn.v,t}); dn=null; }
+    else if(ph==='u'&&dn){ clearTimeout(own._h); if(hold) endHold(t); else if(!dn.moved&&t-dn.t0<TAP){ rip.push({u:dn.u,v:dn.v,t});
+        if(circ&&!calm()){ const G=restG(), gap=Math.max(0,Math.hypot(dn.u*W-G.x,dn.v*H-G.y)-(RB||G.ro)); if(gap<130){ const f2=gap/130, at=1.2*(1-Math.cbrt(1-Math.min(.999,f2))); shivers.push({t0:t+at,k:1-.6*f2}); } } } dn=null; }
     kick(); }
   function endHold(t){ const ht=t-hold.t0; lifts.push({u:hold.u,v:hold.v,t,r:(24+110*(1-Math.exp(-ht/4)))*U/32,p:1-Math.exp(-ht/2.5)}); hold=null; }
   function breathe(){ if(!cv||breath||lay) return; breath={t0:performance.now()/1000, keep:circ}; dn=null; hold=null; mine_=[]; fr.classList.add('gp-breath'); kick(); }
@@ -6930,9 +6989,20 @@ const BRK=(function(){
       g.fillStyle=INK+'.5)'; g.beginPath(); g.arc(C.x,C.y,4.5*u,0,Math.PI*2); g.fill(); }
     g.globalAlpha=1; return true; }
   /* Pulse and Ripples play once (Justin 2026-11-21: "keep it to 1") */
-  const LEN={wave:20,pulse:10,ripples:5.5,glow:24};
-  function move(n){ if(!cv) return; if(n==='stop'||!LEN[n]){ mv=null; kick(); return; } mv={n,t0:performance.now()/1000,len:LEN[n]}; kick(); }
-  function moveOff(){ mv=null; }
+  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:16,see:900,bolts:900,hearts:900,inward:900};
+  /* moves that last the whole slide carry on across a following slide with the same move (the non-safety pair) */
+  const LONG={see:1,bolts:1,hearts:1,inward:1};
+  let spread=0, spreadT=0;
+  const frac=x=>x-Math.floor(x);
+  function move(n){ if(!cv) return; spreadT=0;
+    if(n==='stop'||!LEN[n]){ mv=null; kick(); return; }
+    if(LONG[n]&&mv&&mv.n===n){ kick(); return; }
+    const sq=['wave','glow','widen','pulse']; for(let i=sq.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [sq[i],sq[j]]=[sq[j],sq[i]]; }
+    mv={n,t0:performance.now()/1000,len:LEN[n],seed:1+Math.random()*9,seq:sq};
+    /* hearing: after the one ripple the glyphs drift a little further apart, and come back together when the slide closes */
+    if(n==='ripples') spreadT=1;
+    kick(); }
+  function moveOff(){ mv=null; spreadT=0; }
   function mount(frameEl){
     if(fr===frameEl&&cv&&cv.isConnected) return;
     unmount(); fr=frameEl; cv=document.createElement('canvas'); cv.className='brkpaper'; cv.setAttribute('aria-hidden','true');
@@ -7357,6 +7427,11 @@ function slideMove(b,c){
   const nx=pSlides[pIdx+1]; let nc=null; try{ nc=nx?ACTIVE.map(OV.apply(nx)):null; }catch(e){}
   if(b===pSlides[pIdx]&&nc&&nc.breakMin) return "wave";
   const h=String(c.h||"").replace(/<[^>]+>/g," ");
+  if(/\bwiden/i.test(h)) return "widen";
+  if(/^\s*now,? what do you see/i.test(h)) return "see";
+  if(/non-safety emotion to invite|something you can tolerate/i.test(h)) return "inward";
+  if(/\bkind(ness)?\b/i.test(h)) return "hearts";
+  if(/\bmov(e|es|ing|ement)\b/i.test(h)) return "bolts";
   if(/\b(see|eyes|look(ing)?|sight)\b/i.test(h)) return "glow";
   if(/\b(hear|sounds?|listen(ing)?)\b/i.test(h)) return "ripples";
   return "";
@@ -7405,7 +7480,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="ArrowRight"||e.key===" ")pNext();
   else if(e.key==="ArrowLeft")pPrev();
   else if(e.key==="Escape")endPresent();
-  else if(NEW_BREAK&&!e.metaKey&&!e.ctrlKey&&!e.altKey){ const k=e.key.toLowerCase(), m={"1":"wave","2":"pulse","3":"ripples","4":"glow","0":"stop"}[k];
+  else if(NEW_BREAK&&!e.metaKey&&!e.ctrlKey&&!e.altKey){ const k=e.key.toLowerCase(), m={"1":"wave","2":"pulse","3":"ripples","4":"glow","5":"widen","0":"stop"}[k];
     if(k==="b") hostCue({breath:1}); else if(m) hostCue({move:m}); }
 });
 
