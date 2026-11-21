@@ -6738,7 +6738,7 @@ const BRK=(function(){
   let pts=[], blooms=[], lastBloom=0, crowd=1, settled=false;
   /* the member's own paper on every live slide (Justin 2026-11-20: "Just them"): drag, tap ripple, hold with pull,
      plain bone, never sent to the room. Plus the breath Justin starts with B and the four moves (GLYPH-LIVE-SPEC.md). */
-  let mine_=[], rip=[], hold=null, lifts=[], dn=null, breath=null, mv=null;
+  let mine_=[], rip=[], hold=null, lifts=[], dn=null, breath=null, mv=null, pendB=false, cel=null;
   function size(){ if(!cv) return; W=fr.clientWidth; H=fr.clientHeight; if(!W||!H) return; dpr=Math.min(2,devicePixelRatio||1);
     cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
     /* about 22 glyph columns on a wide screen, never smaller than a fingertip's worth on a phone */
@@ -6781,14 +6781,15 @@ const BRK=(function(){
     gr.addColorStop(0,'rgba('+rgb+',1)'); gr.addColorStop(st(G.ri+.75*gap),'rgba('+rgb+',1)'); gr.addColorStop(st(G.ri+1.6*gap),'rgba('+rgb+',.6)');
     gr.addColorStop(st(G.ro+.25*gap),'rgba('+rgb+',.45)'); gr.addColorStop(1,'rgba('+rgb+',0)');
     x.globalAlpha=a; x.fillStyle=gr; x.beginPath(); x.arc(G.x,G.y,R,0,Math.PI*2); x.fill();
-    x.globalAlpha=a*.9; x.strokeStyle=INK+'.16)'; x.lineWidth=2*G0.u; for(const r of [128,104,80]){ x.beginPath(); x.arc(G.x,G.y,Math.max(1,r===80?G.ri:r*G.u),0,Math.PI*2); x.stroke(); }
-    x.fillStyle=INK+'.5)'; x.beginPath(); x.arc(G.x,G.y,4.5*G.u,0,Math.PI*2); x.fill(); x.globalAlpha=1; }
+    /* at rest the rings are the glyphs' darker bone (Justin 2026-11-21 9:42 AM); they darken only for the One breath */
+    x.globalAlpha=a; x.strokeStyle=BONE; x.lineWidth=2*G0.u; for(const r of [128,104,80]){ x.beginPath(); x.arc(G.x,G.y,Math.max(1,r===80?G.ri:r*G.u),0,Math.PI*2); x.stroke(); }
+    x.fillStyle=BONE; x.beginPath(); x.arc(G.x,G.y,4.5*G.u,0,Math.PI*2); x.fill(); x.globalAlpha=1; }
   function layout(on){ on=!!on; if(on===circ) return; circ=on; if(!cv||!W){ place(); return; }
     breath=null; if(fr) fr.classList.remove('gp-breath'); mv=null;
     if(calm()){ lay=null; place(); paper=null; kick(); return; }
     lay={t0:performance.now()/1000, to:on}; kick(); }
   /* a travel frame: each glyph slides from its grid slot to its seat (or back), embossed as it goes */
-  function layFrame(g,t){ const tt=t-lay.t0; if(tt>=LAYT){ lay=null; place(); paper=null; return false; }
+  function layFrame(g,t){ const tt=t-lay.t0; if(tt>=LAYT){ lay=null; place(); paper=null; if(pendB){ pendB=false; breathe(); } return false; }
     const G=restG(), to=lay.to;
     g.setTransform(dpr,0,0,dpr,0,0); g.globalAlpha=1; g.fillStyle=PAPER; g.fillRect(0,0,W,H);
     for(const q of GL){ const k=eio(clampB((tt-q.ad)/2.4)), p=to?k:1-k, x=q.gx+(q.sx-q.gx)*p, y=q.gy+(q.sy-q.gy)*p;
@@ -6816,9 +6817,9 @@ const BRK=(function(){
   function frame(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; }
     if(!cv||!W) return; const g=cv.getContext('2d'), t=performance.now()/1000;
     { const M=mid(), mk=Math.round(M.x)+','+Math.round(M.y); if(mk!==midKey){ seatC(); if(!lay) place(); paper=null; } }
-    if(lay){ if(layFrame(g,t)){ kick(); return; } }
+    if(lay){ if(layFrame(g,t)){ if(cel&&!celFrame(g,t)) cel=null; kick(); return; } }
     if(!paper) makePaper();
-    if(breath){ lastT=0; if(nowBreath(g,t)){ kick(); return; } }
+    if(breath){ lastT=0; if(nowBreath(g,t)){ if(cel&&!celFrame(g,t)) cel=null; kick(); return; } }
     const live=circ&&!calm(), G=restG(); let E=0, RR=G.ro, sc=1;
     if(live){ const dt=lastT?Math.min(.1,t-lastT):0; lastT=t; idlePh+=dt; E=.13*swayE(idlePh%10.5);
       /* the finger: lean toward a slide, draw in and tighten on a hold */
@@ -6864,19 +6865,48 @@ const BRK=(function(){
       for(const f of [1,.72]){ g.beginPath(); g.arc(cx,cy,base*(1+.55*B.k)*f,0,7); g.stroke(); } }
     g.globalAlpha=1;
     if(live) restRings(g,G,1,sc,rox,roy,tightK);
-    if(pts.length||blooms.length||ex||live) kick(); }
+    if(cel&&!celFrame(g,t)) cel=null;
+    if(pts.length||blooms.length||ex||live||cel) kick(); }
+  /* Woo-hoo (Justin 2026-11-21 9:42 AM: "balloons rising and confetti being thrown", from the bottom up): balloons in the
+     six state colours float up with a little sway, and two handfuls of confetti (small glyphs and flecks) are thrown up
+     from the bottom corners and drift down. About 11 s, once. Off with Reduce Motion. */
+  const CEL_COLS=['#F4D58D','#E89B9B','#A3C0DD','#E8A871','#9FC498','#B89AC4'];
+  function celRnd(i,k){ return frac(Math.sin((cel.seed+i*12.9898+k*78.233))*43758.5453); }
+  function celFrame(g,t){ const ct=t-cel.t0, END=11; if(ct>END) return false;
+    g.setTransform(dpr,0,0,dpr,0,0); const fade=Math.min(1,(END-ct)/1.5), Bn=Math.max(10,Math.round(W/45));
+    /* balloons */
+    for(let i=0;i<Bn;i++){ const st=celRnd(i,1)*3.2, a=ct-st; if(a<0) continue; const sz=(.85+celRnd(i,2)*.6)*Math.max(34,Math.min(60,W/11)), rise=H*(.11+celRnd(i,3)*.05),
+        y=H+sz*2-a*rise, x=W*(.06+.88*celRnd(i,4))+Math.sin(a*1.1+i)*sz*.35; if(y<-sz*3) continue;
+      const col=CEL_COLS[i%6], tilt=Math.sin(a*1.1+i)*.08;
+      g.save(); g.translate(x,y); g.rotate(tilt); g.globalAlpha=.92*fade*Math.min(1,a/.6);
+      g.strokeStyle='rgba(138,132,120,.55)'; g.lineWidth=1; g.beginPath(); g.moveTo(0,sz*.62);
+      for(let k=1;k<=6;k++) g.lineTo(Math.sin(a*2+k)*3,sz*.62+k*sz*.22); g.stroke();
+      g.fillStyle=col; g.beginPath(); g.ellipse(0,0,sz*.42,sz*.52,0,0,Math.PI*2); g.fill();
+      g.beginPath(); g.moveTo(-sz*.07,sz*.6); g.lineTo(sz*.07,sz*.6); g.lineTo(0,sz*.5); g.fill();
+      g.fillStyle='rgba(255,255,255,.45)'; g.beginPath(); g.ellipse(-sz*.15,-sz*.2,sz*.08,sz*.15,-.5,0,Math.PI*2); g.fill(); g.restore(); }
+    /* confetti: two throws from each bottom corner, up and in, then falling and turning */
+    const N=Math.round(Math.min(180,W/3));
+    for(let i=0;i<N;i++){ const th=i%4, st=th<2?.15:1.9, a=ct-st-celRnd(i,5)*.25; if(a<0) continue; const left=th%2===0;
+      const x0=left?-10:W+10, y0=H+10, ang=.15+celRnd(i,6)*.5, sp=H*(1.25+celRnd(i,7)*.6), vx=(left?1:-1)*Math.sin(ang)*sp, vy=-Math.cos(ang)*sp, vt=H*(.17+celRnd(i,10)*.09);
+      const drag=Math.exp(-a*.9), px=x0+vx*(1-drag)/.9+Math.sin(a*2.2+i)*U*.5*Math.min(1,a/2), py=y0+vy*(1-drag)/.9+vt*a;
+      if(py>H+30||px<-30||px>W+30) continue; const col=CEL_COLS[(i*7)%6], rot=a*(2+celRnd(i,8)*4)*(i%2?1:-1), z=(.5+celRnd(i,9)*.5)*SP;
+      g.save(); g.translate(px,py); g.rotate(rot); g.globalAlpha=fade*Math.min(1,a/.15);
+      if(i%3===0) g.drawImage(sprite(K[i%3===0?(i>>2)%3:0],col,dpr,SP,S),-z/2,-z/2,z,z);
+      else { g.fillStyle=col; g.fillRect(-z*.16,-z*.28*Math.abs(Math.cos(a*5+i)),z*.32,z*.56*Math.abs(Math.cos(a*5+i))+1); }
+      g.restore(); }
+    g.globalAlpha=1; return true; }
   /* ---- own touch, breath and moves: what each one lights, how far it nudges ---- */
   const HOLD=.45, TAP=.35;
   function extras(t){
     mine_=mine_.filter(p=>t-p.t<LIFE); rip=rip.filter(r=>t-r.t<1.2); lifts=lifts.filter(l=>t-l.t<1.5);
     const B=null;
-    let C=null; if(mv){ const ct=t-mv.t0; if(ct>mv.len) mv=null; else C={n:mv.n, ct, env:Math.min(1,ct/1.5)*Math.min(1,(mv.len-ct)/2)}; }
+    let C=null; if(mv){ const ct=t-mv.t0; if(ct>mv.len) mv=null; else C={n:mv.n, ct, env:Math.min(1,ct/1.5)*Math.min(1,(mv.len-ct)/1.5)}; }
     let Hd=null; if(hold){ const ht=t-hold.t0; Hd={r:(24+110*(1-Math.exp(-ht/4)))*U/32, p:1-Math.exp(-ht/2.5), a:Math.min(1,ht/.6)}; }
     if(!mine_.length&&!rip.length&&!lifts.length&&!B&&!C&&!Hd) return null;
     return {B,C,Hd};
   }
   /* the moves live on the circle (Justin 2026-11-21): rows are counted out from the outer ring (row 1 sits just outside it) */
-  const CIRC_MOVES=['wave','pulse','glow','widen','see','bolts','hearts','inward','inwardh','twinkle'];
+  const CIRC_MOVES=['wave','pulse','glow','widen','see','bolts','hearts','inward','inwardh','twinkle','ripples'];
   function circMove(n,ct,q,cx,cy){ const d=Math.hypot(q.x-cx,q.y-cy)||1, rb=RB||restG().ro, row=(d-rb)/U, ang=Math.atan2(q.y-cy,q.x-cx);
     const near=(a,b)=>{ let x=a-b; x-=Math.round(x/(2*Math.PI))*2*Math.PI; return x; }, rowW=k=>Math.exp(-Math.pow(row-k,2)/(2*.18));
     let w=0, s=.1, st='';
@@ -6894,6 +6924,10 @@ const BRK=(function(){
       /* repeats while the slide shows, and carries on into the reconnecting slide */
       const c2=ct%15, fo=Math.min(1,Math.max(0,(15-c2)/2.5)), rows=[1,3,6,10]; for(let i=0;i<rows.length;i++){ const t0=1+i*3, a=clampB((c2-t0)/.9); if(a<=0) continue;
         const ww=rowW(rows[i])*a*fo*(i===Math.min(rows.length-1,Math.floor((c2-1)/3))?.85:.45); if(ww>w) w=ww; } s=.08; }
+    else if(n==='ripples'){ /* hearing: one soft ring travels out from the rings every 6 s while the slide shows, fading in and out
+         rather than switching (Justin 2026-11-21 9:42 AM: "a softer off and on") */
+      const age=ct%6, life=5.6; if(age<life){ const front=.4+age/life*9, env=Math.pow(Math.sin(Math.PI*age/life),1.5);
+        w=.72*Math.exp(-Math.pow(row-front,2)/1.3)*env*(row>.2?1:0); s=.1; } }
     else if(n==='bolts'){ /* movement: only the bolts, a slow sweep travelling round the circle while the slide shows */
       if(q.k==='bolt'&&row>.4){ const a0=ct*.42, off=Math.abs(near(ang,a0)); w=.7*Math.exp(-(off*off)/(2*.35*.35))*Math.exp(-Math.max(0,row-1)/6); s=.14; } }
     else if(n==='hearts'){ /* kindness: only the hearts, a soft swell that travels out from the ring every few breaths */
@@ -6944,7 +6978,7 @@ const BRK=(function(){
         if(circ&&!calm()){ const G=restG(), gap=Math.max(0,Math.hypot(dn.u*W-G.x,dn.v*H-G.y)-(RB||G.ro)); if(gap<130){ const f2=gap/130, at=1.2*(1-Math.cbrt(1-Math.min(.999,f2))); shivers.push({t0:t+at,k:1-.6*f2}); } } } dn=null; }
     kick(); }
   function endHold(t){ const ht=t-hold.t0; lifts.push({u:hold.u,v:hold.v,t,r:(24+110*(1-Math.exp(-ht/4)))*U/32,p:1-Math.exp(-ht/2.5)}); hold=null; }
-  function breathe(){ if(!cv||breath||lay) return; breath={t0:performance.now()/1000, keep:circ}; dn=null; hold=null; mine_=[]; fr.classList.add('gp-breath'); kick(); }
+  function breathe(){ if(!cv||breath) return; if(lay){ pendB=true; return; } breath={t0:performance.now()/1000, keep:circ}; dn=null; hold=null; mine_=[]; fr.classList.add('gp-breath'); kick(); }
   /* ---- Now's One breath, the same motion as the app's Now page (app.js _gpBreath + _nqBreath, no check-in form;
      Justin 2026-11-21: "it needs to mirror the one breath on the Now page"). The words step aside for 1.2 s, then the
      three breath rings rise out of the paper at 62% and swell for 4 s to full size and settle for 5 s back; the glyphs
@@ -7000,31 +7034,36 @@ const BRK=(function(){
       gr.addColorStop(0,'rgba('+rgb+',1)'); gr.addColorStop(st(ri+.75*rgap),'rgba('+rgb+',1)'); gr.addColorStop(st(ri+1.6*rgap),'rgba('+rgb+',.6)');
       gr.addColorStop(st(ro+.25*rgap),'rgba('+rgb+',.45)'); gr.addColorStop(1,'rgba('+rgb+',0)');
       g.globalAlpha=breath.keep?1:Math.max(mo,still?rOp:0); g.fillStyle=gr; g.beginPath(); g.arc(C.x,C.y,R,0,Math.PI*2); g.fill();
-      g.globalAlpha=rOp*.9; g.strokeStyle=INK+'.16)'; g.lineWidth=2*u; for(const r of [128,104,80]){ g.beginPath(); g.arc(C.x,C.y,r*u,0,Math.PI*2); g.stroke(); }
-      g.fillStyle=INK+'.5)'; g.beginPath(); g.arc(C.x,C.y,4.5*u,0,Math.PI*2); g.fill(); }
+      /* from the resting bone, the rings darken for their breath and go back to bone after it */
+      const dk=breath.keep?(rt<=0?0:Math.min(1,rt/.9)*(rt>9?Math.max(0,1-(rt-9)/.9):1)):1;
+      const ringsAt=(col,dot,al)=>{ if(al<=.01) return; g.globalAlpha=al; g.strokeStyle=col; g.lineWidth=2*u; for(const r of [128,104,80]){ g.beginPath(); g.arc(C.x,C.y,r*u,0,Math.PI*2); g.stroke(); }
+        g.fillStyle=dot; g.beginPath(); g.arc(C.x,C.y,4.5*u,0,Math.PI*2); g.fill(); };
+      ringsAt(BONE,BONE,rOp*(1-dk)); ringsAt(INK+'.16)',INK+'.5)',rOp*.9*dk); }
     g.globalAlpha=1; return true; }
   /* Pulse and Ripples play once (Justin 2026-11-21: "keep it to 1") */
-  const LEN={wave:19,pulse:10,ripples:5.5,glow:24,widen:900,see:900,bolts:900,hearts:900,inward:900,inwardh:900,twinkle:900};
+  const LEN={wave:19,pulse:10,ripples:900,glow:24,widen:900,see:900,bolts:900,hearts:900,inward:900,inwardh:900,twinkle:900};
   /* moves that last the whole slide carry on across a following slide with the same move (the non-safety pair) */
-  const LONG={see:1,bolts:1,hearts:1,inward:1,inwardh:1,twinkle:1,widen:1};
+  const LONG={ripples:1,see:1,bolts:1,hearts:1,inward:1,inwardh:1,twinkle:1,widen:1};
   let spread=0, spreadT=0;
   const frac=x=>x-Math.floor(x);
   function move(n){ if(!cv) return; spreadT=0; const calmStart=n==='twinklec';
-    if(n==='stop'||!(LEN[n]||n==='twinklec')){ mv=null; kick(); return; }
-    if(LONG[n]&&mv&&mv.n===n){ kick(); return; }
+    if(n==='celebrate'){ if(!calm()) cel={t0:performance.now()/1000, seed:Math.random()*99}; kick(); return; }
+    /* a move ends softly, fading out over 1.5 s (Justin 2026-11-21 9:42 AM) */
+    if(n==='stop'||!(LEN[n]||n==='twinklec')){ if(mv){ const ct=performance.now()/1000-mv.t0; mv.len=Math.min(mv.len,ct+1.5); } kick(); return; }
+    if(LONG[n]&&mv&&mv.n===n){ mv.len=LEN[n]; kick(); return; }
     if(n==='twinklec'){ if(mv&&mv.n==='twinkle'){ if(mv.calmCt==null) mv.calmCt=performance.now()/1000-mv.t0; kick(); return; } n='twinkle'; }
     const sq=['wave','glow','widen','pulse']; for(let i=sq.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [sq[i],sq[j]]=[sq[j],sq[i]]; }
     mv={n,t0:performance.now()/1000,len:LEN[n],seed:1+Math.random()*9,seq:['glow',...sq.filter(x=>x!=='glow')],calmCt:calmStart?0:null};
     /* hearing: after the one ripple the glyphs drift a little further apart, and come back together when the slide closes */
     if(n==='ripples') spreadT=1;
     kick(); }
-  function moveOff(){ mv=null; spreadT=0; }
+  function moveOff(){ mv=null; spreadT=0; cel=null; }
   function mount(frameEl){
     if(fr===frameEl&&cv&&cv.isConnected) return;
     unmount(); fr=frameEl; cv=document.createElement('canvas'); cv.className='brkpaper'; cv.setAttribute('aria-hidden','true');
     fr.insertBefore(cv, fr.querySelector('.safe')); fr.classList.add('brk-on');
     ro=new ResizeObserver(size); ro.observe(fr); size(); }
-  function unmount(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; } if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on','gp-breath'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; embC={}; mine_=[]; rip=[]; hold=null; lifts=[]; dn=null; breath=null; mv=null; lay=null; circ=false; }
+  function unmount(){ if(raf){ cancelAnimationFrame(raf); raf=0; } if(tmo){ clearTimeout(tmo); tmo=0; } if(ro) ro.disconnect(); if(cv) cv.remove(); if(fr) fr.classList.remove('brk-on','gp-breath'); ro=cv=fr=null; pts=[]; blooms=[]; settled=false; paper=null; embC={}; mine_=[]; rip=[]; hold=null; lifts=[]; dn=null; breath=null; mv=null; lay=null; circ=false; pendB=false; cel=null; }
   /* u,v = 0..1 of the frame; st = the toucher's latest check-in key ('' = none, plain bone); who = a per-session id, never a name */
   function touch(u,v,st,who,me){
     if(!cv||settled) return; u=+u; v=+v; if(!(u>=0&&u<=1&&v>=0&&v<=1)) return; st=COL[st]?st:''; who=String(who||'').slice(0,64);
@@ -7347,7 +7386,7 @@ function fmtNote(n){
   return html;
 }
 let _lastImg=null,_lastEb=null,_lastH=null,_lastBody=null;
-let _pvMoveKey="";
+let _pvMoveKey="", _autoBreathT=0;
 function pRender(){
   if(!pSlides.length)return;
   const b=pSlides[pIdx];
@@ -7407,7 +7446,9 @@ function pRender(){
   pv.innerHTML=frameHTML(b, sceneOn, !NEW_BREAK&&sceneOn&&AMB.isDark(), slideHTML);
   if(!NEW_BREAK) AMB.attach(pv.querySelector("canvas.ambient"));
   startBreakClock(pv); syncBreakPaper(pv, NEW_BREAK, sceneOn); applySNB(pv);
-  if(NEW_BREAK){ const mk=ACTIVE.id+":"+pIdx; if(mk!==_pvMoveKey){ _pvMoveKey=mk; BRK.move(beatInfo(b,c).move||"stop"); } }
+  if(NEW_BREAK){ const mk=ACTIVE.id+":"+pIdx; if(mk!==_pvMoveKey){ _pvMoveKey=mk; const bi=beatInfo(b,c); BRK.move(bi.move||"stop");
+      /* the intentional breath starts by itself 3 s into its slide, on every screen (Justin 2026-11-21 9:42 AM); B still works */
+      clearTimeout(_autoBreathT); if(bi.ib) _autoBreathT=setTimeout(()=>{ if(_pvMoveKey===mk) hostCue({breath:1}); },3000); } }
   renderJoin(pv.querySelector("#joinbox"), join);
   gridSnap(pv.querySelector(".frame"));
   document.getElementById("cNotes").innerHTML=fmtNote(OV.apply(b).note);
@@ -7439,6 +7480,8 @@ function beatInfo(b,c){
 /* Justin 2026-11-20 8:57 PM PT: Glow on the sight anchor slides, Ripples on the sound ones, Wave on the last practice
    slide before the break. Pulse rides no slide (keys only). Practice slides only, never reading slides. */
 function slideMove(b,c){
+  /* the Woo-hoo slide celebrates: balloons and confetti from the bottom (Justin 2026-11-21 9:42 AM) */
+  if(c&&c.kind==="cover"&&/woo-?hoo/i.test(String(c.h||""))) return "celebrate";
   if(!c||c.brk||!(ACTIVE.sceneOn&&ACTIVE.sceneOn(b))) return "";
   const nx=pSlides[pIdx+1]; let nc=null; try{ nc=nx?ACTIVE.map(OV.apply(nx)):null; }catch(e){}
   if(b===pSlides[pIdx]&&nc&&nc.breakMin) return "wave";
