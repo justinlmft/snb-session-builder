@@ -631,6 +631,7 @@
 .snbframe .well .ctacard .jlink{font-size:clamp(9px,1cqw,15px);color:var(--sink,#171c26);
   text-decoration:none;overflow-wrap:anywhere;line-height:1.3}
 
+html.pl-hide .snbframe .plans{visibility:hidden}
 /* the two plans (2026-11-25): side by side across the frame, 1-6 and 7-12; no QR (members tap Join now in the app) */
 .snbframe .s.plans-on .body{color:var(--sbody);max-width:none;align-self:stretch}
 .snbframe .s.plans-on .pl-lede{margin:0 0 var(--gut);font-size:max(13px,2.8cqh);line-height:1.4;color:var(--smuted)}
@@ -7366,6 +7367,9 @@ window.addEventListener("message",e=>{
        prompt sets the reeds to the app's breath timing. Ignored by a plain student window. */
     if(d.snbTint!==undefined) AMB.tint(d.snbTint);
     if(d.snbBreathe!==undefined) AMB.breathe(!!d.snbBreathe);
+    /* the plans slide on a computer (2026-11-25, option A): the app lays its own plan cards where the drawn plans are, so
+       the drawing steps aside for this member and we keep telling the app where it was */
+    if(d.snbPlansHide!==undefined){ PL_HIDE=!!d.snbPlansHide; document.documentElement.classList.toggle("pl-hide",PL_HIDE); if(PL_HIDE) plRectLoop(); }
     if(d.snbSafe!==undefined){ ROOM_SAFE=d.snbSafe||null; const f0=document.querySelector("#stage .frame"); if(f0) applySafe(f0,ROOM_SAFE); }
     if(d.snbSlide!==undefined){
       const root=document.getElementById("stage");
@@ -7400,6 +7404,15 @@ window.addEventListener("message",e=>{
   else if(d.snbNav===1) pNext();
   else if(d.snbNav===-1) pPrev();
 });
+let PL_HIDE=false, PL_SIG="";
+function plRectLoop(){
+  if(!PL_HIDE){ PL_SIG=""; return; }
+  const el=document.querySelector("#stage .plans");
+  const r=el?el.getBoundingClientRect():null, q=r&&r.width?{x:Math.round(r.left),y:Math.round(r.top),w:Math.round(r.width),h:Math.round(r.height)}:{x:0,y:0,w:0,h:0};
+  const sig=[q.x,q.y,q.w,q.h].join(",");
+  if(sig!==PL_SIG){ PL_SIG=sig; try{ window.parent.postMessage({snbPlansRect:q},"*"); }catch(e){} }
+  requestAnimationFrame(plRectLoop);
+}
 function bootStudent(){
   document.title="SNB — Slides";
   document.body.innerHTML='<div id="stage" style="position:absolute;inset:0"></div>';
