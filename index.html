@@ -631,8 +631,8 @@
 .snbframe .well .ctacard .jlink{font-size:clamp(9px,1cqw,15px);color:var(--sink,#171c26);
   text-decoration:none;overflow-wrap:anywhere;line-height:1.3}
 
-/* the two plans (2026-11-25): side by side in the text column (1-4 and 5-8), the QR in the art well (9-12) */
-.snbframe .s.plans-on .body{color:var(--sbody)}
+/* the two plans (2026-11-25): side by side across the frame, 1-6 and 7-12; no QR (members tap Join now in the app) */
+.snbframe .s.plans-on .body{color:var(--sbody);max-width:none;align-self:stretch}
 .snbframe .s.plans-on .pl-lede{margin:0 0 var(--gut);font-size:max(13px,2.8cqh);line-height:1.4;color:var(--smuted)}
 .snbframe .plans{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--colgap)}
 .snbframe .plan{border-top:2px solid var(--sink);padding-top:1.6cqh}
@@ -720,10 +720,7 @@
   .snbframe .s > .well .ctacard .qr{width:min(14cqh,20cqw)}
   .snbframe .s > .well .ctacard .jlead{font-size:max(9px,2.2cqw)}
   .snbframe .s > .well .ctacard .jlink{font-size:max(11px,2.8cqw)}
-  /* the plans on a phone: nobody scans their own screen, so the QR steps aside and the link stays as one line */
-  .snbframe .s.plans-on .snbjoin.big{padding:1.6cqh 4cqw;border:0;border-top:1px solid var(--shair);border-radius:0;align-items:flex-start;text-align:left}
-  .snbframe .s.plans-on .snbjoin.big .qr{display:none}
-  .snbframe .s.plans-on .snbjoin.big .jtext{margin-top:0;padding-top:0;border-top:0}
+  /* the plans on a phone */
   .snbframe .plans{column-gap:var(--colgap)}
   .snbframe .plan .pl-p b{font-size:max(24px,min(5.4cqh,8cqw))}
   .snbframe .plan li{font-size:max(13px,min(2.4cqh,3.6cqw))}
@@ -6201,6 +6198,9 @@ function renderSlide(c){
         '<a class="jlink" href="'+c.url+'">'+(c.label||c.url)+'</a></div>';
       /* with an image (2026-09-21, "a visual weight to the slide"): the picture fills the
          well and the scan target rides on it as a card, so the QR is never lost */
+      /* the plans (2026-11-25, Justin: "no qr codes. they are already in the app"): the slide shows the two plans across
+         the frame; in the app each member gets the plans as cards with Join now (beatInfo plans) */
+      if(c.plans) return '<div class="s info plans-on wfoot">'+eb+'<h1>'+hdots(c.h)+'</h1>'+(c.body?'<div class="body">'+c.body+'</div>':"")+'</div>';
       const side = c.img
         ? '<div class="well ctawell"><img src="'+c.img+'" alt="">'+
           '<div class="ctacard">'+qr+jt+'</div></div>'
@@ -7518,6 +7518,8 @@ function beatInfo(b,c){
     breath:prompt&&!/intentional/i.test(t)&&/\bbreath(ing)?\b|chest or (your )?belly|full or shallow|tense or relaxed/i.test(t),
     /* the break slide: the app shows each member a Capacity Check and shares touches on the paper */
     cap:!!(c&&c.brk),
+    /* the plans slide: the app shows each member the two plans with Join now (2026-11-25) */
+    plans:!!(c&&c.plans),
     /* the opening title slide shares touches with the room like the break, with no Capacity Check (Justin 2026-11-21) */
     share:!!(c&&(c.brk||c.kind==="cover")),
     /* the intentional breath (Justin presses B on these) and the move a practice slide carries (GLYPH-LIVE-SPEC.md 5) */
