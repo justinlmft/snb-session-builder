@@ -514,22 +514,29 @@
   font-weight:300;letter-spacing:-.01em;color:var(--sink);opacity:.8;line-height:1}
 
 /* ---- events list (the closing invitation) ---- */
+/* 2026-11-25 (Justin: "make sure it is following the grid rules and sized for various screen sizes"): the table starts
+   on the body line and every row is whole grid rows: the header one row, each event two, so the last line lands on a
+   row line and the note sits under it. Type is the deck's body size (height based), not a width size that went tiny
+   in a laptop window. Name on columns 1-4, the date on 5-9, the plan on 10-12. */
 .snbframe .evlist{list-style:none;margin:var(--gut) 0 0;padding:0;align-self:stretch}
-.snbframe .evlist li{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:baseline;column-gap:var(--colgap);
-  padding:1.4cqh 0;border-bottom:1px solid var(--shair);font-size:clamp(11px,1.35cqw,23px);color:var(--sbody)}
-.snbframe .evlist .evhead{font-size:clamp(8px,.92cqw,14px);letter-spacing:.14em;text-transform:uppercase;
-  font-weight:500;color:var(--smuted);border-bottom:1px solid var(--shair);padding-bottom:1cqh}
-.snbframe .evlist li > :nth-child(1){grid-column:1 / 7}
-.snbframe .evlist li > :nth-child(2){grid-column:7 / 11}
-.snbframe .evlist li > :nth-child(3){grid-column:11 / 13}
+.snbframe .evlist li{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:center;column-gap:var(--colgap);
+  box-sizing:border-box;height:calc(2 * var(--rowh) + var(--colgap));padding:0;border-bottom:1px solid var(--shair);
+  font-size:max(13px,3.3cqh);line-height:1.25;color:var(--sbody)}
+.snbframe .evlist .evhead{height:var(--rowh);align-items:end;padding-bottom:.8cqh;font-size:max(9px,1.5cqh);letter-spacing:.14em;text-transform:uppercase;
+  font-weight:500;color:var(--smuted);border-bottom:1px solid var(--shair)}
+.snbframe .evlist li > :nth-child(1){grid-column:1 / 5}
+.snbframe .evlist li > :nth-child(2){grid-column:5 / 10}
+.snbframe .evlist li > :nth-child(3){grid-column:10 / 13;white-space:nowrap}
 .snbframe .evlist .evname{font-weight:500;color:var(--sink)}
-.snbframe .evlist .evwhen{color:var(--smuted);font-size:clamp(10px,1.1cqw,18px);font-variant-numeric:tabular-nums}
-.snbframe .evlist .evmark{text-align:right;font-size:clamp(10px,1.1cqw,18px)}
+.snbframe .evlist .evwhen{color:var(--smuted);font-size:max(12px,2.6cqh);font-variant-numeric:tabular-nums}
+.snbframe .evlist .evmark{text-align:right;font-size:max(12px,2.6cqh)}
 .snbframe .evlist .evhead .evmark,.snbframe .evlist .evhead .evwhen{color:var(--smuted);font-size:inherit}
 .snbframe .evlist li .evmark.yes{color:#3b6ea5;font-weight:700}
 .snbframe.dark .evlist li .evmark.yes{color:#7ea6d6}
 .snbframe .evlist li .evmark.free{color:var(--smuted);font-style:italic}
-.snbframe .evnote{margin-top:2.6cqh;font-size:clamp(9px,1.1cqw,17px);color:var(--smuted)}
+.snbframe .evlist li .evmark.evplan{color:var(--sink);font-weight:500}
+.snbframe .evlist li .evmark.evplan.open{color:var(--smuted);font-weight:400}
+.snbframe .evnote{margin-top:var(--gut);font-size:max(11px,2cqh);color:var(--smuted)}
 
 /* ---- motion: the SNB rise-in, content only.
    The clearing blur is gone — at 3.3cqh on a projector it read as a smear
@@ -624,6 +631,22 @@
 .snbframe .well .ctacard .jlink{font-size:clamp(9px,1cqw,15px);color:var(--sink,#171c26);
   text-decoration:none;overflow-wrap:anywhere;line-height:1.3}
 
+/* the two plans (2026-11-25): side by side in the text column (1-4 and 5-8), the QR in the art well (9-12) */
+.snbframe .s.plans-on .body{color:var(--sbody)}
+.snbframe .s.plans-on .pl-lede{margin:0 0 var(--gut);font-size:max(13px,2.8cqh);line-height:1.4;color:var(--smuted)}
+.snbframe .plans{display:grid;grid-template-columns:1fr 1fr;column-gap:var(--colgap)}
+.snbframe .plan{border-top:2px solid var(--sink);padding-top:1.6cqh}
+.snbframe .plan:not(.co){border-top-color:var(--shair)}
+.snbframe .plan .pl-n{font-size:max(12px,2.4cqh);font-weight:600;color:var(--sink);letter-spacing:0}
+.snbframe .plan .pl-p{margin-top:1.4cqh;font-size:max(14px,3cqh);line-height:1.1;color:var(--sink)}
+.snbframe .plan .pl-p b{font-size:max(24px,5.4cqh);font-weight:500;letter-spacing:-.02em;margin-right:.15em}
+.snbframe .plan .pl-y{margin-top:.6cqh;font-size:max(12px,2.4cqh);color:var(--smuted)}
+.snbframe .plan ul{list-style:none;margin:2cqh 0 0;padding:0}
+.snbframe .plan li{font-size:max(12px,2.4cqh);line-height:1.35;padding:.55cqh 0 .55cqh 1.2em;position:relative}
+.snbframe .plan li::before{content:"";position:absolute;left:0;top:calc(.55cqh + .62em);width:.55em;height:1px;background:var(--smuted)}
+.snbframe.dark .plan{border-top-color:#f3f1ea}
+.snbframe.dark .plan:not(.co){border-top-color:var(--shair)}
+
 /* ==================================================================
    LIVE ROOM — the slide inside the SNB app's live room (2026-10-28,
    Justin: "optimize the slides for various screen sizes").
@@ -653,10 +676,10 @@
 .snbframe .safe.room.rf3 .s > .body{zoom:.78}
 .snbframe .safe.room.rf4 .s > .body{zoom:.7}
 /* the events list steps with it: tighter rows, whole columns kept (zoom would narrow the 12 columns) */
-.snbframe .safe.room.rf1 .evlist li{padding-top:1cqh;padding-bottom:1cqh}
-.snbframe .safe.room.rf2 .evlist li{padding-top:.75cqh;padding-bottom:.75cqh}
-.snbframe .safe.room.rf3 .evlist li{padding-top:.5cqh;padding-bottom:.5cqh}
-.snbframe .safe.room.rf4 .evlist li{padding-top:.3cqh;padding-bottom:.3cqh}
+.snbframe .safe.room.rf1 .evlist li:not(.evhead){height:calc(1.5 * var(--rowh) + var(--colgap))}
+.snbframe .safe.room.rf2 .evlist li:not(.evhead){height:calc(var(--rowh) + var(--colgap))}
+.snbframe .safe.room.rf3 .evlist li:not(.evhead){height:auto;padding-top:.6cqh;padding-bottom:.6cqh}
+.snbframe .safe.room.rf4 .evlist li:not(.evhead){height:auto;padding-top:.3cqh;padding-bottom:.3cqh}
 /* cards along the bottom: the mark + byline would sit on them; the room carries the brand */
 .snbframe .safe.room.bres .foot.gfoot{display:none!important}
 
@@ -697,6 +720,13 @@
   .snbframe .s > .well .ctacard .qr{width:min(14cqh,20cqw)}
   .snbframe .s > .well .ctacard .jlead{font-size:max(9px,2.2cqw)}
   .snbframe .s > .well .ctacard .jlink{font-size:max(11px,2.8cqw)}
+  /* the plans on a phone: nobody scans their own screen, so the QR steps aside and the link stays as one line */
+  .snbframe .s.plans-on .snbjoin.big{padding:1.6cqh 4cqw;border:0;border-top:1px solid var(--shair);border-radius:0;align-items:flex-start;text-align:left}
+  .snbframe .s.plans-on .snbjoin.big .qr{display:none}
+  .snbframe .s.plans-on .snbjoin.big .jtext{margin-top:0;padding-top:0;border-top:0}
+  .snbframe .plans{column-gap:var(--colgap)}
+  .snbframe .plan .pl-p b{font-size:max(24px,min(5.4cqh,8cqw))}
+  .snbframe .plan li{font-size:max(13px,min(2.4cqh,3.6cqw))}
   /* the drawn phone: in the room every member gets the app's own check-in, so the drawing steps aside */
   .snbframe .snbphone{display:none}
   .frame .snbjoin.big{position:relative;left:auto;right:auto;top:auto;bottom:auto;align-self:stretch;
@@ -713,13 +743,14 @@
   .snbframe .flow .num,.snbframe .snum{width:max(16px,4.4cqw);height:max(16px,4.4cqw);font-size:max(9px,2.4cqw)}
   .snbframe .flow .arr,.snbframe .sarr,.snbframe .farr{font-size:max(11px,2.8cqw)}
   /* events: name and mark on one line, the date under the name */
-  .snbframe .evlist li{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:var(--colgap);row-gap:.4cqh;padding:1.4cqh 0;font-size:max(13px,3.6cqw)}
-  .snbframe .evlist li > :nth-child(1){grid-column:1 / 4;grid-row:1}
-  .snbframe .evlist li > :nth-child(2){grid-column:1 / 4;grid-row:2;font-size:max(12px,3.1cqw)}
-  .snbframe .evlist li > :nth-child(3){grid-column:4 / 5;grid-row:1;font-size:max(12px,3.1cqw)}
+  .snbframe .evlist li{grid-template-columns:repeat(4,minmax(0,1fr));column-gap:var(--colgap);row-gap:.4cqh;height:auto;align-items:baseline;padding:1.6cqh 0;font-size:max(14px,min(3.3cqh,4.5cqw))}
+  .snbframe .evlist .evhead{height:auto;padding:0 0 1cqh}
+  .snbframe .evlist li > :nth-child(1){grid-column:1 / 3;grid-row:1}
+  .snbframe .evlist li > :nth-child(2){grid-column:1 / 4;grid-row:2;font-size:max(13px,min(2.8cqh,3.8cqw))}
+  .snbframe .evlist li > :nth-child(3){grid-column:3 / 5;grid-row:1;font-size:max(12px,min(2.6cqh,3.4cqw))}
   .snbframe .evlist .evhead{font-size:max(9px,2.2cqw)}
   .snbframe .evlist .evhead .evwhen{display:none}
-  .snbframe .evnote{font-size:max(11px,2.8cqw)}
+  .snbframe .evnote{font-size:max(12px,min(2.2cqh,3.2cqw))}
   .snbframe .breakclock .bl{font-size:max(9px,2.2cqw)}
   .snbframe .breakclock .bt{font-size:max(18px,5.4cqw)}
 }
@@ -3678,7 +3709,23 @@ const COREG_LABEL="stucknotbroken.com/checkout/co-regulator";
 /* the Academy home (Circle feed, "where unstucking happens."), cropped to the image well —
    absolute so the standalone tool and the builder load the same file */
 const COREG_IMG="https://justinlmft.github.io/snb-session-builder/images/academy-home.webp";
+/* PLANS AND PRICES (Justin, 2026-11-25: "make it more obvious what things cost ... a breakdown of self-regulator
+   versus co-regulator with prices"). From Dec 1 (the app launch with the new prices; CIRCLE-TO-APP-PRICING.md) the
+   invitation shows the two plans side by side with their prices, and the events table says which plan each event is
+   in. Before that the old slides stay. ?plans=1 previews it. Prices: Self-Regulator $12 a month or $108 a year,
+   Co-Regulator $24 a month or $240 a year (Justin 2026-11-23). */
+const PLANS_LIVE = /[?&]plans=1/.test(location.search) || Date.now() >= Date.parse("2026-12-01T00:00:00-08:00");
+const PLANS_BODY =
+  '<p class="pl-lede">Mindful Moment stays free for everyone.</p>'+
+  '<div class="plans">'+
+    '<div class="plan"><div class="pl-n">Self-Regulator</div><div class="pl-p"><b>$12</b> a month</div><div class="pl-y">or $108 a year</div>'+
+      '<ul><li>The full Unstucking Pathway</li><li>Every article and practice</li><li>Challenges and insights</li></ul></div>'+
+    '<div class="plan co"><div class="pl-n">Co-Regulator</div><div class="pl-p"><b>$24</b> a month</div><div class="pl-y">or $240 a year</div>'+
+      '<ul><li>Everything in Self-Regulator</li><li>Every live event with me</li><li>A small private community</li></ul></div>'+
+  '</div>';
 function coregBeat(){
+  if(PLANS_LIVE) return {style:"coreg", h:"Want to go further?", body:PLANS_BODY, note:"", url:COREG_URL, label:COREG_LABEL, img:null,
+    lead:"see the plans", eyebrow:"THE UNSTUCKING ACADEMY", flow:"", logo:true, fixed:true, plans:true};
   return {style:"coreg", h:"Want to go further?",
     body:"Mindful Moments are where you practice connecting to the present. Capacity Builders are where you self-regulate.<br><br>- weekly<br>- small groups with no pressure<br>- practice self-regulation skills within your capacity<br>- grow your capacity over time = more presence, more safety, less defense<br><br><b>Join the Unstucking Academy as a Co-Regulator →</b>",
     note:"",
@@ -3816,6 +3863,15 @@ function randomize(){
 
   /* the events table, lifted from MM's own markup into the shared events slide */
   function eventsRowsHTML(){
+    if(PLANS_LIVE){
+      const head='<li class="evhead"><span>Practice</span><span class="evwhen">Next session</span><span class="evmark">Plan</span></li>';
+      const rows=EVENTS_ROWS.map(r=>
+        '<li><span class="evname">'+r.name+'</span>'+
+        '<span class="evwhen" data-snb="'+r.snb+'">'+r.fb+'</span>'+
+        '<span class="evmark evplan'+(r.academy?'':' open')+'">'+(r.academy?'Co-Regulator':'Free')+'</span></li>').join("");
+      return '<ul class="evlist">'+head+rows+'</ul>'+
+        '<div class="evnote">Every live event is in the app, under Calendar.</div>';
+    }
     const head='<li class="evhead"><span>Practice</span><span class="evwhen">Next session</span><span class="evmark">Academy</span></li>';
     const rows=EVENTS_ROWS.map(r=>
       '<li><span class="evname">'+r.name+'</span>'+
@@ -3835,7 +3891,7 @@ function randomize(){
       if(b.style==="word")    return {kind:"prompt", h:b.h};
       if(b.style==="checkin") return {kind:"checkin", eyebrow:"CHECK IN", h:b.h, body:b.body, phone:(b.phase==="after"?"after":"before")};
       if(b.style==="events")  return {kind:"events", eyebrow:"THE UNSTUCKING ACADEMY", h:b.h, rows:eventsRowsHTML()};
-      if(b.style==="coreg")   return {kind:"cta", eyebrow:b.eyebrow, h:b.h, body:b.body, url:b.url, label:b.label, img:b.img, lead:"join as a co-regulator"};
+      if(b.style==="coreg")   return {kind:"cta", eyebrow:b.eyebrow, h:b.h, body:b.body, url:b.url, label:b.label, img:b.img, lead:b.lead||"join as a co-regulator", plans:!!b.plans};
       return {kind:"cover", eyebrow:b.eyebrow||"", h:b.h, flow:b.flow||""};
     },
     agenda:function(){ return st.order.length?st.order.map(cap):["—"]; },
@@ -6149,7 +6205,7 @@ function renderSlide(c){
         ? '<div class="well ctawell"><img src="'+c.img+'" alt="">'+
           '<div class="ctacard">'+qr+jt+'</div></div>'
         : '<div class="snbjoin big ctapanel">'+qr+jt+'</div>';
-      return '<div class="s checkin cta wfoot'+(c.img?' haswell':'')+'">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
+      return '<div class="s checkin cta wfoot'+(c.img?' haswell':'')+(c.plans?' plans-on':'')+'">'+eb+'<h1>'+hdots(c.h)+'</h1>'+
         (c.body?'<div class="body">'+c.body+'</div>':"")+side+'</div>';
     }
     case "events":
