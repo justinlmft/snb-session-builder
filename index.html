@@ -6903,6 +6903,8 @@ const BRK=(function(){
     crowd=Math.max(1,new Set(pts.map(p=>p.who)).size);
     const damp=Math.min(1,2.4/Math.sqrt(crowd)), R=U*.8, R2=2*R*R;   /* about one glyph around the finger (Justin 2026-11-20: "should be more discreet") */
     const ex=extras(t), M=mid(), cx=M.x, cy=M.y;
+    if(foA!==foT){ foA+=(foT-foA)*(foT>foA?.06:.08); if(Math.abs(foT-foA)<.004){ foA=foT; if(!foT) foR=null; } }
+    const FO=(foR&&foA>0)?foR:null, FD=5*U, still=calm();
     for(const q of GL){ let v=0, st='', me=false, dx=0, dy=0, sc=1;
       if(ex){ const o=lit(q,t,ex,cx,cy); v=o.v; dx=o.dx; dy=o.dy; sc=o.sc; if(o.st){ st=o.st; me=true; } }
       for(const p of pts){ if(mine(p.st).indexOf(q.k)<0) continue; const dx=q.x-p.u*W, dy=q.y-p.v*H; if(Math.abs(dx)>3*R||Math.abs(dy)>3*R) continue;
@@ -6917,6 +6919,14 @@ const BRK=(function(){
         const kk=dist<r0?smB(clampB((dist-(r0-44))/44)):smB(clampB(1-(dist-r0)/(130+70*E))); dx+=ax/dist*lean; dy+=ay/dist*lean; sc*=1+.2*E*kk;
         if(spread>0){ const sp=eio(spread)*.22*Math.min(1,Math.max(0,dist-RR)/(3*U)); dx+=ax*sp; dy+=ay*sp; }
         const ua=dist<RR?clampB((dist-RR*.75)/(RR*.25))*.5:1; if(ua>.02){ const z=SP*sc; g.globalAlpha=ua; g.drawImage(emb(q.k),q.x+dx-z/2,q.y+dy-z/2,z,z); } }
+      else if(FO&&tm>0){ const ex2=Math.max(FO.x-q.x,0,q.x-FO.x-FO.w), ey2=Math.max(FO.y-q.y,0,q.y-FO.y-FO.h), d=Math.hypot(ex2,ey2);
+        if(d<FD){ const k=smB(1-d/FD)*eio(foA), fx=FO.x+FO.w/2-q.x, fy=FO.y+FO.h/2-q.y, fl=Math.hypot(fx,fy)||1, mvk=still?0:k;
+          const ox=dx+fx/fl*.35*U*mvk, oy=dy+fy/fl*.35*U*mvk, z=SP*sc*(1+.18*mvk);
+          g.globalAlpha=tm; g.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2-1,q.y-SP/2-1,SP+2,SP+2);
+          g.drawImage(emb(q.k),q.x+ox-z/2,q.y+oy-z/2,z,z);
+          if(d<3.2*U&&d>0){ const sp=foSt&&mine(foSt).indexOf(q.k)>=0&&q.ad<.15; g.globalAlpha=tm*k; g.drawImage(sprite(q.k,sp?lightOf(foSt,true):BONE,dpr,SP,S),q.x+ox-z/2,q.y+oy-z/2,z,z); }
+          dx=ox; dy=oy; sc=z/SP; }
+        else if(dx||dy){ g.globalAlpha=tm; g.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2-1,q.y-SP/2-1,SP+2,SP+2); } }
       else if((dx||dy)&&tm>0){ g.globalAlpha=tm; g.drawImage(sprite(q.k,PAPER,dpr,SP,S),q.x-SP/2-1,q.y-SP/2-1,SP+2,SP+2); }
       if(v>.02){ if(st&&mine(st).indexOf(q.k)<0&&v<.5) continue;
         const s=SP*sc; g.globalAlpha=Math.min(1,v); g.drawImage(sprite(q.k,lightOf(st,me),dpr,SP,S),q.x+dx-s/2,q.y+dy-s/2,s,s); } }
@@ -6924,7 +6934,7 @@ const BRK=(function(){
       for(const f of [1,.72]){ g.beginPath(); g.arc(cx,cy,base*(1+.55*B.k)*f,0,7); g.stroke(); } }
     g.globalAlpha=1;
     if(live) restRings(g,G,1,sc,rox,roy,tightK);
-    if(pts.length||blooms.length||ex||live) kick(); }
+    if(pts.length||blooms.length||ex||live||foA!==foT) kick(); }
   /* ---- own touch, breath and moves: what each one lights, how far it nudges ---- */
   const HOLD=.45, TAP=.35;
   function extras(t){
@@ -7093,6 +7103,11 @@ const BRK=(function(){
   /* moves that last the whole slide carry on across a following slide with the same move (the non-safety pair) */
   const LONG={ripples:1,see:1,bolts:1,hearts:1,inward:1,inwardh:1,twinkle:1,widen:1};
   let spread=0, spreadT=0;
+  /* the plans slide (Justin 2026-11-25, option D): the paper leans toward the plan you point at or tap; its glyphs
+     draw in a little toward that card, swell and take the darker bone; moving to the other card moves it */
+  let foR=null, foA=0, foT=0, foSt='';
+  /* with a check-in, a sprinkle of the member's own state colour in their own glyphs among the darker bone (Justin 2026-11-25 1:28 PM) */
+  function focus(r,st){ if(r&&!(r.w>0&&r.h>0)) r=null; if(r){ foR={x:+r.x,y:+r.y,w:+r.w,h:+r.h}; foT=1; foSt=COL[st]?st:''; } else foT=0; kick(); }
   const frac=x=>x-Math.floor(x);
   function move(n){ if(!cv) return; spreadT=0; const calmStart=n==='twinklec';
     /* a move ends softly, fading out over 1.5 s (Justin 2026-11-21 9:42 AM) */
@@ -7122,7 +7137,7 @@ const BRK=(function(){
       if(Math.hypot((p.u-u)*(W/H||1.78),p.v-v)<.1/Math.sqrt(k)){ blooms.push({u:(p.u+u)/2,v:(p.v+v)/2,t,a:st,b:p.st}); lastBloom=t; break; } }
     kick(); }
   function settle(on){ settled=!!on; }
-  return {mount, unmount, touch, settle, own, breathe, move, moveOff, layout, on:()=>!!cv};
+  return {mount, unmount, touch, settle, own, breathe, move, moveOff, layout, focus, on:()=>!!cv};
 })();
 /* the break slide, from whatever capacity slide a practice built (every practice ends a practice the same way) */
 const NEW_BREAK = ROOM_MODE && /[?&]brk=1/.test(location.search);
@@ -7369,7 +7384,9 @@ window.addEventListener("message",e=>{
     if(d.snbBreathe!==undefined) AMB.breathe(!!d.snbBreathe);
     /* the plans slide on a computer (2026-11-25, option A): the app lays its own plan cards where the drawn plans are, so
        the drawing steps aside for this member and we keep telling the app where it was */
-    if(d.snbPlansHide!==undefined){ PL_HIDE=!!d.snbPlansHide; document.documentElement.classList.toggle("pl-hide",PL_HIDE); if(PL_HIDE) plRectLoop(); }
+    if(d.snbPlansFocus!==undefined){ const f=d.snbPlansFocus, fr=document.querySelector("#stage .frame");
+      if(f&&typeof f==="object"&&fr){ const r=fr.getBoundingClientRect(); BRK.focus({x:f.x-r.left,y:f.y-r.top,w:f.w,h:f.h}, String(f.st||'')); } else BRK.focus(null); }
+    if(d.snbPlansHide!==undefined){ PL_HIDE=!!d.snbPlansHide; document.documentElement.classList.toggle("pl-hide",PL_HIDE); if(PL_HIDE) plRectLoop(); else BRK.focus(null); }
     if(d.snbSafe!==undefined){ ROOM_SAFE=d.snbSafe||null; const f0=document.querySelector("#stage .frame"); if(f0) applySafe(f0,ROOM_SAFE); }
     if(d.snbSlide!==undefined){
       const root=document.getElementById("stage");
